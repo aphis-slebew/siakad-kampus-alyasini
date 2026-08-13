@@ -1,0 +1,104 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: siakad_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - siakad
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: siakad_nginx
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./:/var/www/html:ro
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - app
+    networks:
+      - siakad
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: siakad_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - siakad_pgdata:/var/lib/postgresql/data
+    # PENTING: jangan expose port ini ke luar (0.0.0.0) di server produksi.
+    # Untuk akses lokal via DBeaver/TablePlus saat development, gunakan 127.0.0.1 saja.
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks:
+      - siakad
+
+  redis:
+    image: redis:7-alpine
+    container_name: siakad_redis
+    restart: unless-stopped
+    volumes:
+      - siakad_redisdata:/data
+    networks:
+      - siakad
+
+  queue:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: siakad_queue
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    command: php artisan queue:work redis --tries=3 --backoff=5 --sleep=3
+    networks:
+      - siakad
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    container_name: siakad_scheduler
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    # Loop sederhana pengganti cron di dalam container.
+    # Laravel Scheduler jalan tiap menit — dipakai untuk generate tagihan UKT,
+    # sinkron PDDIKTI (nanti), dan job terjadwal lain.
+    command: sh -c "while true; do php artisan schedule:run --verbose --no-interaction; sleep 60; done"
+    networks:
+      - siakad
+
+volumes:
+  siakad_pgdata:
+  siakad_redisdata:
+
+networks:
+  siakad:
+    driver: bridge

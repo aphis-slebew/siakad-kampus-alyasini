@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class BeasiswaMahasiswa extends Model
+{
+    use HasFactory;
+
+    protected $table = 'beasiswa_mahasiswas';
+
+    protected $fillable = [
+        'mahasiswa_id',
+        'jenis_beasiswa_id',
+        'status',
+    ];
+
+    /**
+     * Get the mahasiswa.
+     *
+     * @return BelongsTo<Mahasiswa, $this>
+     */
+    public function mahasiswa(): BelongsTo
+    {
+        return $this->belongsTo(Mahasiswa::class, 'mahasiswa_id');
+    }
+
+    /**
+     * Get the jenis beasiswa referensi.
+     *
+     * @return BelongsTo<ReferensiBiodata, $this>
+     */
+    public function jenisBeasiswa(): BelongsTo
+    {
+        return $this->belongsTo(ReferensiBiodata::class, 'jenis_beasiswa_id');
+    }
+}

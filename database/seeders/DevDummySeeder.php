@@ -1,0 +1,142 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\KelompokUkt;
+use App\Models\Mahasiswa;
+use App\Models\MahasiswaUkt;
+use App\Models\Pembayaran;
+use App\Models\PeriodeRegistrasi;
+use App\Models\ProgramStudi;
+use App\Models\Tagihan;
+use App\Models\TahunAjaran;
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+
+class DevDummySeeder extends Seeder
+{
+    use WithoutModelEvents;
+
+    /**
+     * Seed the development / testing database with realistic mock data & dummy accounts.
+     */
+    public function run(): void
+    {
+        $this->call(RoleAndPermissionSeeder::class);
+        $this->call(MasterDataSeeder::class);
+        $this->call(SystemConfigSeeder::class);
+        $this->call(PmbSeeder::class);
+
+        // 1. Superadmin User (Dev Dummy with pre-enabled 2FA for unhindered dev workflow)
+        $superadmin = User::firstOrCreate(
+            ['email' => 'admin@alyasini.ac.id'],
+            [
+                'name' => 'Superadmin SIAKAD',
+                'password' => Hash::make('password'),
+                'user_type' => 'superadmin',
+                'status' => 'aktif',
+            ]
+        );
+        $superadmin->update([
+            'two_factor_secret' => encrypt('DEV_DUMMY_2FA_SECRET_SUPERADMIN'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['DEV-REC-01', 'DEV-REC-02'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+        $superadmin->assignRole('superadmin');
+
+        // 2. Admin Akademik User (Dev Dummy with pre-enabled 2FA for unhindered dev workflow)
+        $adminAkademik = User::firstOrCreate(
+            ['email' => 'akademik@alyasini.ac.id'],
+            [
+                'name' => 'Staf Akademik',
+                'password' => Hash::make('password'),
+                'user_type' => 'pegawai',
+                'status' => 'aktif',
+            ]
+        );
+        $adminAkademik->update([
+            'two_factor_secret' => encrypt('DEV_DUMMY_2FA_SECRET_ADMIN_AKADEMIK'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['DEV-REC-01', 'DEV-REC-02'])),
+            'two_factor_confirmed_at' => now(),
+        ]);
+        $adminAkademik->assignRole('admin_akademik');
+
+        // 3. Staf Keuangan User
+        $stafKeuangan = User::firstOrCreate(
+            ['email' => 'keuangan@alyasini.ac.id'],
+            [
+                'name' => 'Staf Keuangan',
+                'password' => Hash::make('password'),
+                'user_type' => 'pegawai',
+                'status' => 'aktif',
+            ]
+        );
+        $stafKeuangan->assignRole('staf_keuangan');
+
+        // 4. Dosen User
+        $dosen = User::firstOrCreate(
+            ['email' => 'dosen@alyasini.ac.id'],
+            [
+                'name' => 'Dr. Ahmad Dosen',
+                'password' => Hash::make('password'),
+                'user_type' => 'dosen',
+                'status' => 'aktif',
+            ]
+        );
+        $dosen->assignRole('dosen');
+
+        // 5. Mahasiswa User & Model
+        $userMhs = User::firstOrCreate(
+            ['email' => 'mahasiswa@alyasini.ac.id'],
+            [
+                'name' => 'Budi Mahasiswa',
+                'password' => Hash::make('password'),
+                'user_type' => 'mahasiswa',
+                'status' => 'aktif',
+            ]
+        );
+        $userMhs->assignRole('mahasiswa');
+
+        $prodi = ProgramStudi::first();
+        $tahunAjaran = TahunAjaran::first();
+
+        $mahasiswa = Mahasiswa::firstOrCreate(
+            ['user_id' => $userMhs->id],
+            [
+                'program_studi_id' => $prodi->id,
+                'nim' => '2026PAI0001',
+                'nama_lengkap' => 'Budi Mahasiswa',
+                'nik' => '3515000000000088',
+                'tahun_masuk' => 2026,
+                'status_mahasiswa' => 'aktif',
+            ]
+        );
+
+        $kelompokUkt = KelompokUkt::firstOrCreate(
+            ['program_studi_id' => $prodi->id, 'nama' => 'Kelompok II'],
+            ['nominal_per_semester' => 3000000.00]
+        );
+
+        MahasiswaUkt::firstOrCreate(
+            ['mahasiswa_id' => $mahasiswa->id, 'tahun_ajaran_id' => $tahunAjaran->id],
+            ['kelompok_ukt_id' => $kelompokUkt->id, 'status' => 'aktif']
+        );
+
+        $periode = PeriodeRegistrasi::firstOrCreate(
+            ['tahun_ajaran_id' => $tahunAjaran->id, 'jenis' => 'mahasiswa_lama'],
+            ['mulai' => '2026-08-01', 'selesai' => '2026-08-30']
+        );
+
+        $tagihan = Tagihan::firstOrCreate(
+            ['mahasiswa_id' => $mahasiswa->id, 'tahun_ajaran_id' => $tahunAjaran->id, 'jenis' => 'ukt'],
+            ['nominal' => 3000000.00, 'jatuh_tempo' => '2026-08-30', 'status' => 'belum_bayar']
+        );
+
+        Pembayaran::firstOrCreate(
+            ['tagihan_id' => $tagihan->id, 'nominal_dibayar' => 3000000.00],
+            ['tanggal_bayar' => '2026-08-10', 'metode' => 'transfer_manual', 'status_verifikasi' => 'menunggu']
+        );
+    }
+}

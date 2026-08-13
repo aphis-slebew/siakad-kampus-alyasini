@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+
+@import 'tw-animate-css';
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+
+:root {
+    /* Design Tokens according to 03-UI-Theme.md §2 */
+    --brand-primary: #146356;
+    --brand-primary-dark: #0B3D35;
+    --brand-accent: #B9862E;
+
+    --surface-base: #F6F7F5;
+    --surface-card: #FFFFFF;
+
+    --text-primary: #1B1F1D;
+    --text-secondary: #5B625E;
+
+    --border-default: #DCE0DD;
+
+    --status-success: #2F8F5B;
+    --status-warning: #C08A1E;
+    --status-danger: #B4342E;
+
+    --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+}
+
+@theme {
+    --font-sans: var(--font-sans);
+    --font-mono: var(--font-mono);
+
+    --color-brand-primary: var(--brand-primary);
+    --color-brand-primary-dark: var(--brand-primary-dark);
+    --color-brand-accent: var(--brand-accent);
+
+    --color-surface-base: var(--surface-base);
+    --color-surface-card: var(--surface-card);
+
+    --color-text-primary: var(--text-primary);
+    --color-text-secondary: var(--text-secondary);
+
+    --color-border-default: var(--border-default);
+
+    --color-status-success: var(--status-success);
+    --color-status-warning: var(--status-warning);
+    --color-status-danger: var(--status-danger);
+}
+
+@layer base {
+    * {
+        border-color: var(--border-default);
+    }
+
+    body {
+        background-color: var(--surface-base);
+        color: var(--text-primary);
+        font-family: var(--font-sans);
+    }
+}
