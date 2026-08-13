@@ -29,7 +29,7 @@ class DevDummySeeder extends Seeder
         $this->call(SystemConfigSeeder::class);
         $this->call(PmbSeeder::class);
 
-        // 1. Superadmin User (Dev Dummy with pre-enabled 2FA for unhindered dev workflow)
+        // 1. Superadmin User (Dev Dummy with pre-enabled 2FA)
         $superadmin = User::firstOrCreate(
             ['email' => 'admin@alyasini.ac.id'],
             [
@@ -40,13 +40,13 @@ class DevDummySeeder extends Seeder
             ]
         );
         $superadmin->update([
-            'two_factor_secret' => encrypt('DEV_DUMMY_2FA_SECRET_SUPERADMIN'),
-            'two_factor_recovery_codes' => encrypt(json_encode(['DEV-REC-01', 'DEV-REC-02'])),
+            'two_factor_secret' => encrypt('JBSWY3DPEHPK3PXP'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['DEV-REC-01', 'DEV-REC-02', 'DEV-REC-03'])),
             'two_factor_confirmed_at' => now(),
         ]);
         $superadmin->assignRole('superadmin');
 
-        // 2. Admin Akademik User (Dev Dummy with pre-enabled 2FA for unhindered dev workflow)
+        // 2. Admin Akademik User (Dev Dummy with pre-enabled 2FA)
         $adminAkademik = User::firstOrCreate(
             ['email' => 'akademik@alyasini.ac.id'],
             [
@@ -57,13 +57,25 @@ class DevDummySeeder extends Seeder
             ]
         );
         $adminAkademik->update([
-            'two_factor_secret' => encrypt('DEV_DUMMY_2FA_SECRET_ADMIN_AKADEMIK'),
-            'two_factor_recovery_codes' => encrypt(json_encode(['DEV-REC-01', 'DEV-REC-02'])),
+            'two_factor_secret' => encrypt('JBSWY3DPEHPK3PXP'),
+            'two_factor_recovery_codes' => encrypt(json_encode(['DEV-REC-01', 'DEV-REC-02', 'DEV-REC-03'])),
             'two_factor_confirmed_at' => now(),
         ]);
         $adminAkademik->assignRole('admin_akademik');
 
-        // 3. Staf Keuangan User
+        // 3. Panitia PMB User
+        $panitiaPmb = User::firstOrCreate(
+            ['email' => 'pmb@alyasini.ac.id'],
+            [
+                'name' => 'Panitia PMB',
+                'password' => Hash::make('password'),
+                'user_type' => 'pegawai',
+                'status' => 'aktif',
+            ]
+        );
+        $panitiaPmb->assignRole('panitia_pmb');
+
+        // 4. Staf Keuangan User
         $stafKeuangan = User::firstOrCreate(
             ['email' => 'keuangan@alyasini.ac.id'],
             [
@@ -75,7 +87,19 @@ class DevDummySeeder extends Seeder
         );
         $stafKeuangan->assignRole('staf_keuangan');
 
-        // 4. Dosen User
+        // 5. Kaprodi User
+        $kaprodiUser = User::firstOrCreate(
+            ['email' => 'kaprodi@alyasini.ac.id'],
+            [
+                'name' => 'Dr. H. Kaprodi PAI',
+                'password' => Hash::make('password'),
+                'user_type' => 'dosen',
+                'status' => 'aktif',
+            ]
+        );
+        $kaprodiUser->assignRole('kaprodi');
+
+        // 6. Dosen User
         $dosen = User::firstOrCreate(
             ['email' => 'dosen@alyasini.ac.id'],
             [
@@ -87,7 +111,19 @@ class DevDummySeeder extends Seeder
         );
         $dosen->assignRole('dosen');
 
-        // 5. Mahasiswa User & Model
+        // 7. Staf Kepegawaian User
+        $stafKepegawaian = User::firstOrCreate(
+            ['email' => 'kepegawaian@alyasini.ac.id'],
+            [
+                'name' => 'Staf Kepegawaian',
+                'password' => Hash::make('password'),
+                'user_type' => 'pegawai',
+                'status' => 'aktif',
+            ]
+        );
+        $stafKepegawaian->assignRole('staf_kepegawaian');
+
+        // 8. Mahasiswa User & Model
         $userMhs = User::firstOrCreate(
             ['email' => 'mahasiswa@alyasini.ac.id'],
             [
@@ -98,6 +134,31 @@ class DevDummySeeder extends Seeder
             ]
         );
         $userMhs->assignRole('mahasiswa');
+
+        // 9. Calon Mahasiswa User
+        $calonMhs = User::firstOrCreate(
+            ['email' => 'calon@alyasini.ac.id'],
+            [
+                'name' => 'Calon Mahasiswa Pendaftar',
+                'password' => Hash::make('password'),
+                'user_type' => 'calon_mahasiswa',
+                'status' => 'aktif',
+            ]
+        );
+        $calonMhs->assignRole('calon_mahasiswa');
+
+        // 10. Operator Kemahasiswaan User
+        $opKemahasiswaan = User::firstOrCreate(
+            ['email' => 'kemahasiswaan@alyasini.ac.id'],
+            [
+                'name' => 'Operator Kemahasiswaan',
+                'password' => Hash::make('password'),
+                'user_type' => 'pegawai',
+                'status' => 'aktif',
+            ]
+        );
+        $opKemahasiswaan->assignRole('operator_kemahasiswaan');
+
 
         $prodi = ProgramStudi::first();
         $tahunAjaran = TahunAjaran::first();
