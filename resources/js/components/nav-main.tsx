@@ -40,7 +40,7 @@ export function NavMain({ groups = [] }: { groups?: NavGroup[]; items?: NavItem[
                                                 : 'text-text-primary hover:bg-emerald-50/80 hover:text-brand-primary hover:translate-x-0.5'
                                         }`}
                                     >
-                                        <Link href={item.href} prefetch>
+                                        <Link href={item.href} prefetch="hover">
                                             {item.icon && (
                                                 <item.icon
                                                     className={`size-4 shrink-0 transition-colors ${
