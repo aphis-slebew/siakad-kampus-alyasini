@@ -175,7 +175,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Registrasi Ulang & Keuangan Staff Management (Otorisasi: keuangan.manage / registrasi.manage)
-    Route::middleware(['can:keuangan.manage'])->prefix('keuangan')->name('keuangan.')->group(function () {
+    Route::middleware(['role:superadmin|admin_akademik|staf_keuangan'])->prefix('keuangan')->name('keuangan.')->group(function () {
         Route::resource('periode-registrasi', PeriodeRegistrasiController::class)->except(['create', 'edit', 'show']);
         Route::resource('kelompok-ukt', KelompokUktController::class)->except(['create', 'edit', 'show']);
         Route::resource('komponen-biaya', KomponenBiayaController::class)->except(['create', 'edit', 'show']);

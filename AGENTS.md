@@ -221,5 +221,22 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
   - Backend: `php artisan serve` (or Laragon Virtual Host `http://siakad-alyasini.test`).
   - Frontend: `npm run dev` (Vite dev server) for live code editing, or `npm run build` for production assets.
 
+=== team ai agent anti-hallucination & single source of truth rules ===
+
+# AI Agent Team Discipline & Single Source of Truth
+
+To prevent AI coding agents from losing context, hallucinating ficitious features, or breaking existing architecture:
+
+1. **Mandatory Source of Truth Reference**:
+   - Database Entities & ERD: Must strictly follow [`docs/ERD.md`](docs/ERD.md). Never invent tables, columns, or relations outside this schema.
+   - Functional Roles & Use Cases: Must strictly follow [`docs/USE_CASE.md`](docs/USE_CASE.md). The application has exactly **10 official roles** (`superadmin`, `admin_akademik`, `dosen`, `kaprodi`, `mahasiswa`, `calon_mahasiswa`, `staf_keuangan`, `panitia_pmb`, `kepegawaian`, `kemahasiswaan`). Do NOT create fictional roles.
+   - Academic Business Logic: Must strictly follow [`docs/FLOWCHART.md`](docs/FLOWCHART.md).
+   - Local Runtime & Deployment: Must follow [`SETUP_LOCAL_LARAGON.md`](SETUP_LOCAL_LARAGON.md).
+2. **No Breaking Database Mutations**:
+   - Never write migrations that alter column types or drop existing tables without updating `docs/ERD.md`.
+3. **Strict Verification Standard**:
+   - Any backend change must be verified with `php artisan test --compact` using PHP >= 8.4.
+   - Any frontend change must pass `npm run types:check` and `npm run build`.
+
 </laravel-boost-guidelines>
 
