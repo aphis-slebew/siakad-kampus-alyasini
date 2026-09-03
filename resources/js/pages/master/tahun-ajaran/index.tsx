@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { MasterDataNav } from '@/components/master-data-nav';
 import { formatDateIndonesian } from '@/lib/utils';
 
 type TahunAjaran = {
@@ -145,6 +146,9 @@ export default function TahunAjaranIndex({ tahunAjarans = [], filters = { search
             <Head title="Kelola Tahun Ajaran & Periode Akademik" />
 
             <div className="p-4 sm:p-6 lg:p-8 space-y-6 font-sans max-w-7xl mx-auto">
+                {/* Clean Dropdown Breadcrumb Nav */}
+                <MasterDataNav currentHref="/master/tahun-ajaran" />
+
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
                     <div className="flex items-center gap-3">
@@ -163,45 +167,11 @@ export default function TahunAjaranIndex({ tahunAjarans = [], filters = { search
 
                     <Button
                         onClick={openCreateModal}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition self-start sm:self-auto"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition self-start sm:self-auto cursor-pointer"
                     >
                         <Plus className="size-4" />
                         <span>Tambah Tahun Ajaran</span>
                     </Button>
-                </div>
-
-                {/* Sub-nav Tabs */}
-                <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto whitespace-nowrap text-xs font-medium">
-                    <Link
-                        href="/master/perguruan-tinggi"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Perguruan Tinggi
-                    </Link>
-                    <Link
-                        href="/master/fakultas"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Fakultas
-                    </Link>
-                    <Link
-                        href="/master/program-studi"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Program Studi
-                    </Link>
-                    <Link
-                        href="/master/tahun-ajaran"
-                        className="px-3.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 shadow-2xs"
-                    >
-                        Tahun Ajaran & Periode
-                    </Link>
-                    <Link
-                        href="/master/ruang-kuliah"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Ruang Kuliah
-                    </Link>
                 </div>
 
                 {/* Search & Filter Toolbar */}

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { MasterDataNav } from '@/components/master-data-nav';
 import AppLayout from '@/layouts/app-layout';
 
 interface PerguruanTinggi {
@@ -102,6 +103,9 @@ export default function PerguruanTinggiIndex({ perguruanTinggi, dosens }: Props)
             <Head title="Data Perguruan Tinggi" />
 
             <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans">
+                {/* Clean Dropdown Breadcrumb Nav */}
+                <MasterDataNav currentHref="/master/perguruan-tinggi" />
+
                 {/* Header Page */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
                     <div className="flex items-center gap-3">
@@ -120,45 +124,11 @@ export default function PerguruanTinggiIndex({ perguruanTinggi, dosens }: Props)
 
                     <Button
                         onClick={() => setIsEditOpen(true)}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition self-start sm:self-auto"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition self-start sm:self-auto cursor-pointer"
                     >
                         <Edit className="size-3.5" />
                         <span>Edit Data Institusi</span>
                     </Button>
-                </div>
-
-                {/* Sub-nav Tabs */}
-                <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto whitespace-nowrap text-xs font-medium">
-                    <Link
-                        href="/master/perguruan-tinggi"
-                        className="px-3.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 shadow-2xs"
-                    >
-                        Perguruan Tinggi
-                    </Link>
-                    <Link
-                        href="/master/fakultas"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Fakultas
-                    </Link>
-                    <Link
-                        href="/master/program-studi"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Program Studi
-                    </Link>
-                    <Link
-                        href="/master/tahun-ajaran"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Tahun Ajaran & Periode
-                    </Link>
-                    <Link
-                        href="/master/ruang-kuliah"
-                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
-                    >
-                        Ruang Kuliah
-                    </Link>
                 </div>
 
                 {/* 1. Identitas Perguruan Tinggi Card */}
