@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
+            'perguruanTinggi' => fn () => \App\Models\PerguruanTinggi::first(),
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,
