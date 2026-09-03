@@ -204,4 +204,22 @@ Use Wayfinder to generate TypeScript functions for Laravel routes. Import from `
 
 - IMPORTANT: Activate `inertia-react-development` when working with Inertia React client-side patterns.
 
+=== laragon & local execution rules ===
+
+# Laragon & Local Windows Execution
+
+- **PHP Version Requirement**: This application requires PHP >= 8.4 (due to Pest 5 and PHPUnit 13 modern syntax `new Class()->method()`).
+  - In Windows / Laragon: ALWAYS ensure the active PHP is **PHP 8.4.x** (`D:\laragon\bin\php\php-8.4.25-Win32-vs17-x64\php.exe`). Never use PHP 8.3 or older as it triggers parse errors in `Version.php` and `Expectation.php`.
+  - In WSL / Linux: Use PHP 8.5+.
+- **Database Environments**:
+  - **Laragon / Campus Local (`D:\laragon\www\siakad-alyasini`)**: Uses **MySQL** port `3306`, database `siakad_db`, user `root`, no password.
+  - **WSL / Docker (`/home/aphis/Project/siakad-alyasini`)**: Uses **PostgreSQL** port `5432`, database `siakad_db`, user `siakad_user`, password `siakad_pass`.
+  - **Automated Tests**: Always run on **SQLite in-memory** (`DB_CONNECTION=sqlite`, `DB_DATABASE=:memory:`).
+- **Filesystem Locking Safeguard**:
+  - Keep `INERTIA_DEVTOOLS_ENABLED=false` in `.env` to prevent stream exclusive locking (`LOCK_EX`) exceptions across Windows/WSL mounts.
+- **Running the Application**:
+  - Backend: `php artisan serve` (or Laragon Virtual Host `http://siakad-alyasini.test`).
+  - Frontend: `npm run dev` (Vite dev server) for live code editing, or `npm run build` for production assets.
+
 </laravel-boost-guidelines>
+
