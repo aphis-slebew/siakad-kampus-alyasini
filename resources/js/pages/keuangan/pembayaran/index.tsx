@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, CreditCard, ExternalLink, Eye, RefreshCw, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -45,15 +46,22 @@ export default function PembayaranStaffIndex({
 }) {
     const { errors, flash } = usePage<SharedData & { flash?: { success?: string; error?: string }; errors?: Record<string, string> }>().props;
     const [selectedPembayaran, setSelectedPembayaran] = useState<Pembayaran | null>(null);
+    const { confirm, confirmDialog } = useConfirmDialog();
 
     const handleVerify = (item: Pembayaran, status: 'diverifikasi' | 'ditolak') => {
-        if (confirm(`Apakah Anda yakin ingin memverifikasi pembayaran ini sebagai "${status}"?`)) {
-            router.patch(`/keuangan/pembayaran/${item.id}/verify`, {
-                status_verifikasi: status,
-            }, {
-                onSuccess: () => setSelectedPembayaran(null),
-            });
-        }
+        confirm({
+            title: status === 'diverifikasi' ? 'Verifikasi Pembayaran' : 'Tolak Pembayaran',
+            description: `Apakah Anda yakin ingin memverifikasi pembayaran sebesar Rp ${Number(item.nominal_dibayar).toLocaleString('id-ID')} atas nama ${item.tagihan?.mahasiswa?.nama_lengkap || 'Mahasiswa'} sebagai "${status}"?`,
+            variant: status === 'diverifikasi' ? 'primary' : 'destructive',
+            confirmText: status === 'diverifikasi' ? 'Ya, Verifikasi' : 'Ya, Tolak',
+            onConfirm: () => {
+                router.patch(`/keuangan/pembayaran/${item.id}/verify`, {
+                    status_verifikasi: status,
+                }, {
+                    onSuccess: () => setSelectedPembayaran(null),
+                });
+            },
+        });
     };
 
     const handleFilterStatus = (status: string) => {
@@ -64,9 +72,10 @@ export default function PembayaranStaffIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Verifikasi Pembayaran UKT & Keuangan" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Error Banner Notification (Poin 4 - Error Handling Ramah User) */}
                 {errorMessage && (
                     <div className="bg-status-danger/10 border border-status-danger/30 rounded-lg p-3 text-status-danger text-xs font-semibold flex items-center gap-2">
@@ -95,7 +104,7 @@ export default function PembayaranStaffIndex({
                 </div>
 
                 {/* Filter Tabs */}
-                <div className="flex items-center gap-2 border-b border-border-default pb-2">
+                <div className="flex items-center gap-2 border-b border-border-default pb-2 overflow-x-auto whitespace-nowrap">
                     {['menunggu', 'diverifikasi', 'ditolak', 'semua'].map((st) => (
                         <button
                             key={st}

@@ -59,6 +59,10 @@ class KelompokUktController extends Controller
 
     public function destroy(KelompokUkt $kelompokUkt): RedirectResponse
     {
+        if ($kelompokUkt->mahasiswaUkts()->exists()) {
+            return back()->with('error', 'Kelompok UKT tidak dapat dihapus karena sudah ditetapkan pada data mahasiswa.');
+        }
+
         $kelompokUkt->delete();
 
         return back()->with('success', 'Kelompok UKT berhasil dihapus.');

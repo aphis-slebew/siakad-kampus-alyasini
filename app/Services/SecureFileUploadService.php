@@ -23,8 +23,8 @@ class SecureFileUploadService
     ];
 
     protected const ALLOWED_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'];
-    protected const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png'];
 
+    protected const ALLOWED_IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png'];
 
     /**
      * Dangerous executable extensions that are explicitly forbidden.
@@ -97,5 +97,4 @@ class SecureFileUploadService
         // 4. Store file with random hashed name in private storage
         return $file->store($folder, 'local');
     }
-
 }

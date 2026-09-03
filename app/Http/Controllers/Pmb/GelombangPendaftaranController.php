@@ -62,6 +62,10 @@ class GelombangPendaftaranController extends Controller
 
     public function destroy(GelombangPendaftaran $gelombang): RedirectResponse
     {
+        if ($gelombang->calonMahasiswas()->exists()) {
+            return back()->with('error', 'Gelombang pendaftaran tidak dapat dihapus karena sudah memiliki calon mahasiswa terdaftar.');
+        }
+
         $gelombang->delete();
 
         return back()->with('success', 'Gelombang pendaftaran berhasil dihapus.');

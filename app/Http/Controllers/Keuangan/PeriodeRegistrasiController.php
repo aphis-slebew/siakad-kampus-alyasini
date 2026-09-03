@@ -46,7 +46,7 @@ class PeriodeRegistrasiController extends Controller
         return back()->with('success', 'Periode registrasi ulang berhasil ditambahkan.');
     }
 
-    public function update(Request $request, PeriodeRegistrasi $periode): RedirectResponse
+    public function update(Request $request, PeriodeRegistrasi $periodeRegistrasi): RedirectResponse
     {
         $validated = $request->validate([
             'tahun_ajaran_id' => ['required', 'exists:tahun_ajarans,id'],
@@ -55,14 +55,18 @@ class PeriodeRegistrasiController extends Controller
             'selesai' => ['required', 'date', 'after_or_equal:mulai'],
         ]);
 
-        $periode->update($validated);
+        $periodeRegistrasi->update($validated);
 
         return back()->with('success', 'Periode registrasi ulang berhasil diperbarui.');
     }
 
-    public function destroy(PeriodeRegistrasi $periode): RedirectResponse
+    public function destroy(PeriodeRegistrasi $periodeRegistrasi): RedirectResponse
     {
-        $periode->delete();
+        if ($periodeRegistrasi->registrasiUlangs()->exists()) {
+            return back()->with('error', 'Periode registrasi ulang tidak dapat dihapus karena sudah memiliki data registrasi mahasiswa terdaftar.');
+        }
+
+        $periodeRegistrasi->delete();
 
         return back()->with('success', 'Periode registrasi ulang berhasil dihapus.');
     }

@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { CreditCard, Edit, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -61,7 +62,10 @@ export default function KelompokUktIndex({
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingKelompok) return;
+
+        if (!editingKelompok) {
+return;
+}
 
         editForm.put(`/keuangan/kelompok-ukt/${editingKelompok.id}`, {
             onSuccess: () => {
@@ -71,10 +75,18 @@ export default function KelompokUktIndex({
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: KelompokUkt) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus kelompok UKT ${item.nama}?`)) {
-            router.delete(`/keuangan/kelompok-ukt/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Kelompok UKT',
+            description: `Apakah Anda yakin ingin menghapus kelompok UKT "${item.nama}" (Rp ${Number(item.nominal_per_semester).toLocaleString('id-ID')} / semester)? Mahasiswa yang ditugaskan ke kelompok ini perlu dipetakan ulang.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/keuangan/kelompok-ukt/${item.id}`);
+            },
+        });
     };
 
     const openEditModal = (item: KelompokUkt) => {
@@ -88,9 +100,10 @@ export default function KelompokUktIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Kelompok UKT" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-xl font-semibold text-text-primary">Kelompok UKT (Uang Kuliah Tunggal)</h1>

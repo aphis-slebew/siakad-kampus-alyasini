@@ -66,7 +66,7 @@ export default function StudentRegistrasiUlangIndex({
         <>
             <Head title="Pengajuan Registrasi Ulang Saya" />
 
-            <div className="p-6 space-y-6 font-sans max-w-4xl mx-auto">
+            <div className="p-4 sm:p-6 space-y-6 font-sans max-w-4xl mx-auto">
                 <div>
                     <h1 className="text-xl font-semibold text-text-primary">Registrasi Ulang (Her-Registrasi)</h1>
                     <p className="text-xs text-text-secondary mt-0.5">

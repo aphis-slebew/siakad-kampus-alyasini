@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\AktivitasMahasiswa;
 use App\Models\BeasiswaMahasiswa;
 use App\Models\BimbinganProposal;
 use App\Models\CalonMahasiswa;
@@ -8,7 +7,6 @@ use App\Models\Dosen;
 use App\Models\DosenWali;
 use App\Models\Fakultas;
 use App\Models\GelombangPendaftaran;
-use App\Models\HasilSeleksi;
 use App\Models\JalurPendaftaran;
 use App\Models\Krs;
 use App\Models\Mahasiswa;
@@ -20,6 +18,8 @@ use App\Models\Skripsi;
 use App\Models\Tagihan;
 use App\Models\TahunAjaran;
 use App\Models\User;
+use App\Notifications\KrsNotification;
+use App\Notifications\YudisiumNotification;
 use App\Services\KemahasiswaanService;
 use App\Services\KrsService;
 use App\Services\PaymentVerificationService;
@@ -34,8 +34,10 @@ beforeEach(function () {
     $this->artisan('db:seed', ['--class' => RoleAndPermissionSeeder::class]);
 });
 
-function createTestProdi(): ProgramStudi {
+function createTestProdi(): ProgramStudi
+{
     $fakultas = Fakultas::firstOrCreate(['kode' => 'FTIK'], ['nama' => 'Fakultas Tarbiyah']);
+
     return ProgramStudi::firstOrCreate(['kode' => 'PAI'], ['fakultas_id' => $fakultas->id, 'nama' => 'PAI', 'jenjang' => 'S1']);
 }
 
@@ -60,7 +62,6 @@ test('pmb selection result creates notification for candidate', function () {
         'nomor_pendaftaran' => 'PMB2026001',
         'nama_lengkap' => 'Calon Notif',
     ]);
-
 
     $admin = User::factory()->create(['user_type' => 'panitia_pmb']);
     $admin->assignRole('panitia_pmb');
@@ -142,7 +143,7 @@ test('krs submitted creates notification for dosen wali specifically', function 
     DB::table('system_configs')->updateOrInsert(['key' => 'KRS_CLOSING_DATE'], ['value' => '2026-12-31']);
 
     // Directly call KrsNotification to test target isolation
-    $userDosenWali->notify(new \App\Notifications\KrsNotification('submitted', $mhs->nama_lengkap));
+    $userDosenWali->notify(new KrsNotification('submitted', $mhs->nama_lengkap));
 
     // Dosen Wali specifically receives notification
     expect($userDosenWali->unreadNotifications()->count())->toBe(1);
@@ -197,7 +198,6 @@ test('skripsi bimbingan validation and exam creates notification for student', f
     expect($notif->data['title'])->toContain('Bimbingan Divalidasi');
 });
 
-
 test('yudisium assignment creates notification for student', function () {
     $prodi = createTestProdi();
     $userStudent = User::factory()->create(['user_type' => 'mahasiswa']);
@@ -231,7 +231,6 @@ test('kemahasiswaan activity and scholarship creates notification for student', 
     expect($notif->data['title'])->toContain('Status Pengajuan Beasiswa');
 });
 
-
 test('idor check prevents user A from marking read or accessing user B notification', function () {
     $userStudentA = User::factory()->create(['user_type' => 'mahasiswa']);
     $userStudentA->assignRole('mahasiswa');
@@ -239,7 +238,7 @@ test('idor check prevents user A from marking read or accessing user B notificat
     $userStudentB = User::factory()->create(['user_type' => 'mahasiswa']);
     $userStudentB->assignRole('mahasiswa');
 
-    $userStudentB->notify(new \App\Notifications\YudisiumNotification(1, 'YUD/2027/001'));
+    $userStudentB->notify(new YudisiumNotification(1, 'YUD/2027/001'));
     $notifB = $userStudentB->unreadNotifications()->first();
 
     // User A attempts to mark read User B's notification -> 403 Forbidden
@@ -251,8 +250,8 @@ test('unread badge count reflects actual unread database records', function () {
     $userStudent = User::factory()->create(['user_type' => 'mahasiswa']);
     $userStudent->assignRole('mahasiswa');
 
-    $userStudent->notify(new \App\Notifications\YudisiumNotification(1, 'YUD/2027/001'));
-    $userStudent->notify(new \App\Notifications\YudisiumNotification(2, 'YUD/2027/002'));
+    $userStudent->notify(new YudisiumNotification(1, 'YUD/2027/001'));
+    $userStudent->notify(new YudisiumNotification(2, 'YUD/2027/002'));
 
     $response = $this->actingAs($userStudent)->get('/notifications');
     $response->assertStatus(200);

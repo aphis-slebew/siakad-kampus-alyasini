@@ -6,8 +6,10 @@ use App\Models\AktivitasMahasiswa;
 use App\Models\BeasiswaMahasiswa;
 use App\Models\Mahasiswa;
 use App\Models\PelanggaranMahasiswa;
+use App\Notifications\KemahasiswaanNotification;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KemahasiswaanService
 {
@@ -41,13 +43,13 @@ class KemahasiswaanService
             $studentUser = $aktivitas->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\KemahasiswaanNotification(
+                    $studentUser->notify(new KemahasiswaanNotification(
                         'aktivitas',
                         $aktivitas->nama_kegiatan,
                         'divalidasi'
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Aktivitas: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Aktivitas: '.$e->getMessage());
                 }
             }
 
@@ -114,19 +116,17 @@ class KemahasiswaanService
             if ($studentUser) {
                 try {
                     $namaItem = $beasiswa->jenisBeasiswa->nama ?? 'Beasiswa';
-                    $studentUser->notify(new \App\Notifications\KemahasiswaanNotification(
+                    $studentUser->notify(new KemahasiswaanNotification(
                         'beasiswa',
                         $namaItem,
                         $newStatus
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Beasiswa: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Beasiswa: '.$e->getMessage());
                 }
             }
 
             return $beasiswa->fresh();
         });
     }
-
-
 }

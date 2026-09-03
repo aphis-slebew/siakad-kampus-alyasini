@@ -1,6 +1,7 @@
-import { useState } from 'react';
-import { Head, router, useForm } from '@inertiajs/react';
-import { DoorOpen, Edit, Plus, Trash2 } from 'lucide-react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { DoorOpen, Edit, Plus, Search, Trash2 } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -23,6 +24,7 @@ type RuangKuliah = {
 export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: RuangKuliah[] }) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [editingRuang, setEditingRuang] = useState<RuangKuliah | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
     const createForm = useForm({
         kode: '',
@@ -36,6 +38,19 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
         kapasitas: 30,
     });
 
+    const filteredList = useMemo(() => {
+        return ruangKuliahs.filter((item) => {
+            if (!searchQuery) {
+return true;
+}
+
+            return (
+                item.kode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                item.nama.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        });
+    }, [ruangKuliahs, searchQuery]);
+
     const handleCreateSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         createForm.post('/master/ruang-kuliah', {
@@ -48,7 +63,10 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingRuang) return;
+
+        if (!editingRuang) {
+return;
+}
 
         editForm.put(`/master/ruang-kuliah/${editingRuang.id}`, {
             onSuccess: () => {
@@ -58,10 +76,18 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: RuangKuliah) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus ruang kuliah ${item.nama}?`)) {
-            router.delete(`/master/ruang-kuliah/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Ruang Kuliah',
+            description: `Apakah Anda yakin ingin menghapus ruang kuliah "${item.nama}" (${item.kode} - Kapasitas: ${item.kapasitas} kursi)? Pastikan tidak ada jadwal kuliah yang sedang menggunakan ruang ini.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/master/ruang-kuliah/${item.id}`);
+            },
+        });
     };
 
     const openEditModal = (item: RuangKuliah) => {
@@ -75,39 +101,100 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Ruang Kuliah" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6 font-sans max-w-7xl mx-auto">
                 {/* Header Title */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-semibold text-text-primary">Ruang Kuliah</h1>
-                        <p className="text-xs text-text-secondary mt-0.5">
-                            Kelola data gedung dan ruang perkuliahan di STAI Al-Yasini.
-                        </p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+                            <DoorOpen className="size-6 sm:size-7" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                                Ruang Kuliah
+                            </h1>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                                Kelola data gedung dan ruang perkuliahan di STAI Al-Yasini.
+                            </p>
+                        </div>
                     </div>
 
                     <Button
                         onClick={() => setIsCreateOpen(true)}
-                        className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 self-start sm:self-auto"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition self-start sm:self-auto"
                     >
                         <Plus className="size-4" />
-                        Tambah Ruang Kuliah
+                        <span>Tambah Ruang Kuliah</span>
                     </Button>
                 </div>
 
+                {/* Sub-nav Tabs */}
+                <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto whitespace-nowrap text-xs font-medium">
+                    <Link
+                        href="/master/perguruan-tinggi"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Perguruan Tinggi
+                    </Link>
+                    <Link
+                        href="/master/fakultas"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Fakultas
+                    </Link>
+                    <Link
+                        href="/master/program-studi"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Program Studi
+                    </Link>
+                    <Link
+                        href="/master/tahun-ajaran"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Tahun Ajaran & Periode
+                    </Link>
+                    <Link
+                        href="/master/ruang-kuliah"
+                        className="px-3.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 shadow-2xs"
+                    >
+                        Ruang Kuliah
+                    </Link>
+                </div>
+
+                {/* Search Toolbar */}
+                <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-slate-200 bg-white shadow-xs">
+                    <div className="relative w-full sm:w-72">
+                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-3.5 text-slate-400" />
+                        <Input
+                            type="text"
+                            placeholder="Cari kode atau nama ruang..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-8 h-9 text-xs bg-slate-50 border-slate-200"
+                        />
+                    </div>
+                    <span className="text-xs text-slate-500 font-medium hidden sm:inline">
+                        Total: {filteredList.length} ruang
+                    </span>
+                </div>
+
                 {/* Data Table */}
-                <div className="rounded-lg border border-border-default bg-surface-card shadow-xs overflow-hidden">
-                    {ruangKuliahs.length === 0 ? (
+                <div className="rounded-xl border border-slate-200 bg-white shadow-xs overflow-hidden border-t-2 border-t-emerald-600">
+                    {filteredList.length === 0 ? (
                         <div className="p-12 text-center">
-                            <DoorOpen className="mx-auto size-10 text-text-secondary/50 mb-3" />
-                            <h3 className="text-sm font-semibold text-text-primary">Belum ada data ruang kuliah</h3>
-                            <p className="text-xs text-text-secondary mt-1 mb-4">
-                                Silakan tambahkan data ruang perkuliahan baru.
+                            <DoorOpen className="mx-auto size-10 text-slate-400 mb-3" />
+                            <h3 className="text-sm font-semibold text-slate-900">
+                                {searchQuery ? 'Tidak ada ruang kuliah yang cocok dengan pencarian' : 'Belum ada data ruang kuliah'}
+                            </h3>
+                            <p className="text-xs text-slate-500 mt-1 mb-4">
+                                {searchQuery ? 'Silakan periksa kembali kata kunci pencarian Anda.' : 'Silakan tambahkan data ruang perkuliahan baru.'}
                             </p>
                             <Button
                                 onClick={() => setIsCreateOpen(true)}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md inline-flex items-center gap-1.5"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg inline-flex items-center gap-1.5"
                             >
                                 <Plus className="size-4" />
                                 Tambah Ruang Kuliah
@@ -116,7 +203,7 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
-                                <thead className="sticky top-0 bg-surface-base border-b border-border-default text-text-secondary font-semibold uppercase tracking-wider">
+                                <thead className="sticky top-0 bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
                                     <tr>
                                         <th className="py-3 px-4 w-12">No</th>
                                         <th className="py-3 px-4 w-32 font-mono">Kode Ruang</th>
@@ -126,7 +213,7 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border-default text-text-primary">
-                                    {ruangKuliahs.map((item, index) => (
+                                    {filteredList.map((item, index) => (
                                         <tr key={item.id} className="even:bg-surface-base/50 hover:bg-surface-base transition-colors duration-150">
                                             <td className="py-3 px-4 text-text-secondary">{index + 1}</td>
                                             <td className="py-3 px-4 font-mono font-semibold text-brand-primary">{item.kode}</td>
@@ -215,7 +302,7 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
                                 type="number"
                                 min={1}
                                 value={createForm.data.kapasitas}
-                                onChange={(e) => createForm.setData('kapasitas', Number(e.target.value))}
+                                onChange={(e) => createForm.setData('kapasitas', e.target.value === '' ? ('' as any) : parseInt(e.target.value, 10))}
                                 className="text-xs border-border-default focus-visible:ring-brand-primary"
                             />
                             {createForm.errors.kapasitas && (
@@ -235,7 +322,7 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
                             <Button
                                 type="submit"
                                 disabled={createForm.processing}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold"
+                                className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold"
                             >
                                 {createForm.processing ? 'Menyimpan...' : 'Simpan Ruang Kuliah'}
                             </Button>
@@ -294,7 +381,7 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
                                 type="number"
                                 min={1}
                                 value={editForm.data.kapasitas}
-                                onChange={(e) => editForm.setData('kapasitas', Number(e.target.value))}
+                                onChange={(e) => editForm.setData('kapasitas', e.target.value === '' ? ('' as any) : parseInt(e.target.value, 10))}
                                 className="text-xs border-border-default focus-visible:ring-brand-primary"
                             />
                             {editForm.errors.kapasitas && (
@@ -314,7 +401,7 @@ export default function RuangKuliahIndex({ ruangKuliahs = [] }: { ruangKuliahs: 
                             <Button
                                 type="submit"
                                 disabled={editForm.processing}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold"
+                                className="bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-semibold"
                             >
                                 {editForm.processing ? 'Menyimpan...' : 'Perbarui Ruang Kuliah'}
                             </Button>

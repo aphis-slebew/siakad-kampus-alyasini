@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +25,7 @@ class NotificationController extends Controller
                 'url' => $n->data['url'] ?? '#',
                 'category' => $n->data['category'] ?? 'system',
                 'read_at' => $n->read_at ? $n->read_at->toISOString() : null,
-                'created_at_human' => \Carbon\Carbon::parse($n->created_at)->locale('id')->diffForHumans(),
+                'created_at_human' => Carbon::parse($n->created_at)->locale('id')->diffForHumans(),
             ];
         });
 

@@ -31,7 +31,6 @@ test('prospective student public registration creates user with calon_mahasiswa 
     Storage::fake('local');
     $ijazahFile = UploadedFile::fake()->createWithContent('ijazah.pdf', "%PDF-1.4\n1 0 obj\n<<>>\nendobj\ntrailer\n<<>>\n%%EOF");
 
-
     $response = $this->post(route('pmb.register.store'), [
         'gelombang_pendaftaran_id' => $gelombang->id,
         'jalur_pendaftaran_id' => $jalur->id,

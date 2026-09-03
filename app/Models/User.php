@@ -28,7 +28,6 @@ use Spatie\Permission\Traits\HasRoles;
 
 #[Fillable(['name', 'email', 'password', 'user_type', 'status', 'avatar', 'two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at'])]
 
-
 #[Hidden(['password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -47,5 +46,25 @@ class User extends Authenticatable
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    public function mahasiswa()
+    {
+        return $this->hasOne(Mahasiswa::class, 'user_id');
+    }
+
+    public function dosen()
+    {
+        return $this->hasOne(Dosen::class, 'user_id');
+    }
+
+    public function pegawai()
+    {
+        return $this->hasOne(Pegawai::class, 'user_id');
+    }
+
+    public function calonMahasiswa()
+    {
+        return $this->hasOne(CalonMahasiswa::class, 'user_id');
     }
 }

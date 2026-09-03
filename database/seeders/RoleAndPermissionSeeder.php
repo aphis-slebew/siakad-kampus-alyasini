@@ -80,6 +80,10 @@ class RoleAndPermissionSeeder extends Seeder
             'kemahasiswaan.manage_aktivitas',
             'kemahasiswaan.manage_pelanggaran',
             'kemahasiswaan.manage_beasiswa',
+
+            // PD-DIKTI Neo Feeder
+            'pddikti.view',
+            'pddikti.manage',
         ];
 
         foreach ($permissions as $permissionName) {
@@ -101,6 +105,8 @@ class RoleAndPermissionSeeder extends Seeder
             'nilai.pemutihan',
             'skripsi.approve',
             'yudisium.manage',
+            'pddikti.view',
+            'pddikti.manage',
         ]);
 
         $panitiaPmb = Role::findByName('panitia_pmb', 'web');
@@ -126,11 +132,15 @@ class RoleAndPermissionSeeder extends Seeder
             'master_data.view',
             'akademik.view_kurikulum',
             'krs.approve',
+            'nilai.input',
+            'nilai.approve',
+            'skripsi.bimbingan',
             'skripsi.approve',
         ]);
 
         $dosen = Role::findByName('dosen', 'web');
         $dosen->syncPermissions([
+            'akademik.view_kurikulum',
             'krs.approve',
             'nilai.input',
             'skripsi.bimbingan',

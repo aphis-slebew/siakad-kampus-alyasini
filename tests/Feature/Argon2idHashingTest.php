@@ -62,4 +62,3 @@ test('corrupted or invalid hash strings are strictly rejected by fallback hasher
     // 4. Empty string
     expect($hasher->check('password123', ''))->toBeFalse();
 });
-

@@ -1,7 +1,8 @@
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { AlertCircle, BookOpen, CheckCircle2, Printer, Send, ShieldAlert, Users } from 'lucide-react';
 import { useState } from 'react';
-import { Head, router, useForm, usePage } from '@inertiajs/react';
-import { AlertCircle, BookOpen, CheckCircle2, Send, ShieldAlert, Users } from 'lucide-react';
 
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
 import type { SharedData } from '@/types';
@@ -107,10 +108,15 @@ export default function StudentKrsPortal({
     const [selectedClassIds, setSelectedClassIds] = useState<number[]>(initialSelectedIds);
 
     const toggleClassSelection = (item: KelasKuliah) => {
-        if (krs?.status === 'diajukan' || krs?.status === 'disetujui_wali') return;
+        if (krs?.status === 'diajukan' || krs?.status === 'disetujui_wali') {
+return;
+}
 
         const isFull = (item.enrolled_count || 0) >= item.kuota;
-        if (isFull && !selectedClassIds.includes(item.id)) return; // Cannot select full class
+
+        if (isFull && !selectedClassIds.includes(item.id)) {
+return;
+} // Cannot select full class
 
         if (selectedClassIds.includes(item.id)) {
             setSelectedClassIds(selectedClassIds.filter((id) => id !== item.id));
@@ -126,14 +132,24 @@ export default function StudentKrsPortal({
         kelas_kuliah_ids: [] as number[],
     });
 
-    const handleSubmitKrs = () => {
-        if (!eligibility.is_eligible || selectedClassIds.length === 0 || krs?.status !== 'draft') return;
+    const { confirm, confirmDialog } = useConfirmDialog();
 
-        if (confirm(`Apakah Anda yakin ingin mengajukan ${selectedClassIds.length} matakuliah (${totalSks} SKS) ke Dosen Wali?`)) {
-            router.post('/krs/saya/submit', {
-                kelas_kuliah_ids: selectedClassIds,
-            });
-        }
+    const handleSubmitKrs = () => {
+        if (!eligibility.is_eligible || selectedClassIds.length === 0 || krs?.status !== 'draft') {
+return;
+}
+
+        confirm({
+            title: 'Ajukan Kartu Rencana Studi (KRS)',
+            description: `Apakah Anda yakin ingin mengajukan ${selectedClassIds.length} mata kuliah (${totalSks} SKS) untuk semester ${tahunAjaran?.nama} ke Dosen Wali Anda? Anda tidak dapat mengubah pilihan saat proses peninjauan berlangsung.`,
+            variant: 'primary',
+            confirmText: 'Ya, Ajukan KRS',
+            onConfirm: () => {
+                router.post('/krs/saya/submit', {
+                    kelas_kuliah_ids: selectedClassIds,
+                });
+            },
+        });
     };
 
     const errorMessage = errors?.krs || errors?.kelas_kuliah_ids || submitForm.errors.kelas_kuliah_ids;
@@ -141,9 +157,10 @@ export default function StudentKrsPortal({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Pengisian Kartu Rencana Studi (KRS)" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -153,15 +170,29 @@ export default function StudentKrsPortal({
                         </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
                         <div className="bg-surface-base px-3 py-1.5 rounded-md border border-border-default text-xs font-mono">
                             Total SKS Dipilih: <span className="font-bold text-brand-primary text-sm">{totalSks}</span> / 24 SKS
                         </div>
 
+                        <Link href="/dokumen/krs">
+                            <Button variant="outline" size="sm" className="text-xs h-9 flex items-center gap-1.5 border-border-default hover:bg-surface-base">
+                                <Printer className="size-3.5" />
+                                Cetak KRS
+                            </Button>
+                        </Link>
+
+                        <Link href="/dokumen/kartu-ujian">
+                            <Button variant="outline" size="sm" className="text-xs h-9 flex items-center gap-1.5 border-border-default hover:bg-surface-base">
+                                <Printer className="size-3.5" />
+                                Kartu Ujian
+                            </Button>
+                        </Link>
+
                         <Button
                             onClick={handleSubmitKrs}
                             disabled={isSubmitDisabled}
-                            className={`text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 transition-all ${
+                            className={`text-xs font-semibold px-4 py-2 h-9 rounded-md flex items-center gap-1.5 transition-all ${
                                 isSubmitDisabled
                                     ? 'bg-surface-base text-text-secondary/60 border border-border-default cursor-not-allowed opacity-60'
                                     : 'bg-brand-primary text-white hover:bg-brand-primary-dark shadow-xs'

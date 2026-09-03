@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
 import { Printer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { formatDateIndonesian } from '@/lib/utils';
 
 type Yudisium = {

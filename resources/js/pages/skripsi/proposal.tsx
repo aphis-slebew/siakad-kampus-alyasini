@@ -1,16 +1,16 @@
-import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { BookOpen, CheckCircle, Clock, Calendar, UserCheck } from 'lucide-react';
+import type { FormEventHandler } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
+import { EmptyState } from '@/components/empty-state';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle, Clock, Calendar, UserCheck } from 'lucide-react';
 import { formatDateIndonesian } from '@/lib/utils';
 import type { SharedData } from '@/types';
-
 
 type Dosen = { id: number; nama_lengkap: string };
 type BimbinganProposal = { id: number; tanggal: string; catatan: string; divalidasi: boolean };
@@ -26,17 +26,19 @@ type ProposalSkripsi = {
 
 export default function ProposalSkripsiPage({
     proposal,
-    proposals,
-    dosens,
-    role,
-    errors,
+    proposals = [],
+    dosens = [],
+    role = 'admin',
+    errors = {},
 }: {
     proposal?: ProposalSkripsi;
     proposals?: ProposalSkripsi[];
     dosens?: Dosen[];
-    role: string;
+    role?: string;
     errors?: Record<string, string>;
 }) {
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const submitForm = useForm({
         judul: proposal?.judul || '',
         dosen_pembimbing_id: proposal?.dosen_pembimbing?.id || '',
@@ -62,6 +64,7 @@ export default function ProposalSkripsiPage({
 
     const handleAddBimbingan: FormEventHandler = (e) => {
         e.preventDefault();
+
         if (proposal) {
             bimbinganForm.post(`/skripsi/proposal/${proposal.id}/bimbingan`, {
                 onSuccess: () => bimbinganForm.reset('catatan'),
@@ -70,19 +73,51 @@ export default function ProposalSkripsiPage({
     };
 
     const handleValidateBimbingan = (id: number) => {
-        useForm({}).post(`/skripsi/bimbingan-proposal/${id}/validate`);
+        confirm({
+            title: 'Validasi Log Bimbingan',
+            description: 'Apakah Anda yakin ingin memvalidasi log konsultasi proposal ini?',
+            variant: 'primary',
+            confirmText: 'Ya, Validasi',
+            onConfirm: () => {
+                router.post(`/skripsi/bimbingan-proposal/${id}/validate`);
+            },
+        });
     };
 
     const handleApprove = (proposalId: number) => {
-        approveForm.post(`/skripsi/proposal/${proposalId}/approve`);
+        confirm({
+            title: 'Setujui Proposal Skripsi',
+            description: 'Apakah Anda yakin ingin menyetujui pengajuan proposal ini dan menetapkan dosen pembimbing?',
+            variant: 'primary',
+            confirmText: 'Ya, Setujui',
+            onConfirm: () => {
+                approveForm.post(`/skripsi/proposal/${proposalId}/approve`);
+            },
+        });
     };
 
     const handleSchedule = (proposalId: number) => {
-        scheduleForm.post(`/skripsi/proposal/${proposalId}/schedule`);
+        confirm({
+            title: 'Tetapkan Jadwal Ujian Proposal',
+            description: `Apakah Anda yakin ingin menjadwalkan ujian proposal pada tanggal ${scheduleForm.data.tanggal_ujian}?`,
+            variant: 'primary',
+            confirmText: 'Ya, Jadwalkan',
+            onConfirm: () => {
+                scheduleForm.post(`/skripsi/proposal/${proposalId}/schedule`);
+            },
+        });
     };
 
     const handlePass = (proposalId: number) => {
-        useForm({}).post(`/skripsi/proposal/${proposalId}/pass`);
+        confirm({
+            title: 'Luluskan Ujian Proposal',
+            description: 'Apakah Anda yakin ingin meluluskan mahasiswa ini pada Ujian Proposal Skripsi?',
+            variant: 'primary',
+            confirmText: 'Ya, Luluskan',
+            onConfirm: () => {
+                router.post(`/skripsi/proposal/${proposalId}/pass`);
+            },
+        });
     };
 
     const getStatusBadge = (status: string) => {
@@ -96,13 +131,14 @@ export default function ProposalSkripsiPage({
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Proposal Skripsi', href: '/skripsi/proposal' }]}>
+        <>
+            {confirmDialog}
             <Head title="Pengajuan & Bimbingan Proposal Skripsi" />
 
-            <div className="space-y-6 p-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground-default">Proposal Skripsi & Bimbingan</h1>
-                    <p className="text-sm text-foreground-muted">Kelola pengajuan judul proposal, log bimbingan berkala, dan verifikasi kelayakan ujian.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Proposal Skripsi & Bimbingan</h1>
+                    <p className="text-sm text-muted-foreground">Kelola pengajuan judul proposal, log bimbingan berkala, dan verifikasi kelayakan ujian.</p>
                 </div>
 
                 {(errors?.proposal || errors?.bimbingan || errors?.ujian) && (
@@ -256,30 +292,41 @@ export default function ProposalSkripsiPage({
                                                         <div className="font-semibold text-foreground">{p.mahasiswa?.nama_lengkap}</div>
                                                         <div className="text-xs text-muted-foreground font-mono">{p.mahasiswa?.nim}</div>
                                                         <div className="text-xs text-muted-foreground mt-1 max-w-lg font-normal italic" title={p.judul}>
-                                                            "{p.judul}"
+                                                            &ldquo;{p.judul}&rdquo;
                                                         </div>
                                                     </td>
                                                     {role === 'admin' && (
                                                         <td className="p-3">{p.dosen_pembimbing?.nama_lengkap || '-'}</td>
                                                     )}
                                                     <td className="p-3 text-center">
-                                                        <span className="font-bold text-foreground">{p.bimbingan_proposals?.filter(b => b.divalidasi).length || 0}</span> / {p.bimbingan_proposals?.length || 0}
+                                                        <span className="font-bold text-foreground">
+                                                            {p.bimbingan_proposals?.filter((b) => b.divalidasi).length || 0}
+                                                        </span>
+                                                        <span className="text-muted-foreground"> / </span>
+                                                        <span>{p.bimbingan_proposals?.length || 0}</span>
                                                         <div className="text-[11px] text-muted-foreground">Tervalidasi</div>
                                                     </td>
                                                     <td className="p-3">{getStatusBadge(p.status)}</td>
                                                     <td className="p-3 text-right">
-
-
                                                         {role === 'admin' && p.status === 'diajukan' && (
                                                             <div className="flex items-center justify-end gap-2">
                                                                 <select
+                                                                    aria-label="Pilih Dosen Pembimbing"
                                                                     onChange={(e) => approveForm.setData('dosen_pembimbing_id', e.target.value)}
-                                                                    className="rounded border px-2 py-1 text-xs"
+                                                                    className="rounded border border-input bg-background px-2 py-1 text-xs"
                                                                 >
                                                                     <option value="">Pilih Dosen</option>
-                                                                    {dosens?.map(d => <option key={d.id} value={d.id}>{d.nama_lengkap}</option>)}
+                                                                    {dosens?.map((d) => (
+                                                                        <option key={d.id} value={d.id}>
+                                                                            {d.nama_lengkap}
+                                                                        </option>
+                                                                    ))}
                                                                 </select>
-                                                                <Button size="sm" onClick={() => handleApprove(p.id)} disabled={!approveForm.data.dosen_pembimbing_id}>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() => handleApprove(p.id)}
+                                                                    disabled={!approveForm.data.dosen_pembimbing_id}
+                                                                >
                                                                     Setujui
                                                                 </Button>
                                                             </div>
@@ -292,14 +339,23 @@ export default function ProposalSkripsiPage({
                                                                     className="h-8 w-36 text-xs"
                                                                     onChange={(e) => scheduleForm.setData('tanggal_ujian', e.target.value)}
                                                                 />
-                                                                <Button size="sm" variant="outline" onClick={() => handleSchedule(p.id)} disabled={!scheduleForm.data.tanggal_ujian}>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() => handleSchedule(p.id)}
+                                                                    disabled={!scheduleForm.data.tanggal_ujian}
+                                                                >
                                                                     Jadwalkan Ujian
                                                                 </Button>
                                                             </div>
                                                         )}
 
                                                         {p.status === 'siap_ujian' && (
-                                                            <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => handlePass(p.id)}>
+                                                            <Button
+                                                                size="sm"
+                                                                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                                                                onClick={() => handlePass(p.id)}
+                                                            >
                                                                 Luluskan Ujian
                                                             </Button>
                                                         )}
@@ -314,6 +370,14 @@ export default function ProposalSkripsiPage({
                     </Card>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+ProposalSkripsiPage.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Tugas Akhir', href: '#' },
+        { title: 'Proposal Skripsi', href: '/skripsi/proposal' },
+    ],
+};

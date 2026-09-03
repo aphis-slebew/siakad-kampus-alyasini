@@ -9,8 +9,10 @@ use App\Models\ProposalSkripsi;
 use App\Models\Skripsi;
 use App\Models\SystemConfig;
 use App\Models\Tagihan;
+use App\Notifications\SkripsiNotification;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SkripsiService
 {
@@ -119,9 +121,9 @@ class SkripsiService
             $studentUser = $bimbingan->proposalSkripsi->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\SkripsiNotification('bimbingan_validated', $bimbingan->tanggal));
+                    $studentUser->notify(new SkripsiNotification('bimbingan_validated', $bimbingan->tanggal));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Bimbingan Proposal: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Bimbingan Proposal: '.$e->getMessage());
                 }
             }
 
@@ -173,9 +175,9 @@ class SkripsiService
             $studentUser = $proposal->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\SkripsiNotification('ujian_scheduled', $tanggalUjian));
+                    $studentUser->notify(new SkripsiNotification('ujian_scheduled', $tanggalUjian));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Ujian Proposal: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Ujian Proposal: '.$e->getMessage());
                 }
             }
 
@@ -208,16 +210,15 @@ class SkripsiService
             $studentUser = $proposal->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\SkripsiNotification('ujian_passed'));
+                    $studentUser->notify(new SkripsiNotification('ujian_passed'));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Lulus Proposal: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Lulus Proposal: '.$e->getMessage());
                 }
             }
 
             return $skripsi;
         });
     }
-
 
     /**
      * Mahasiswa adds a skripsi guidance consultation log.
@@ -259,9 +260,9 @@ class SkripsiService
             $studentUser = $bimbingan->skripsi->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\SkripsiNotification('bimbingan_validated', $bimbingan->tanggal));
+                    $studentUser->notify(new SkripsiNotification('bimbingan_validated', $bimbingan->tanggal));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Bimbingan Skripsi: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Bimbingan Skripsi: '.$e->getMessage());
                 }
             }
 
@@ -313,9 +314,9 @@ class SkripsiService
             $studentUser = $skripsi->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\SkripsiNotification('ujian_scheduled', $tanggalUjian));
+                    $studentUser->notify(new SkripsiNotification('ujian_scheduled', $tanggalUjian));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Ujian Skripsi: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Ujian Skripsi: '.$e->getMessage());
                 }
             }
 
@@ -345,15 +346,13 @@ class SkripsiService
             $studentUser = $skripsi->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\SkripsiNotification('ujian_passed'));
+                    $studentUser->notify(new SkripsiNotification('ujian_passed'));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Lulus Skripsi: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Lulus Skripsi: '.$e->getMessage());
                 }
             }
 
             return $skripsi->fresh();
         });
     }
-
 }
-

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class KelasKuliah extends Model
 {
@@ -18,6 +19,7 @@ class KelasKuliah extends Model
         'tahun_ajaran_id',
         'nama_kelas',
         'kuota',
+        'sistem_kuliah',
     ];
 
     /**
@@ -68,6 +70,36 @@ class KelasKuliah extends Model
     public function krsDetails(): HasMany
     {
         return $this->hasMany(KrsDetail::class, 'kelas_kuliah_id');
+    }
+
+    /**
+     * Get the jurnal perkuliahans for the class.
+     *
+     * @return HasMany<JurnalPerkuliahan, $this>
+     */
+    public function jurnalPerkuliahans(): HasMany
+    {
+        return $this->hasMany(JurnalPerkuliahan::class, 'kelas_kuliah_id');
+    }
+
+    /**
+     * Get the komposisi nilais for the class.
+     *
+     * @return HasMany<KomposisiNilai, $this>
+     */
+    public function komposisiNilais(): HasMany
+    {
+        return $this->hasMany(KomposisiNilai::class, 'kelas_kuliah_id');
+    }
+
+    /**
+     * Get the presensis for the class through jurnal perkuliahans.
+     *
+     * @return HasManyThrough<Presensi, JurnalPerkuliahan, $this>
+     */
+    public function presensis(): HasManyThrough
+    {
+        return $this->hasManyThrough(Presensi::class, JurnalPerkuliahan::class, 'kelas_kuliah_id', 'jurnal_perkuliahan_id');
     }
 
     /**

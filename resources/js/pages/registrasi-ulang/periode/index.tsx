@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { Calendar, Edit, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -66,7 +67,10 @@ export default function PeriodeRegistrasiIndex({
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingPeriode) return;
+
+        if (!editingPeriode) {
+return;
+}
 
         editForm.put(`/keuangan/periode-registrasi/${editingPeriode.id}`, {
             onSuccess: () => {
@@ -76,10 +80,18 @@ export default function PeriodeRegistrasiIndex({
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: Periode) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus periode registrasi ini?`)) {
-            router.delete(`/keuangan/periode-registrasi/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Periode Registrasi Ulang',
+            description: `Apakah Anda yakin ingin menghapus periode registrasi ${item.jenis === 'pmb' ? 'Mahasiswa Baru' : 'Semester Reguler'} (${formatDateIndonesian(item.mulai)} s.d. ${formatDateIndonesian(item.selesai)})?`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/keuangan/periode-registrasi/${item.id}`);
+            },
+        });
     };
 
     const openEditModal = (item: Periode) => {
@@ -94,9 +106,10 @@ export default function PeriodeRegistrasiIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Periode Registrasi Ulang" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-xl font-semibold text-text-primary">Periode Registrasi Ulang (Her-Registrasi)</h1>

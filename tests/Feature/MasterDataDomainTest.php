@@ -48,7 +48,6 @@ test('superadmin can create and update program studi', function () {
     $superadmin = User::factory()->create(['user_type' => 'superadmin', 'two_factor_secret' => encrypt('DEV_2FA')]);
     $superadmin->assignRole('superadmin');
 
-
     $fakultas = Fakultas::create(['kode' => 'F1', 'nama' => 'Fakultas Satu']);
 
     $this->actingAs($superadmin)
@@ -68,7 +67,6 @@ test('superadmin can create and update program studi', function () {
 test('master data validation errors work correctly', function () {
     $admin = User::factory()->create(['two_factor_secret' => encrypt('DEV_2FA')]);
     $admin->assignRole('admin_akademik');
-
 
     $this->actingAs($admin)
         ->post(route('master.fakultas.store'), [

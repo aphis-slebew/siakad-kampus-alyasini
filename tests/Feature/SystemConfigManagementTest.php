@@ -25,7 +25,6 @@ test('superadmin can access system configs index page', function () {
     $superadmin->update(['two_factor_secret' => encrypt('DEV_2FA')]);
     $superadmin->assignRole('superadmin');
 
-
     $response = $this->actingAs($superadmin)->get('/settings/system-configs');
 
     $response->assertStatus(200);
@@ -61,7 +60,6 @@ test('superadmin can update system config value and trigger activity log entry',
     );
     $superadmin->update(['two_factor_secret' => encrypt('DEV_2FA')]);
     $superadmin->assignRole('superadmin');
-
 
     $config = SystemConfig::where('key', 'MAX_SKS_DEFAULT')->firstOrFail();
     $oldVal = $config->value;
@@ -99,7 +97,6 @@ test('validation fails on invalid data type input for system configs', function 
     );
     $superadmin->update(['two_factor_secret' => encrypt('DEV_2FA')]);
     $superadmin->assignRole('superadmin');
-
 
     $numberConfig = SystemConfig::where('key', 'MIN_BIMBINGAN_PROPOSAL')->firstOrFail();
     $responseNumber = $this->actingAs($superadmin)->put("/settings/system-configs/{$numberConfig->id}", [

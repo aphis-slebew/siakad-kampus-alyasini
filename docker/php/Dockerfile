@@ -1,4 +1,6 @@
-FROM php:8.3-fpm-alpine
+FROM php:8.5-fpm-alpine
+# Node.js 20 untuk Vite + Wayfinder
+RUN apk add --no-cache nodejs npm
 
 # Dependensi sistem untuk ekstensi PHP yang dibutuhkan Laravel + PostgreSQL + Redis
 RUN apk add --no-cache \
@@ -25,7 +27,6 @@ RUN docker-php-ext-configure gd --with-jpeg --with-freetype \
         gd \
         bcmath \
         intl \
-        opcache \
         mbstring
 
 # Ekstensi Redis via PECL (dibutuhkan untuk queue & cache driver redis)

@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Award, BookOpen, CheckCircle2, FileText, GraduationCap, Printer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -51,7 +51,7 @@ export default function StudentKhsPage({
         <>
             <Head title="Kartu Hasil Studi (KHS)" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 print:hidden">
                     <div>
@@ -61,14 +61,27 @@ export default function StudentKhsPage({
                         </p>
                     </div>
 
-                    <Button
-                        onClick={() => window.print()}
-                        variant="outline"
-                        className="border-border-default text-text-primary text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 self-start sm:self-auto"
-                    >
-                        <Printer className="size-4" />
-                        Cetak KHS
-                    </Button>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Link href="/dokumen/khs">
+                            <Button
+                                variant="outline"
+                                className="border-border-default text-text-primary text-xs font-semibold px-3 py-2 h-9 rounded-md flex items-center gap-1.5 hover:bg-surface-base"
+                            >
+                                <Printer className="size-4" />
+                                Cetak KHS Resmi
+                            </Button>
+                        </Link>
+
+                        <Link href="/dokumen/transkrip">
+                            <Button
+                                variant="outline"
+                                className="border-border-default text-text-primary text-xs font-semibold px-3 py-2 h-9 rounded-md flex items-center gap-1.5 hover:bg-surface-base"
+                            >
+                                <FileText className="size-4" />
+                                Transkrip Nilai
+                            </Button>
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Identity Card */}

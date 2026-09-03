@@ -1,8 +1,9 @@
-import { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-
-
 import { Calendar, CheckCircle2, Edit, Plus, Trash2, XCircle } from 'lucide-react';
+import { useState } from 'react';
+
+
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -60,7 +61,10 @@ export default function GelombangIndex({ gelombangs = [] }: { gelombangs: Gelomb
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingGelombang) return;
+
+        if (!editingGelombang) {
+return;
+}
 
         editForm.put(`/pmb/gelombang/${editingGelombang.id}`, {
             onSuccess: () => {
@@ -70,10 +74,18 @@ export default function GelombangIndex({ gelombangs = [] }: { gelombangs: Gelomb
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: Gelombang) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus gelombang ${item.nama}?`)) {
-            router.delete(`/pmb/gelombang/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Gelombang PMB',
+            description: `Apakah Anda yakin ingin menghapus gelombang pendaftaran "${item.nama}" (Kuota: ${item.kuota} pendaftar)? Calon mahasiswa yang terdaftar di gelombang ini akan terpengaruh.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/pmb/gelombang/${item.id}`);
+            },
+        });
     };
 
     const openEditModal = (item: Gelombang) => {
@@ -89,9 +101,10 @@ export default function GelombangIndex({ gelombangs = [] }: { gelombangs: Gelomb
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Gelombang PMB" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -111,7 +124,7 @@ export default function GelombangIndex({ gelombangs = [] }: { gelombangs: Gelomb
                 </div>
 
                 {/* Sub Navigation Tabs */}
-                <div className="flex items-center gap-2 border-b border-border-default pb-2">
+                <div className="flex items-center gap-2 border-b border-border-default pb-2 overflow-x-auto whitespace-nowrap">
                     <span className="px-3 py-1.5 text-xs font-semibold text-brand-primary border-b-2 border-brand-primary bg-brand-primary/5 rounded-t-md">
                         Gelombang Pendaftaran
                     </span>

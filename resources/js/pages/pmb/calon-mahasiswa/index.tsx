@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { CheckCircle2, Eye, GraduationCap, ShieldCheck, UserCheck, XCircle } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -72,7 +72,10 @@ export default function CalonMahasiswaIndex({
 
     const handleHasilSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCalon) return;
+
+        if (!selectedCalon) {
+return;
+}
 
         hasilForm.post(`/pmb/calon-mahasiswa/${selectedCalon.id}/hasil-seleksi`, {
             onSuccess: () => {
@@ -84,7 +87,10 @@ export default function CalonMahasiswaIndex({
 
     const handleKonversiSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCalon) return;
+
+        if (!selectedCalon) {
+return;
+}
 
         konversiForm.post(`/pmb/calon-mahasiswa/${selectedCalon.id}/konversi`, {
             onSuccess: () => {
@@ -98,7 +104,7 @@ export default function CalonMahasiswaIndex({
         <>
             <Head title="Daftar Calon Mahasiswa - PMB" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -110,7 +116,7 @@ export default function CalonMahasiswaIndex({
                 </div>
 
                 {/* Filter Tabs Status Pendaftaran */}
-                <div className="flex flex-wrap items-center gap-1.5 border-b border-border-default pb-2">
+                <div className="flex items-center gap-1.5 border-b border-border-default pb-2 overflow-x-auto whitespace-nowrap">
                     <button
                         type="button"
                         onClick={() => handleFilterStatus()}

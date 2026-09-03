@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\Mahasiswa;
 use App\Models\ReferensiBiodata;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,6 +40,8 @@ class ReferensiBiodataController extends Controller
             'nama.required' => 'Nama referensi wajib diisi.',
         ]);
 
+        $validated['tipe'] = trim(strtolower($validated['tipe']));
+
         ReferensiBiodata::create($validated);
 
         return back()->with('success', 'Referensi biodata berhasil ditambahkan.');
@@ -58,6 +61,8 @@ class ReferensiBiodataController extends Controller
             'nama.required' => 'Nama referensi wajib diisi.',
         ]);
 
+        $validated['tipe'] = trim(strtolower($validated['tipe']));
+
         $referensiBiodatum->update($validated);
 
         return back()->with('success', 'Referensi biodata berhasil diperbarui.');
@@ -68,6 +73,11 @@ class ReferensiBiodataController extends Controller
      */
     public function destroy(ReferensiBiodata $referensiBiodatum): RedirectResponse
     {
+        // Safety check if referenced in mahasiswa agama
+        if (Mahasiswa::where('agama_referensi_biodata_id', $referensiBiodatum->id)->exists()) {
+            return back()->withErrors(['error' => 'Referensi "'.$referensiBiodatum->nama.'" tidak dapat dihapus karena sedang digunakan dalam data profil mahasiswa.']);
+        }
+
         $referensiBiodatum->delete();
 
         return back()->with('success', 'Referensi biodata berhasil dihapus.');

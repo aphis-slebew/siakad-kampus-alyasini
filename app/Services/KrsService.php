@@ -2,14 +2,18 @@
 
 namespace App\Services;
 
+use App\Models\DosenWali;
 use App\Models\KelasKuliah;
 use App\Models\Krs;
 use App\Models\KrsDetail;
 use App\Models\Mahasiswa;
 use App\Models\Nilai;
 use App\Models\PrasyaratMatakuliah;
+use App\Models\SystemConfig;
+use App\Notifications\KrsNotification;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class KrsService
 {
@@ -68,12 +72,11 @@ class KrsService
         }
 
         // 3. MAX SKS CHECK
-        $maxSksLimit = (int) \App\Models\SystemConfig::getValue('MAX_SKS_DEFAULT', (string) $maxSks);
+        $maxSksLimit = (int) SystemConfig::getValue('MAX_SKS_DEFAULT', (string) $maxSks);
         $totalSks = $selectedClasses->sum(fn ($k) => (int) ($k->kurikulumMatakuliah->matakuliah->sks ?? 0));
         if ($totalSks > $maxSksLimit) {
             throw new DomainException("BATAS SKS TERLAMPAUI: Total SKS yang Anda pilih ({$totalSks} SKS) melebihi batas maksimal per semester ({$maxSksLimit} SKS).");
         }
-
 
         // 4. PREREQUISITE COURSE CHECK
         foreach ($selectedClasses as $kelas) {
@@ -188,22 +191,22 @@ class KrsService
             ]);
 
             // Notify specific Dosen Wali assigned to this student
-            $dosenWaliRow = \App\Models\DosenWali::with('dosen.user')
+            $dosenWaliRow = DosenWali::with('dosen.user')
                 ->where('mahasiswa_id', $mahasiswa->id)
                 ->where('tahun_ajaran_id', $krs->tahun_ajaran_id)
                 ->first()
-                ?? \App\Models\DosenWali::with('dosen.user')
+                ?? DosenWali::with('dosen.user')
                     ->where('mahasiswa_id', $mahasiswa->id)
                     ->first();
 
             if ($dosenWaliRow && $dosenWaliRow->dosen && $dosenWaliRow->dosen->user) {
                 try {
-                    $dosenWaliRow->dosen->user->notify(new \App\Notifications\KrsNotification(
+                    $dosenWaliRow->dosen->user->notify(new KrsNotification(
                         'submitted',
                         $mahasiswa->nama_lengkap
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification KRS Submit: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification KRS Submit: '.$e->getMessage());
                 }
             }
 
@@ -241,12 +244,12 @@ class KrsService
             $studentUser = $krs->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\KrsNotification(
+                    $studentUser->notify(new KrsNotification(
                         'approved',
                         $krs->mahasiswa->nama_lengkap
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification KRS Approve: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification KRS Approve: '.$e->getMessage());
                 }
             }
 
@@ -288,19 +291,17 @@ class KrsService
             $studentUser = $krs->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\KrsNotification(
+                    $studentUser->notify(new KrsNotification(
                         'rejected',
                         $krs->mahasiswa->nama_lengkap,
                         $catatan
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification KRS Reject: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification KRS Reject: '.$e->getMessage());
                 }
             }
 
             return $krs->fresh();
         });
     }
-
 }
-

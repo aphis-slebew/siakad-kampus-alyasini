@@ -1,13 +1,22 @@
-import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, router, useForm } from '@inertiajs/react';
+import { BookOpen, CheckCircle, Clock, Calendar } from 'lucide-react';
+import { useState  } from 'react';
+import type {FormEventHandler} from 'react';
+import { EmptyState } from '@/components/empty-state';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { BookOpen, CheckCircle, Clock, Calendar } from 'lucide-react';
 import { formatDateIndonesian } from '@/lib/utils';
 
 
@@ -25,15 +34,17 @@ type Skripsi = {
 
 export default function SkripsiIndexPage({
     skripsi,
-    skripsis,
-    role,
-    errors,
+    skripsis = [],
+    role = 'admin',
+    errors = {},
 }: {
     skripsi?: Skripsi;
     skripsis?: Skripsi[];
-    role: string;
+    role?: string;
     errors?: Record<string, string>;
 }) {
+    const [schedulingSkripsi, setSchedulingSkripsi] = useState<Skripsi | null>(null);
+
     const bimbinganForm = useForm({
         tanggal: new Date().toISOString().split('T')[0],
         catatan: '',
@@ -45,6 +56,7 @@ export default function SkripsiIndexPage({
 
     const handleAddBimbingan: FormEventHandler = (e) => {
         e.preventDefault();
+
         if (skripsi) {
             bimbinganForm.post(`/skripsi/${skripsi.id}/bimbingan`, {
                 onSuccess: () => bimbinganForm.reset('catatan'),
@@ -53,15 +65,31 @@ export default function SkripsiIndexPage({
     };
 
     const handleValidateBimbingan = (id: number) => {
-        useForm({}).post(`/skripsi/bimbingan/${id}/validate`);
+        router.post(`/skripsi/bimbingan/${id}/validate`);
     };
 
-    const handleSchedule = (skripsiId: number) => {
-        scheduleForm.post(`/skripsi/${skripsiId}/schedule`);
+    const handleOpenScheduleModal = (item: Skripsi) => {
+        setSchedulingSkripsi(item);
+        scheduleForm.setData('tanggal_ujian', item.tanggal_ujian || new Date().toISOString().split('T')[0]);
+    };
+
+    const handleScheduleSubmit: FormEventHandler = (e) => {
+        e.preventDefault();
+
+        if (!schedulingSkripsi) {
+return;
+}
+
+        scheduleForm.post(`/skripsi/${schedulingSkripsi.id}/schedule`, {
+            onSuccess: () => {
+                setSchedulingSkripsi(null);
+                scheduleForm.reset();
+            },
+        });
     };
 
     const handlePass = (skripsiId: number) => {
-        useForm({}).post(`/skripsi/${skripsiId}/pass`);
+        router.post(`/skripsi/${skripsiId}/pass`);
     };
 
     const getStatusBadge = (status: string) => {
@@ -74,13 +102,13 @@ export default function SkripsiIndexPage({
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Skripsi & Bimbingan', href: '/skripsi/bimbingan' }]}>
+        <>
             <Head title="Skripsi & Bimbingan Tugas Akhir" />
 
-            <div className="space-y-6 p-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground-default">Skripsi & Bimbingan Tugas Akhir</h1>
-                    <p className="text-sm text-foreground-muted">Monitoring bimbingan skripsi penuh, validasi log konsultasi, dan penetapan jadwal sidang skripsi.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Skripsi & Bimbingan Tugas Akhir</h1>
+                    <p className="text-sm text-muted-foreground">Monitoring bimbingan skripsi penuh, validasi log konsultasi, dan penetapan jadwal sidang skripsi.</p>
                 </div>
 
                 {(errors?.bimbingan || errors?.ujian) && (
@@ -234,12 +262,8 @@ export default function SkripsiIndexPage({
                                                     <td className="p-3 text-right">
                                                         {s.status === 'bimbingan' && (
                                                             <div className="flex items-center justify-end gap-2">
-                                                                <Input
-                                                                    type="date"
-                                                                    className="h-8 w-36 text-xs"
-                                                                    onChange={(e) => scheduleForm.setData('tanggal_ujian', e.target.value)}
-                                                                />
-                                                                <Button size="sm" variant="outline" onClick={() => handleSchedule(s.id)} disabled={!scheduleForm.data.tanggal_ujian}>
+                                                                <Button size="sm" variant="outline" onClick={() => handleOpenScheduleModal(s)}>
+                                                                    <Calendar className="mr-1.5 h-3.5 w-3.5" />
                                                                     Jadwalkan Sidang
                                                                 </Button>
                                                             </div>
@@ -258,10 +282,65 @@ export default function SkripsiIndexPage({
                                 </table>
                             </div>
                         </CardContent>
-
                     </Card>
                 )}
             </div>
-        </AppLayout>
+
+            {/* Modal Penjadwalan Sidang */}
+            <Dialog open={!!schedulingSkripsi} onOpenChange={(open) => !open && setSchedulingSkripsi(null)}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="text-base font-semibold">Jadwalkan Sidang Skripsi</DialogTitle>
+                        <DialogDescription className="text-xs">
+                            Tetapkan tanggal pelaksanaan ujian sidang skripsi untuk mahasiswa berikut:
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    {schedulingSkripsi && (
+                        <form onSubmit={handleScheduleSubmit} className="space-y-4 pt-2">
+                            <div className="rounded-md border p-3 bg-muted/40 space-y-1 text-xs">
+                                <div><span className="font-semibold text-foreground">Mahasiswa:</span> {schedulingSkripsi.mahasiswa?.nama_lengkap} ({schedulingSkripsi.mahasiswa?.nim})</div>
+                                <div><span className="font-semibold text-foreground">Pembimbing:</span> {schedulingSkripsi.dosen_pembimbing?.nama_lengkap || '-'}</div>
+                                <div className="text-muted-foreground italic line-clamp-2">"{schedulingSkripsi.judul}"</div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="tanggal_ujian" className="text-xs font-semibold">
+                                    Tanggal Pelaksanaan Sidang
+                                </Label>
+                                <Input
+                                    id="tanggal_ujian"
+                                    type="date"
+                                    value={scheduleForm.data.tanggal_ujian}
+                                    onChange={(e) => scheduleForm.setData('tanggal_ujian', e.target.value)}
+                                    className="text-xs"
+                                    required
+                                />
+                                {scheduleForm.errors.tanggal_ujian && (
+                                    <p className="text-destructive text-xs">{scheduleForm.errors.tanggal_ujian}</p>
+                                )}
+                            </div>
+
+                            <DialogFooter className="pt-2">
+                                <Button type="button" variant="outline" size="sm" onClick={() => setSchedulingSkripsi(null)}>
+                                    Batal
+                                </Button>
+                                <Button type="submit" size="sm" disabled={scheduleForm.processing || !scheduleForm.data.tanggal_ujian} className="bg-brand-primary text-white">
+                                    Simpan Jadwal Sidang
+                                </Button>
+                            </DialogFooter>
+                        </form>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }
+
+SkripsiIndexPage.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Tugas Akhir & Kelulusan', href: '#' },
+        { title: 'Bimbingan Skripsi', href: '/skripsi/bimbingan' },
+    ],
+};

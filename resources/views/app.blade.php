@@ -1,8 +1,31 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="notranslate" translate="no" @class(['dark' => ($appearance ?? 'system') == 'dark'])>
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="google" content="notranslate">
+
+        {{-- Protection against Chrome/Google Translate and browser extensions crashing React DOM reconciliation --}}
+        <script>
+            if (typeof Node === 'function' && Node.prototype) {
+                const originalRemoveChild = Node.prototype.removeChild;
+                Node.prototype.removeChild = function(child) {
+                    if (child && child.parentNode !== this) {
+                        return child;
+                    }
+                    return originalRemoveChild.apply(this, arguments);
+                };
+
+                const originalInsertBefore = Node.prototype.insertBefore;
+                Node.prototype.insertBefore = function(newNode, referenceNode) {
+                    if (referenceNode && referenceNode.parentNode !== this) {
+                        return newNode;
+                    }
+                    return originalInsertBefore.apply(this, arguments);
+                };
+            }
+        </script>
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>

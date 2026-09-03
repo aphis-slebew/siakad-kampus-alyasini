@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { CheckCircle2, Eye, UserCheck, XCircle } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -10,8 +11,8 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
 import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
 
 type Mahasiswa = {
     id: number;
@@ -62,18 +63,28 @@ export default function DosenApprovalIndex({
     const [selectedKrs, setSelectedKrs] = useState<Krs | null>(null);
     const [rejectingKrs, setRejectingKrs] = useState<Krs | null>(null);
     const [catatanPenolakan, setCatatanPenolakan] = useState('');
+    const { confirm, confirmDialog } = useConfirmDialog();
 
     const handleApprove = (krs: Krs) => {
-        if (confirm(`Apakah Anda yakin ingin menyetujui KRS mahasiswa ${krs.mahasiswa?.nama_lengkap}?`)) {
-            router.post(`/perwalian/krs/${krs.id}/approve`, {}, {
-                onSuccess: () => setSelectedKrs(null),
-            });
-        }
+        confirm({
+            title: 'Setujui Kartu Rencana Studi (KRS)',
+            description: `Apakah Anda yakin ingin menyetujui KRS mahasiswa "${krs.mahasiswa?.nama_lengkap}" (${krs.mahasiswa?.nim})? Status KRS mahasiswa akan menjadi "Disetujui" dan perkuliahan siap diikuti.`,
+            variant: 'primary',
+            confirmText: 'Ya, Setujui KRS',
+            onConfirm: () => {
+                router.post(`/perwalian/krs/${krs.id}/approve`, {}, {
+                    onSuccess: () => setSelectedKrs(null),
+                });
+            },
+        });
     };
 
     const handleRejectSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!rejectingKrs) return;
+
+        if (!rejectingKrs) {
+return;
+}
 
         router.post(`/perwalian/krs/${rejectingKrs.id}/reject`, {
             catatan: catatanPenolakan,
@@ -88,9 +99,10 @@ export default function DosenApprovalIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Perwalian & Approval KRS - Dosen Wali" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>

@@ -163,3 +163,10 @@ test('IDOR check prevents student from viewing another student KHS', function ()
     // Student A viewing own KHS MUST SUCCEED
     $this->get('/khs/saya')->assertStatus(200);
 });
+
+test('dosen can access penilaian index page', function () {
+    $dosenUser = User::factory()->create(['user_type' => 'dosen']);
+    $dosenUser->assignRole('dosen');
+    $response = $this->actingAs($dosenUser)->get('/akademik/penilaian');
+    $response->assertStatus(200);
+});

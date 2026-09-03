@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { CheckCircle2, FileText, XCircle } from 'lucide-react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogContent,
@@ -48,7 +48,7 @@ export default function RegistrasiUlangStaffIndex({
         <>
             <Head title="Verifikasi Registrasi Ulang" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div>
                     <h1 className="text-xl font-semibold text-text-primary">Dashboard Verifikasi Registrasi Ulang</h1>
                     <p className="text-xs text-text-secondary mt-0.5">

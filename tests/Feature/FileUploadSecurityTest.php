@@ -3,7 +3,6 @@
 use App\Models\Fakultas;
 use App\Models\GelombangPendaftaran;
 use App\Models\JalurPendaftaran;
-use App\Models\KelompokUkt;
 use App\Models\Mahasiswa;
 use App\Models\PeriodeRegistrasi;
 use App\Models\ProgramStudi;
@@ -57,8 +56,6 @@ test('student payment submission rejects php script disguised as pdf file', func
     $prodi = ProgramStudi::create(['fakultas_id' => $fakultas->id, 'kode' => 'PAI2', 'nama' => 'Pendidikan Agama Islam', 'jenjang' => 'S1']);
     $tahun = TahunAjaran::create(['nama' => '2026/2027 Ganjil', 'mulai' => '2026-08-01', 'selesai' => '2027-01-31', 'is_active' => true]);
 
-
-
     $userMhs = User::factory()->create(['user_type' => 'mahasiswa']);
     $userMhs->assignRole('mahasiswa');
     $mhs = Mahasiswa::create(['user_id' => $userMhs->id, 'program_studi_id' => $prodi->id, 'nim' => '2026PAY01', 'nama_lengkap' => 'Attacker Mhs', 'tahun_masuk' => 2026]);
@@ -84,8 +81,6 @@ test('registrasi ulang submission rejects php script disguised as pdf file', fun
     $prodi = ProgramStudi::create(['fakultas_id' => $fakultas->id, 'kode' => 'PAI3', 'nama' => 'Pendidikan Agama Islam', 'jenjang' => 'S1']);
     $tahun = TahunAjaran::create(['nama' => '2026/2027 Genap', 'mulai' => '2027-02-01', 'selesai' => '2027-07-31', 'is_active' => true]);
 
-
-
     $userMhs = User::factory()->create(['user_type' => 'mahasiswa']);
     $userMhs->assignRole('mahasiswa');
     $mhs = Mahasiswa::create(['user_id' => $userMhs->id, 'program_studi_id' => $prodi->id, 'nim' => '2026REG01', 'nama_lengkap' => 'Attacker Reg', 'tahun_masuk' => 2026]);
@@ -99,7 +94,6 @@ test('registrasi ulang submission rejects php script disguised as pdf file', fun
         'periode_registrasi_id' => $periode->id,
         'berkas_ijazah' => $maliciousFile,
     ]);
-
 
     $response->assertSessionHasErrors(['registrasi']);
 });

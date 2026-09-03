@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { Download, FileText, Filter, Users } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
@@ -54,9 +54,9 @@ export default function LaporanKrsIndex({
     programStudis: Option[];
     filters: { tahun_ajaran_id: number | null; program_studi_id: number | null; status: string | null };
 }) {
-    const [selectedTahun, setSelectedTahun] = useState<string>(filters.tahun_ajaran_id ? String(filters.tahun_ajaran_id) : '');
-    const [selectedProdi, setSelectedProdi] = useState<string>(scopedProdiId ? String(scopedProdiId) : (filters.program_studi_id ? String(filters.program_studi_id) : 'all'));
-    const [selectedStatus, setSelectedStatus] = useState<string>(filters.status || 'all');
+    const selectedTahun = filters.tahun_ajaran_id ? String(filters.tahun_ajaran_id) : (tahunAjarans[0]?.id ? String(tahunAjarans[0].id) : '');
+    const selectedProdi = scopedProdiId ? String(scopedProdiId) : (filters.program_studi_id ? String(filters.program_studi_id) : 'all');
+    const selectedStatus = filters.status || 'all';
 
     const handleFilterChange = (tahun: string, prodi: string, status: string) => {
         router.get('/laporan/krs', {
@@ -98,7 +98,7 @@ export default function LaporanKrsIndex({
         <>
             <Head title="Laporan KRS per Prodi" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header & Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -115,7 +115,7 @@ export default function LaporanKrsIndex({
                         variant="outline"
                         size="sm"
                         onClick={handleExportCsv}
-                        className="text-xs flex items-center gap-1.5"
+                        className="text-xs flex items-center gap-1.5 self-start sm:self-auto"
                     >
                         <Download className="size-4 text-emerald-600" />
                         <span>Export CSV</span>
@@ -123,19 +123,16 @@ export default function LaporanKrsIndex({
                 </div>
 
                 {/* Filter Toolbar */}
-                <div className="flex flex-wrap items-center gap-3 p-4 rounded-lg border border-border bg-card shadow-xs">
+                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 p-4 rounded-lg border border-border bg-card shadow-xs">
                     <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground mr-2">
                         <Filter className="size-3.5" />
                         <span>Filter:</span>
                     </div>
 
-                    <div className="w-48">
+                    <div className="w-full sm:w-48">
                         <Select
                             value={selectedTahun}
-                            onValueChange={(val) => {
-                                setSelectedTahun(val);
-                                handleFilterChange(val, selectedProdi, selectedStatus);
-                            }}
+                            onValueChange={(val) => handleFilterChange(val, selectedProdi, selectedStatus)}
                         >
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="Pilih Tahun Ajaran" />
@@ -150,14 +147,11 @@ export default function LaporanKrsIndex({
                         </Select>
                     </div>
 
-                    <div className="w-56">
+                    <div className="w-full sm:w-56">
                         <Select
                             disabled={!!scopedProdiId}
                             value={selectedProdi}
-                            onValueChange={(val) => {
-                                setSelectedProdi(val);
-                                handleFilterChange(selectedTahun, val, selectedStatus);
-                            }}
+                            onValueChange={(val) => handleFilterChange(selectedTahun, val, selectedStatus)}
                         >
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="Semua Program Studi" />
@@ -173,13 +167,10 @@ export default function LaporanKrsIndex({
                         </Select>
                     </div>
 
-                    <div className="w-44">
+                    <div className="w-full sm:w-44">
                         <Select
                             value={selectedStatus}
-                            onValueChange={(val) => {
-                                setSelectedStatus(val);
-                                handleFilterChange(selectedTahun, selectedProdi, val);
-                            }}
+                            onValueChange={(val) => handleFilterChange(selectedTahun, selectedProdi, val)}
                         >
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="Semua Status" />
@@ -196,8 +187,8 @@ export default function LaporanKrsIndex({
                 </div>
 
                 {/* Summary Metric Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                    <div className="p-4 rounded-lg border border-border bg-card shadow-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                    <div className="p-4 rounded-lg border border-border bg-card shadow-xs col-span-2 sm:col-span-1">
                         <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total KRS</p>
                         <p className="text-2xl font-bold text-foreground mt-1">{totalSemua}</p>
                     </div>
@@ -333,3 +324,11 @@ export default function LaporanKrsIndex({
         </>
     );
 }
+
+LaporanKrsIndex.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Laporan & Monitoring', href: '#' },
+        { title: 'Laporan KRS', href: '/laporan/krs' },
+    ],
+};

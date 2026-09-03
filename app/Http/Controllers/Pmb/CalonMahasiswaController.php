@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\BerkasPendaftaran;
 use App\Models\CalonMahasiswa;
 use App\Models\HasilSeleksi;
+use App\Notifications\PmbSeleksiNotification;
 use App\Services\ActivityLogger;
 use App\Services\PmbStateService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -142,15 +144,14 @@ class CalonMahasiswaController extends Controller
 
         if ($calonMahasiswa->user) {
             try {
-                $calonMahasiswa->user->notify(new \App\Notifications\PmbSeleksiNotification(
+                $calonMahasiswa->user->notify(new PmbSeleksiNotification(
                     $validated['status'],
                     $validated['catatan'] ?? ''
                 ));
             } catch (\Throwable $e) {
-                \Illuminate\Support\Facades\Log::error('Gagal mengirim notification PMB: '.$e->getMessage());
+                Log::error('Gagal mengirim notification PMB: '.$e->getMessage());
             }
         }
-
 
         ActivityLogger::log('pmb.input_hasil_seleksi', 'HasilSeleksi', $hasil->id, null, [
 

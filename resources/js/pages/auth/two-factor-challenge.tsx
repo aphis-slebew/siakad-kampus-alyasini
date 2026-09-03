@@ -124,6 +124,33 @@ export default function TwoFactorChallenge() {
                                     {authConfigContent.toggleText}
                                 </button>
                             </div>
+
+                            {/* Dev Helper Hint */}
+                            <div className="mt-4 p-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 text-xs space-y-1">
+                                <p className="font-bold flex items-center gap-1.5">
+                                    <svg className="size-3.5 text-amber-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                                        <path d="M9 18h6" />
+                                        <path d="M10 22h4" />
+                                    </svg>
+                                    <span>Mode Development / Pengujian:</span>
+                                </p>
+                                <p>
+                                    Klik <em>&ldquo;login using a recovery code&rdquo;</em> lalu masukkan kode:{' '}
+                                    <code className="bg-amber-200/80 px-1.5 py-0.5 rounded font-mono font-bold">
+                                        DEV-REC-01
+                                    </code>
+                                </p>
+                                <p className="pt-1">
+                                    Atau langsung login instan tanpa 2FA via{' '}
+                                    <a
+                                        href="/dev-auth/admin"
+                                        className="font-bold underline text-brand-primary hover:text-brand-primary-dark"
+                                    >
+                                        /dev-auth/admin &rarr;
+                                    </a>
+                                </p>
+                            </div>
                         </>
                     )}
                 </Form>

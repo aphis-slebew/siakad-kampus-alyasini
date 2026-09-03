@@ -6,11 +6,15 @@ import {
     Building2,
     Calendar,
     ClipboardList,
+    Coins,
     CreditCard,
     DoorOpen,
     FileText,
     GraduationCap,
     LayoutGrid,
+    Receipt,
+    RefreshCw,
+    Settings,
     ShieldAlert,
     UserCheck,
     Users,
@@ -27,7 +31,6 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
-import { dashboard } from '@/routes';
 import type { NavGroup, SharedData } from '@/types';
 
 export function AppSidebar() {
@@ -35,13 +38,14 @@ export function AppSidebar() {
     const user = auth?.user;
     const userRoles = user?.roles || [];
     const isSuperAdmin = userRoles.includes('superadmin') || user?.user_type === 'superadmin';
-    const isAdminAkademik = isSuperAdmin || userRoles.includes('admin_akademik');
-    const isPanitiaPmb = isSuperAdmin || userRoles.includes('panitia_pmb');
-    const isStafKeuangan = isSuperAdmin || userRoles.includes('staf_keuangan');
-    const isStafKepegawaian = isSuperAdmin || userRoles.includes('staf_kepegawaian');
-    const isOperatorKemahasiswaan = isSuperAdmin || userRoles.includes('operator_kemahasiswaan');
-    const isDosen = isSuperAdmin || userRoles.includes('dosen') || userRoles.includes('kaprodi');
-    const isMahasiswa = isSuperAdmin || userRoles.includes('mahasiswa');
+    const isAdminAkademik = isSuperAdmin || userRoles.includes('admin_akademik') || user?.user_type === 'admin_akademik';
+    const isPanitiaPmb = isSuperAdmin || userRoles.includes('panitia_pmb') || user?.user_type === 'panitia_pmb';
+    const isStafKeuangan = isSuperAdmin || userRoles.includes('staf_keuangan') || user?.user_type === 'staf_keuangan';
+    const isStafKepegawaian = isSuperAdmin || userRoles.includes('staf_kepegawaian') || user?.user_type === 'staf_kepegawaian';
+    const isOperatorKemahasiswaan = isSuperAdmin || userRoles.includes('operator_kemahasiswaan') || user?.user_type === 'operator_kemahasiswaan';
+    const isDosen = userRoles.includes('dosen') || userRoles.includes('kaprodi') || user?.user_type === 'dosen';
+    const isKaprodi = userRoles.includes('kaprodi');
+    const isMahasiswa = userRoles.includes('mahasiswa') || user?.user_type === 'mahasiswa';
 
     const navigationGroups: NavGroup[] = [
         {
@@ -49,17 +53,108 @@ export function AppSidebar() {
             items: [
                 {
                     title: 'Dashboard',
-                    href: dashboard(),
+                    href: '/dashboard',
                     icon: LayoutGrid,
                 },
             ],
         },
     ];
 
+    // ==========================================
+    // 1. PORTAL MAHASISWA (Khusus Mahasiswa)
+    // ==========================================
+    if (isMahasiswa) {
+        navigationGroups.push({
+            title: 'Portal Mahasiswa',
+            items: [
+                {
+                    title: 'Profil Akademik',
+                    href: '/mahasiswa/profil',
+                    icon: Users,
+                },
+                {
+                    title: 'Her-Registrasi Saya',
+                    href: '/registrasi-ulang/saya',
+                    icon: FileText,
+                },
+                {
+                    title: 'Pembayaran UKT',
+                    href: '/keuangan/bayar',
+                    icon: CreditCard,
+                },
+                {
+                    title: 'Riwayat Pembayaran',
+                    href: '/mahasiswa/riwayat-pembayaran',
+                    icon: Award,
+                },
+            ],
+        });
+
+        navigationGroups.push({
+            title: 'Akademik Mahasiswa',
+            items: [
+                {
+                    title: 'KRS Online',
+                    href: '/krs/saya',
+                    icon: ClipboardList,
+                },
+                {
+                    title: 'Kartu Hasil Studi (KHS)',
+                    href: '/khs/saya',
+                    icon: Award,
+                },
+                {
+                    title: 'Jadwal Kuliah',
+                    href: '/mahasiswa/jadwal',
+                    icon: Calendar,
+                },
+                {
+                    title: 'Presensi Kehadiran',
+                    href: '/mahasiswa/presensi',
+                    icon: UserCheck,
+                },
+            ],
+        });
+
+        navigationGroups.push({
+            title: 'Dokumen & Kelulusan',
+            items: [
+                {
+                    title: 'Cetak Dokumen & Transkrip',
+                    href: '/dokumen/transkrip',
+                    icon: FileText,
+                },
+                {
+                    title: 'Cetak Kartu Ujian',
+                    href: '/dokumen/kartu-ujian',
+                    icon: Award,
+                },
+                {
+                    title: 'Proposal Skripsi',
+                    href: '/skripsi/proposal',
+                    icon: GraduationCap,
+                },
+                {
+                    title: 'Pendaftaran Yudisium',
+                    href: '/yudisium',
+                    icon: Award,
+                },
+            ],
+        });
+    }
+
+    // ==========================================
+    // 2. MASTER DATA (Admin Akademik & Superadmin)
+    // ==========================================
     if (isAdminAkademik) {
         navigationGroups.push({
             title: 'Master Data',
             items: [
+                {
+                    title: 'Perguruan Tinggi',
+                    href: '/master/perguruan-tinggi',
+                    icon: Building2,
+                },
                 {
                     title: 'Fakultas',
                     href: '/master/fakultas',
@@ -70,7 +165,6 @@ export function AppSidebar() {
                     href: '/master/program-studi',
                     icon: Building2,
                 },
-
                 {
                     title: 'Tahun & Kalender',
                     href: '/master/tahun-ajaran',
@@ -86,10 +180,18 @@ export function AppSidebar() {
                     href: '/master/referensi-biodata',
                     icon: FileText,
                 },
+                {
+                    title: 'PD-DIKTI Feeder',
+                    href: '/pddikti',
+                    icon: RefreshCw,
+                },
             ],
         });
     }
 
+    // ==========================================
+    // 3. PMB (Panitia PMB & Superadmin)
+    // ==========================================
     if (isPanitiaPmb) {
         navigationGroups.push({
             title: 'PMB',
@@ -104,19 +206,27 @@ export function AppSidebar() {
                     href: '/pmb/calon-mahasiswa',
                     icon: Users,
                 },
-                {
-                    title: 'Verifikasi Berkas',
-                    href: '/pmb/verifikasi',
-                    icon: UserCheck,
-                },
             ],
         });
     }
 
+    // ==========================================
+    // 4. KEUANGAN & REGISTRASI (BAU & Superadmin)
+    // ==========================================
     if (isStafKeuangan) {
         navigationGroups.push({
             title: 'Keuangan & Registrasi',
             items: [
+                {
+                    title: 'Kasir Pembayaran POS',
+                    href: '/keuangan/kasir',
+                    icon: Receipt,
+                },
+                {
+                    title: 'Tarif Komponen Biaya',
+                    href: '/keuangan/komponen-biaya',
+                    icon: Coins,
+                },
                 {
                     title: 'Periode Registrasi',
                     href: '/keuangan/periode-registrasi',
@@ -141,32 +251,26 @@ export function AppSidebar() {
         });
     }
 
-    if (isMahasiswa || user?.user_type === 'calon_mahasiswa') {
+    // ==========================================
+    // 5. AKADEMIK KAMPUS (Dosen, Kaprodi, Admin)
+    // ==========================================
+    if (isAdminAkademik) {
         navigationGroups.push({
-            title: 'Portal Mahasiswa',
+            title: 'Akademik Kampus',
             items: [
                 {
-                    title: 'Her-Registrasi Saya',
-                    href: '/registrasi-ulang/saya',
-                    icon: FileText,
+                    title: 'Data Mahasiswa',
+                    href: '/mahasiswa',
+                    icon: Users,
                 },
-                {
-                    title: 'Pembayaran UKT Saya',
-                    href: '/keuangan/bayar',
-                    icon: CreditCard,
-                },
-            ],
-        });
-    }
-
-
-    if (isAdminAkademik || isDosen || isMahasiswa) {
-        navigationGroups.push({
-            title: 'Akademik',
-            items: [
                 {
                     title: 'Kurikulum',
                     href: '/akademik/kurikulum',
+                    icon: BookOpenCheck,
+                },
+                {
+                    title: 'Mata Kuliah',
+                    href: '/akademik/matakuliah',
                     icon: BookOpenCheck,
                 },
                 {
@@ -175,31 +279,106 @@ export function AppSidebar() {
                     icon: Building2,
                 },
                 {
-                    title: 'Perwalian & KRS',
-                    href: '/akademik/krs',
-                    icon: ClipboardList,
+                    title: 'Setting Prodi / Periode',
+                    href: '/akademik/setting-prodi',
+                    icon: Settings,
                 },
                 {
-                    title: 'Presensi',
+                    title: 'Dosen Wali',
+                    href: '/akademik/dosen-wali',
+                    icon: Users,
+                },
+                {
+                    title: 'Presensi Perkuliahan',
                     href: '/akademik/presensi',
                     icon: UserCheck,
                 },
                 {
-                    title: 'Penilaian & KHS',
-                    href: '/akademik/nilai',
+                    title: 'Penilaian Mahasiswa',
+                    href: '/akademik/penilaian',
+                    icon: Award,
+                },
+            ],
+        });
+    } else if (isKaprodi) {
+        navigationGroups.push({
+            title: 'Pengelolaan Prodi & Perkuliahan',
+            items: [
+                {
+                    title: 'Kurikulum Prodi',
+                    href: '/akademik/kurikulum',
+                    icon: BookOpenCheck,
+                },
+                {
+                    title: 'Mata Kuliah',
+                    href: '/akademik/matakuliah',
+                    icon: BookOpenCheck,
+                },
+                {
+                    title: 'Kelas Kuliah',
+                    href: '/akademik/kelas-kuliah',
+                    icon: Building2,
+                },
+                {
+                    title: 'Approval KRS Wali',
+                    href: '/perwalian/krs',
+                    icon: ClipboardList,
+                },
+                {
+                    title: 'Presensi & Jurnal',
+                    href: '/akademik/presensi',
+                    icon: UserCheck,
+                },
+                {
+                    title: 'Penilaian Mahasiswa',
+                    href: '/akademik/penilaian',
+                    icon: Award,
+                },
+            ],
+        });
+    } else if (isDosen) {
+        navigationGroups.push({
+            title: 'Perkuliahan & Bimbingan',
+            items: [
+                {
+                    title: 'Kelas Kuliah',
+                    href: '/akademik/kelas-kuliah',
+                    icon: Building2,
+                },
+                {
+                    title: 'Approval KRS Wali',
+                    href: '/perwalian/krs',
+                    icon: ClipboardList,
+                },
+                {
+                    title: 'Presensi & Jurnal',
+                    href: '/akademik/presensi',
+                    icon: UserCheck,
+                },
+                {
+                    title: 'Penilaian Mahasiswa',
+                    href: '/akademik/penilaian',
                     icon: Award,
                 },
             ],
         });
     }
 
-    if (isAdminAkademik || isDosen || isMahasiswa) {
+    // ==========================================
+    // 6. TUGAS AKHIR (Dosen, Admin, Superadmin)
+    // ==========================================
+    if (isAdminAkademik || isDosen) {
         navigationGroups.push({
-            title: 'Tugas Akhir',
+            title: 'Tugas Akhir & Kelulusan',
             items: [
                 {
-                    title: 'Proposal & Skripsi',
-                    href: '/skripsi',
+                    title: 'Proposal Skripsi',
+                    href: '/skripsi/proposal',
+                    icon: BookOpenCheck,
+                },
+                {
+                    title: 'Bimbingan Skripsi',
+                    href: '/skripsi/bimbingan',
                     icon: GraduationCap,
                 },
                 {
@@ -211,19 +390,35 @@ export function AppSidebar() {
         });
     }
 
+    // ==========================================
+    // 7. KEPEGAWAIAN (HRD & Superadmin)
+    // ==========================================
     if (isStafKepegawaian) {
         navigationGroups.push({
             title: 'Kepegawaian',
             items: [
                 {
-                    title: 'Data Dosen & Pegawai',
+                    title: 'Data Dosen',
+                    href: '/kepegawaian/dosen',
+                    icon: GraduationCap,
+                },
+                {
+                    title: 'Data Pegawai / Staf',
                     href: '/kepegawaian/pegawai',
                     icon: Users,
+                },
+                {
+                    title: 'Unit Kerja',
+                    href: '/kepegawaian/unit-kerja',
+                    icon: Building2,
                 },
             ],
         });
     }
 
+    // ==========================================
+    // 8. KEMAHASISWAAN
+    // ==========================================
     if (isOperatorKemahasiswaan) {
         navigationGroups.push({
             title: 'Kemahasiswaan',
@@ -242,11 +437,14 @@ export function AppSidebar() {
         });
     }
 
-    const isKaprodi = userRoles.includes('kaprodi');
+    // ==========================================
+    // 9. LAPORAN & MONITORING
+    // ==========================================
     const canSeeLaporan = isAdminAkademik || isDosen || isKaprodi || isStafKeuangan;
 
     if (canSeeLaporan) {
         const laporanItems = [];
+
         if (isAdminAkademik || isKaprodi) {
             laporanItems.push({
                 title: 'Laporan KRS',
@@ -254,6 +452,7 @@ export function AppSidebar() {
                 icon: FileText,
             });
         }
+
         if (isAdminAkademik || isDosen) {
             laporanItems.push({
                 title: 'Rekap Nilai',
@@ -261,6 +460,7 @@ export function AppSidebar() {
                 icon: ClipboardList,
             });
         }
+
         if (isSuperAdmin || isStafKeuangan) {
             laporanItems.push({
                 title: 'Piutang UKT',
@@ -277,6 +477,31 @@ export function AppSidebar() {
         }
     }
 
+    // ==========================================
+    // 10. SISTEM & PENGGUNA (Superadmin)
+    // ==========================================
+    if (isSuperAdmin) {
+        navigationGroups.push({
+            title: 'Sistem & Pengguna',
+            items: [
+                {
+                    title: 'Manajemen Pengguna',
+                    href: '/users',
+                    icon: Users,
+                },
+                {
+                    title: 'Konfigurasi Sistem',
+                    href: '/settings/system-configs',
+                    icon: ShieldAlert,
+                },
+                {
+                    title: 'Monitoring & Audit Log',
+                    href: '/superadmin/monitoring',
+                    icon: Activity,
+                },
+            ],
+        });
+    }
 
     return (
         <Sidebar collapsible="icon" variant="inset" className="border-r border-border-default bg-surface-card">
@@ -284,7 +509,7 @@ export function AppSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild className="hover:bg-transparent">
-                            <a href={dashboard.url()}>
+                            <a href="/dashboard">
 
                                 <AppLogo />
                             </a>

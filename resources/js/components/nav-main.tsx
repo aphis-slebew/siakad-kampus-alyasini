@@ -17,32 +17,46 @@ export function NavMain({ groups = [] }: { groups?: NavGroup[]; items?: NavItem[
     }
 
     return (
-        <>
+        <div className="space-y-3 font-sans">
             {groups.map((group) => (
-                <SidebarGroup key={group.title} className="px-2 py-1">
-                    <SidebarGroupLabel className="text-[11px] font-semibold text-text-secondary uppercase tracking-wider">
-                        {group.title}
+                <SidebarGroup key={group.title} className="px-2 py-0.5">
+                    <SidebarGroupLabel className="text-[11px] font-bold text-text-muted uppercase tracking-wider px-2.5 mb-1.5 flex items-center gap-1.5">
+                        <span className="size-1 rounded-full bg-brand-primary/60" />
+                        <span>{group.title}</span>
                     </SidebarGroupLabel>
-                    <SidebarMenu>
-                        {group.items.map((item) => (
-                            <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={isCurrentUrl(item.href)}
-                                    tooltip={{ children: item.title }}
-                                    className="data-[active=true]:bg-brand-primary/10 data-[active=true]:text-brand-primary hover:bg-surface-base hover:text-text-primary focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2 transition-colors duration-200"
-                                >
+                    <SidebarMenu className="space-y-0.5">
+                        {group.items.map((item) => {
+                            const active = isCurrentUrl(item.href);
 
-                                    <Link href={item.href} prefetch>
-                                        {item.icon && <item.icon className="size-4" />}
-                                        <span>{item.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        ))}
+                            return (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton
+                                        asChild
+                                        isActive={active}
+                                        tooltip={{ children: item.title }}
+                                        className={`w-full text-xs sm:text-sm font-medium rounded-lg px-2.5 py-2 transition-all duration-150 flex items-center gap-2.5 ${
+                                            active
+                                                ? 'bg-brand-primary text-white shadow-xs font-semibold hover:bg-brand-primary hover:text-white'
+                                                : 'text-text-primary hover:bg-emerald-50/80 hover:text-brand-primary hover:translate-x-0.5'
+                                        }`}
+                                    >
+                                        <Link href={item.href} prefetch>
+                                            {item.icon && (
+                                                <item.icon
+                                                    className={`size-4 shrink-0 transition-colors ${
+                                                        active ? 'text-white' : 'text-text-secondary group-hover:text-brand-primary'
+                                                    }`}
+                                                />
+                                            )}
+                                            <span className="truncate">{item.title}</span>
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            );
+                        })}
                     </SidebarMenu>
                 </SidebarGroup>
             ))}
-        </>
+        </div>
     );
 }

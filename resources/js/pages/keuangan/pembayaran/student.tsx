@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, CreditCard, Upload } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -91,7 +91,10 @@ export default function StudentPaymentIndex({
 
     const handleCicilanSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedCicilanTagihan) return;
+
+        if (!selectedCicilanTagihan) {
+return;
+}
 
         cicilanForm.post(`/keuangan/tagihan/${selectedCicilanTagihan.id}/cicilan`, {
             onSuccess: () => {
@@ -105,7 +108,7 @@ export default function StudentPaymentIndex({
         <>
             <Head title="Pembayaran UKT & Tagihan Saya" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div>
                     <h1 className="text-xl font-semibold text-text-primary">Pembayaran UKT & Tagihan Mahasiswa</h1>
                     <p className="text-xs text-text-secondary mt-0.5">

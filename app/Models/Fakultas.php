@@ -16,6 +16,22 @@ class Fakultas extends Model
     protected $fillable = [
         'kode',
         'nama',
+        'nama_en',
+        'nama_singkat',
+        'alamat',
+        'telepon',
+        'tahun_berdiri',
+        'periode_berdiri',
+        'status',
+        'luas_m2',
+        'dekan_nama',
+        'dekan_nidn',
+        'wakil_dekan_1',
+        'wakil_dekan_2',
+        'wakil_dekan_3',
+        'wakil_dekan_4',
+        'visi',
+        'misi',
     ];
 
     /**

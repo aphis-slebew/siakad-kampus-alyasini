@@ -1,12 +1,13 @@
-import AppLayout from '@/layouts/app-layout';
 import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Award, FileText, CheckCircle, Plus, Calendar } from 'lucide-react';
+import type { FormEventHandler } from 'react';
+import { EmptyState } from '@/components/empty-state';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Award, FileText, CheckCircle, Plus, Calendar } from 'lucide-react';
+import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
 import { formatDateIndonesian } from '@/lib/utils';
 
 
@@ -23,17 +24,17 @@ type Yudisium = {
 
 export default function YudisiumIndexPage({
     yudisium,
-    yudisiums,
-    periodeWisudas,
-    candidates,
-    role,
-    errors,
+    yudisiums = [],
+    periodeWisudas = [],
+    candidates = [],
+    role = 'admin',
+    errors = {},
 }: {
     yudisium?: Yudisium;
     yudisiums?: Yudisium[];
     periodeWisudas?: PeriodeWisuda[];
     candidates?: Mahasiswa[];
-    role: string;
+    role?: string;
     errors?: Record<string, string>;
 }) {
     const yudisiumForm = useForm({
@@ -59,13 +60,13 @@ export default function YudisiumIndexPage({
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Yudisium & Wisuda', href: '/yudisium' }]}>
+        <>
             <Head title="Penetapan Yudisium & Wisuda" />
 
-            <div className="space-y-6 p-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground-default">Penetapan Yudisium & Periode Wisuda</h1>
-                    <p className="text-sm text-foreground-muted">Proses penetapan kelulusan resmi, penerbitan nomor dokumen kelulusan otomatis, dan penentuan periode wisuda.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Penetapan Yudisium & Periode Wisuda</h1>
+                    <p className="text-sm text-muted-foreground">Proses penetapan kelulusan resmi, penerbitan nomor dokumen kelulusan otomatis, dan penentuan periode wisuda.</p>
                 </div>
 
                 {errors?.yudisium && (
@@ -219,52 +220,70 @@ export default function YudisiumIndexPage({
                                 <CardDescription>Daftar kelulusan resmi dengan IPK akhir otomatis dan nomor dokumen unik.</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <div className="w-full">
-                                    <table className="w-full text-left text-sm">
-                                        <thead className="border-b bg-muted/50 text-xs font-semibold uppercase text-muted-foreground">
-                                            <tr>
-                                                <th className="p-3">No Dokumen</th>
-                                                <th className="p-3">Mahasiswa</th>
-                                                <th className="p-3">Program Studi</th>
-                                                <th className="p-3 text-center">IPK Akhir</th>
-                                                <th className="p-3">Periode Wisuda</th>
-                                                <th className="p-3 text-right">Aksi</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y">
-                                            {(!yudisiums || yudisiums.length === 0) ? (
-                                                <tr>
-                                                    <td colSpan={6} className="p-4 text-center text-xs text-muted-foreground">Belum ada data penetapan yudisium.</td>
-                                                </tr>
-                                            ) : (
-                                                yudisiums.map((y) => (
-                                                    <tr key={y.id} className="hover:bg-muted/20">
-                                                        <td className="p-3 font-mono text-xs font-bold text-emerald-700">{y.nomor_dokumen}</td>
-                                                        <td className="p-3">
-                                                            <div className="font-medium text-foreground">{y.mahasiswa?.nama_lengkap}</div>
-                                                            <div className="text-xs text-muted-foreground">{y.mahasiswa?.nim}</div>
-                                                        </td>
-                                                        <td className="p-3">{y.mahasiswa?.program_studi?.nama || '-'}</td>
-                                                        <td className="p-3 text-center font-bold">{y.ipk_akhir}</td>
-                                                        <td className="p-3">{y.periode_wisuda?.nama || '-'}</td>
-                                                        <td className="p-3 text-right">
-                                                            <a href={`/yudisium/sertifikat/${y.id}`} target="_blank" rel="noreferrer">
-                                                                <Button size="sm" variant="outline" className="gap-1">
-                                                                    <FileText className="h-3.5 w-3.5" /> Lihat Sertifikat
-                                                                </Button>
-                                                            </a>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                            )}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                {(!yudisiums || yudisiums.length === 0) ? (
+                                    <EmptyState
+                                        icon={Award}
+                                        title="Belum Ada Data Penetapan Yudisium"
+                                        description="Mahasiswa yang telah lulus ujian skripsi dan menyelesaikan administrasi akademik akan terdaftar di sini."
+                                    />
+                                ) : (
+                                    <ResponsiveTable>
+                                        <TableHeader>
+                                            <TableRow>
+                                                <TableHead>No Dokumen</TableHead>
+                                                <TableHead>Mahasiswa</TableHead>
+                                                <TableHead>Program Studi</TableHead>
+                                                <TableHead align="center">IPK Akhir</TableHead>
+                                                <TableHead>Periode Wisuda</TableHead>
+                                                <TableHead align="right">Aksi</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {yudisiums.map((y) => (
+                                                <TableRow key={y.id}>
+                                                    <TableCell className="font-mono text-xs font-bold text-brand-primary">
+                                                        {y.nomor_dokumen}
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <StackedCell
+                                                            primary={y.mahasiswa?.nama_lengkap || '-'}
+                                                            secondary={`NIM: ${y.mahasiswa?.nim || '-'}`}
+                                                        />
+                                                    </TableCell>
+                                                    <TableCell className="text-text-secondary">
+                                                        {y.mahasiswa?.program_studi?.nama || '-'}
+                                                    </TableCell>
+                                                    <TableCell align="center" className="font-bold text-foreground">
+                                                        {y.ipk_akhir}
+                                                    </TableCell>
+                                                    <TableCell className="text-text-secondary">
+                                                        {y.periode_wisuda?.nama || '-'}
+                                                    </TableCell>
+                                                    <TableCell align="right">
+                                                        <a href={`/yudisium/sertifikat/${y.id}`} target="_blank" rel="noreferrer">
+                                                            <Button size="sm" variant="outline" className="gap-1 text-xs h-8">
+                                                                <FileText className="size-3.5" /> Lihat Sertifikat
+                                                            </Button>
+                                                        </a>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </ResponsiveTable>
+                                )}
                             </CardContent>
                         </Card>
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+YudisiumIndexPage.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Tugas Akhir & Kelulusan', href: '#' },
+        { title: 'Yudisium & Wisuda', href: '/yudisium' },
+    ],
+};

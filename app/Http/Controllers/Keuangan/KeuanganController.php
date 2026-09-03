@@ -13,6 +13,7 @@ use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -99,11 +100,10 @@ class KeuanganController extends Controller
                 2048
             );
         } catch (\InvalidArgumentException $e) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'bukti_file' => [$e->getMessage()],
             ]);
         }
-
 
         Pembayaran::create([
             'tagihan_id' => $tagihan->id,

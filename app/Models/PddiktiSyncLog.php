@@ -32,4 +32,24 @@ class PddiktiSyncLog extends Model
             'synced_at' => 'datetime',
         ];
     }
+
+    public function scopeSuccess($query)
+    {
+        return $query->where('status', 'success');
+    }
+
+    public function scopeFailed($query)
+    {
+        return $query->where('status', 'failed');
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('status', 'pending');
+    }
+
+    public function scopeForTable($query, string $tableName)
+    {
+        return $query->where('table_name', $tableName);
+    }
 }

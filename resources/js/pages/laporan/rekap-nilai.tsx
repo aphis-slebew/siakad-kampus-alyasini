@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { Award, Download, Filter, GraduationCap } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
@@ -30,7 +30,6 @@ type Option = {
     is_active?: boolean;
 };
 
-
 type KelasOption = {
     id: number;
     nama_kelas: string;
@@ -50,16 +49,22 @@ export default function RekapNilaiIndex({
     kelases = [],
     filters = { tahun_ajaran_id: null, kelas_kuliah_id: null, program_studi_id: null },
 }: {
-    rekap: RekapRow[];
-    scopedDosenId: number | null;
-    tahunAjarans: Option[];
-    programStudis: Option[];
-    kelases: KelasOption[];
-    filters: { tahun_ajaran_id: number | null; kelas_kuliah_id: number | null; program_studi_id: number | null };
+    rekap?: RekapRow[];
+    scopedDosenId?: number | null;
+    tahunAjarans?: Option[];
+    programStudis?: Option[];
+    kelases?: KelasOption[];
+    filters?: { tahun_ajaran_id: number | null; kelas_kuliah_id: number | null; program_studi_id: number | null };
 }) {
-    const [selectedTahun, setSelectedTahun] = useState<string>(filters.tahun_ajaran_id ? String(filters.tahun_ajaran_id) : '');
-    const [selectedKelas, setSelectedKelas] = useState<string>(filters.kelas_kuliah_id ? String(filters.kelas_kuliah_id) : 'all');
-    const [selectedProdi, setSelectedProdi] = useState<string>(filters.program_studi_id ? String(filters.program_studi_id) : 'all');
+    const safeFilters = filters || { tahun_ajaran_id: null, kelas_kuliah_id: null, program_studi_id: null };
+    const safeRekap = Array.isArray(rekap) ? rekap : [];
+    const safeTahunAjarans = Array.isArray(tahunAjarans) ? tahunAjarans : [];
+    const safeProgramStudis = Array.isArray(programStudis) ? programStudis : [];
+    const safeKelases = Array.isArray(kelases) ? kelases : [];
+
+    const selectedTahun = safeFilters.tahun_ajaran_id ? String(safeFilters.tahun_ajaran_id) : (safeTahunAjarans[0]?.id ? String(safeTahunAjarans[0].id) : '');
+    const selectedKelas = safeFilters.kelas_kuliah_id ? String(safeFilters.kelas_kuliah_id) : 'all';
+    const selectedProdi = safeFilters.program_studi_id ? String(safeFilters.program_studi_id) : 'all';
 
     const handleFilterChange = (tahun: string, kelas: string, prodi: string) => {
         router.get('/laporan/rekap-nilai', {
@@ -90,7 +95,7 @@ export default function RekapNilaiIndex({
         <>
             <Head title="Rekap Nilai Perkuliahan" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -107,7 +112,7 @@ export default function RekapNilaiIndex({
                         variant="outline"
                         size="sm"
                         onClick={handleExportCsv}
-                        className="text-xs flex items-center gap-1.5"
+                        className="text-xs flex items-center gap-1.5 self-start sm:self-auto"
                     >
                         <Download className="size-4 text-emerald-600" />
                         <span>Export CSV</span>
@@ -115,25 +120,22 @@ export default function RekapNilaiIndex({
                 </div>
 
                 {/* Filters */}
-                <div className="flex flex-wrap items-center gap-3 p-4 rounded-lg border border-border bg-card shadow-xs">
+                <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-3 p-4 rounded-lg border border-border bg-card shadow-xs">
                     <div className="flex items-center gap-1 text-xs font-semibold text-muted-foreground mr-2">
                         <Filter className="size-3.5" />
                         <span>Filter:</span>
                     </div>
 
-                    <div className="w-48">
+                    <div className="w-full sm:w-48">
                         <Select
                             value={selectedTahun}
-                            onValueChange={(val) => {
-                                setSelectedTahun(val);
-                                handleFilterChange(val, selectedKelas, selectedProdi);
-                            }}
+                            onValueChange={(val) => handleFilterChange(val, selectedKelas, selectedProdi)}
                         >
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="Pilih Tahun Ajaran" />
                             </SelectTrigger>
                             <SelectContent>
-                                {tahunAjarans.map((ta) => (
+                                {safeTahunAjarans.map((ta) => (
                                     <SelectItem key={ta.id} value={String(ta.id)} className="text-xs">
                                         {ta.nama} {ta.is_active ? '(Aktif)' : ''}
                                     </SelectItem>
@@ -142,20 +144,17 @@ export default function RekapNilaiIndex({
                         </Select>
                     </div>
 
-                    <div className="w-56">
+                    <div className="w-full sm:w-56">
                         <Select
                             value={selectedProdi}
-                            onValueChange={(val) => {
-                                setSelectedProdi(val);
-                                handleFilterChange(selectedTahun, selectedKelas, val);
-                            }}
+                            onValueChange={(val) => handleFilterChange(selectedTahun, selectedKelas, val)}
                         >
                             <SelectTrigger className="h-9 text-xs">
                                 <SelectValue placeholder="Semua Program Studi" />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all" className="text-xs">Semua Program Studi</SelectItem>
-                                {programStudis.map((p) => (
+                                {safeProgramStudis.map((p) => (
                                     <SelectItem key={p.id} value={String(p.id)} className="text-xs">
                                         {p.kode} - {p.nama}
                                     </SelectItem>
@@ -164,22 +163,19 @@ export default function RekapNilaiIndex({
                         </Select>
                     </div>
 
-                    <div className="w-64">
+                    <div className="w-full sm:w-60">
                         <Select
                             value={selectedKelas}
-                            onValueChange={(val) => {
-                                setSelectedKelas(val);
-                                handleFilterChange(selectedTahun, val, selectedProdi);
-                            }}
+                            onValueChange={(val) => handleFilterChange(selectedTahun, val, selectedProdi)}
                         >
                             <SelectTrigger className="h-9 text-xs">
-                                <SelectValue placeholder="Semua Kelas Kuliah" />
+                                <SelectValue placeholder="Semua Kelas Matakuliah" />
                             </SelectTrigger>
                             <SelectContent>
-                                <SelectItem value="all" className="text-xs">Semua Kelas Kuliah</SelectItem>
-                                {kelases.map((k) => (
+                                <SelectItem value="all" className="text-xs">Semua Kelas</SelectItem>
+                                {safeKelases.map((k) => (
                                     <SelectItem key={k.id} value={String(k.id)} className="text-xs">
-                                        {k.kurikulum_matakuliah?.matakuliah?.kode} - {k.kurikulum_matakuliah?.matakuliah?.nama} ({k.nama_kelas})
+                                        {k.kurikulum_matakuliah?.matakuliah?.nama} ({k.nama_kelas})
                                     </SelectItem>
                                 ))}
                             </SelectContent>
@@ -188,7 +184,7 @@ export default function RekapNilaiIndex({
                 </div>
 
                 {/* Grade Distribution Summary Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-7 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
                     <div className="p-3 rounded-lg border border-border bg-card shadow-xs text-center">
                         <p className="text-[10px] font-semibold text-muted-foreground uppercase">Peserta</p>
                         <p className="text-xl font-bold text-foreground mt-0.5">{totalPeserta}</p>
@@ -213,7 +209,7 @@ export default function RekapNilaiIndex({
                         <p className="text-[10px] font-semibold text-red-800 dark:text-red-300 uppercase">Nilai E</p>
                         <p className="text-xl font-bold text-red-600 mt-0.5">{totalE}</p>
                     </div>
-                    <div className="p-3 rounded-lg border border-purple-200 bg-purple-50/50 dark:bg-purple-950/20 text-center">
+                    <div className="p-3 rounded-lg border border-purple-200 bg-purple-50/50 dark:bg-purple-950/20 text-center col-span-2 sm:col-span-1">
                         <p className="text-[10px] font-semibold text-purple-800 dark:text-purple-300 uppercase">Belum Final</p>
                         <p className="text-xl font-bold text-purple-600 mt-0.5">{totalBelumFinal}</p>
                     </div>
@@ -226,56 +222,57 @@ export default function RekapNilaiIndex({
                             <TableRow>
                                 <TableHead className="w-12">No</TableHead>
                                 <TableHead>Mata Kuliah & Kelas</TableHead>
-                                <TableHead>Dosen Pengajar</TableHead>
+                                <TableHead className="hidden sm:table-cell">Dosen Pengajar</TableHead>
                                 <TableHead align="center" className="w-20">Peserta</TableHead>
-                                <TableHead align="center" className="w-12 text-emerald-600">A</TableHead>
-                                <TableHead align="center" className="w-12 text-blue-600">B</TableHead>
-                                <TableHead align="center" className="w-12 text-amber-600">C</TableHead>
-                                <TableHead align="center" className="w-12 text-orange-600">D</TableHead>
-                                <TableHead align="center" className="w-12 text-red-600">E</TableHead>
-                                <TableHead align="center" className="w-24 text-purple-600">Belum Final</TableHead>
+                                <TableHead align="center" className="w-12 text-emerald-600 hidden md:table-cell">A</TableHead>
+                                <TableHead align="center" className="w-12 text-blue-600 hidden md:table-cell">B</TableHead>
+                                <TableHead align="center" className="w-12 text-amber-600 hidden md:table-cell">C</TableHead>
+                                <TableHead align="center" className="w-12 text-orange-600 hidden md:table-cell">D</TableHead>
+                                <TableHead align="center" className="w-12 text-red-600 hidden md:table-cell">E</TableHead>
+                                <TableHead align="center" className="w-24 text-purple-600 hidden sm:table-cell">Belum Final</TableHead>
                                 <TableHead align="right" className="w-24 font-bold">Rerata</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {rekap.length === 0 ? (
+                            {safeRekap.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={11} className="text-center text-xs text-muted-foreground py-8">
                                         Tidak ada data rekap nilai untuk filter yang dipilih.
                                     </TableCell>
                                 </TableRow>
                             ) : (
-                                rekap.map((row, idx) => (
+                                safeRekap.map((row, idx) => (
                                     <TableRow key={row.kelas_kuliah_id}>
                                         <TableCell className="text-muted-foreground font-medium">{idx + 1}</TableCell>
                                         <TableCell>
                                             <StackedCell
                                                 primary={`${row.kode_mk} - ${row.nama_mk} (${row.nama_kelas})`}
                                                 secondary={`Prodi: ${row.nama_prodi} • ${row.total_sks} SKS`}
+                                                tertiary={row.nama_dosen ? `Dosen: ${row.nama_dosen}` : undefined}
                                             />
                                         </TableCell>
-                                        <TableCell className="text-xs text-muted-foreground">
+                                        <TableCell className="text-xs text-muted-foreground hidden sm:table-cell">
                                             {row.nama_dosen || '-'}
                                         </TableCell>
                                         <TableCell align="center" className="font-semibold text-foreground">
                                             {row.total_mahasiswa}
                                         </TableCell>
-                                        <TableCell align="center" className="font-semibold text-emerald-600">
+                                        <TableCell align="center" className="font-semibold text-emerald-600 hidden md:table-cell">
                                             {row.count_a}
                                         </TableCell>
-                                        <TableCell align="center" className="font-semibold text-blue-600">
+                                        <TableCell align="center" className="font-semibold text-blue-600 hidden md:table-cell">
                                             {row.count_b}
                                         </TableCell>
-                                        <TableCell align="center" className="font-semibold text-amber-600">
+                                        <TableCell align="center" className="font-semibold text-amber-600 hidden md:table-cell">
                                             {row.count_c}
                                         </TableCell>
-                                        <TableCell align="center" className="font-semibold text-orange-600">
+                                        <TableCell align="center" className="font-semibold text-orange-600 hidden md:table-cell">
                                             {row.count_d}
                                         </TableCell>
-                                        <TableCell align="center" className="font-semibold text-red-600">
+                                        <TableCell align="center" className="font-semibold text-red-600 hidden md:table-cell">
                                             {row.count_e}
                                         </TableCell>
-                                        <TableCell align="center" className="font-semibold text-purple-600">
+                                        <TableCell align="center" className="font-semibold text-purple-600 hidden sm:table-cell">
                                             {row.count_belum_final}
                                         </TableCell>
                                         <TableCell align="right" className="font-bold text-emerald-600 text-sm">
@@ -291,3 +288,11 @@ export default function RekapNilaiIndex({
         </>
     );
 }
+
+RekapNilaiIndex.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Laporan & Monitoring', href: '#' },
+        { title: 'Rekap Nilai', href: '/laporan/rekap-nilai' },
+    ],
+};

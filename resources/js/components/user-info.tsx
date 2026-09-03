@@ -15,14 +15,14 @@ export function UserInfo({
         <>
             <Avatar className="h-8 w-8 overflow-hidden rounded-full">
                 <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
+                <AvatarFallback className="rounded-full bg-gradient-to-br from-brand-primary to-brand-primary-dark text-white font-bold text-xs shadow-xs">
                     {getInitials(user.name)}
                 </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">{user.name}</span>
+            <div className="grid flex-1 text-left text-xs leading-tight">
+                <span className="truncate font-bold text-text-primary">{user.name}</span>
                 {showEmail && (
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="truncate text-[11px] text-text-secondary">
                         {user.email}
                     </span>
                 )}

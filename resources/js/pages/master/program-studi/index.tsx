@@ -1,10 +1,8 @@
-import { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Building2, Edit, Plus, Trash2 } from 'lucide-react';
+import { Building2, Edit, Plus, Trash2, Eye, Award, CheckCircle, GraduationCap } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
-import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
-
-
 import {
     Dialog,
     DialogContent,
@@ -15,13 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 
 type Fakultas = {
     id: number;
@@ -34,9 +25,16 @@ type ProgramStudi = {
     fakultas_id: number;
     kode: string;
     nama: string;
+    nama_singkat?: string | null;
     jenjang: string;
+    gelar_singkat?: string | null;
+    status: string;
+    status_spmb: string;
+    akreditasi?: string | null;
+    ketua_prodi_nama?: string | null;
     fakultas?: Fakultas;
     konsentrasis_count?: number;
+    mahasiswas_count?: number;
 };
 
 export default function ProgramStudiIndex({
@@ -47,20 +45,44 @@ export default function ProgramStudiIndex({
     fakultas: Fakultas[];
 }) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [editingProdi, setEditingProdi] = useState<ProgramStudi | null>(null);
 
     const createForm = useForm({
-        fakultas_id: '',
+        fakultas_id: fakultas[0]?.id || '',
         kode: '',
         nama: '',
+        nama_en: '',
+        nama_singkat: '',
         jenjang: 'S1',
-    });
-
-    const editForm = useForm({
-        fakultas_id: '',
-        kode: '',
-        nama: '',
-        jenjang: 'S1',
+        periode_berdiri: '',
+        gelar: 'Sarjana Pendidikan',
+        gelar_singkat: 'S.Pd.',
+        gelar_en: 'Bachelor of Education',
+        gelar_singkat_en: 'B.Ed.',
+        status: 'aktif',
+        status_spmb: 'aktif',
+        terdaftar_lptk: false,
+        ketua_prodi_nama: '',
+        ketua_prodi_nidn: '',
+        sekretaris_prodi_nama: '',
+        sks_lulus_min: 144,
+        ipk_lulus_min: 2.00,
+        tugas_akhir_syarat: true,
+        jenis_tugas_akhir: 'Skripsi',
+        pengaturan_transfer_nilai: 'Masuk Transkrip Akademik',
+        max_dosen_pembimbing: 2,
+        max_dosen_penguji: 2,
+        periode_hitung_ips: 'Periode terakhir mahasiswa aktif',
+        lembaga_akreditasi: 'LAMDIK',
+        akreditasi: 'Baik Sekali',
+        nilai_akreditasi: '',
+        no_sk_akreditasi: '',
+        tanggal_sk_akreditasi: '',
+        tanggal_berlaku_akreditasi: '',
+        tanggal_berakhir_akreditasi: '',
+        alamat: '',
+        telepon: '',
+        email: '',
+        website: '',
     });
 
     const handleCreateSubmit = (e: React.FormEvent) => {
@@ -73,352 +95,307 @@ export default function ProgramStudiIndex({
         });
     };
 
-    const handleEditSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!editingProdi) return;
-
-        editForm.put(`/master/program-studi/${editingProdi.id}`, {
-            onSuccess: () => {
-                setEditingProdi(null);
-                editForm.reset();
-            },
-        });
-    };
+    const { confirm, confirmDialog } = useConfirmDialog();
 
     const handleDelete = (item: ProgramStudi) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus program studi ${item.nama}?`)) {
-            router.delete(`/master/program-studi/${item.id}`);
-        }
-    };
-
-    const openEditModal = (item: ProgramStudi) => {
-        setEditingProdi(item);
-        editForm.setData({
-            fakultas_id: String(item.fakultas_id),
-            kode: item.kode,
-            nama: item.nama,
-            jenjang: item.jenjang,
+        confirm({
+            title: 'Hapus Program Studi',
+            description: `Apakah Anda yakin ingin menghapus Program Studi "${item.nama}" (${item.jenjang} - ${item.kode})? Data yang terkait dengan prodi ini akan terpengaruh.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/master/program-studi/${item.id}`);
+            },
         });
     };
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Program Studi" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6 font-sans max-w-7xl mx-auto">
                 {/* Header Title */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-semibold text-text-primary">Program Studi</h1>
-                        <p className="text-xs text-text-secondary mt-0.5">
-                            Kelola data program studi dan jenjang pendidikan di STAI Al-Yasini.
-                        </p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-slate-200">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 shrink-0">
+                            <GraduationCap className="size-6 sm:size-7" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+                                Program Studi
+                            </h1>
+                            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                                Kelola program studi, akreditasi (LAM/BAN-PT), gelar, dan informasi akademik di STAI Al-Yasini.
+                            </p>
+                        </div>
                     </div>
 
                     <Button
                         onClick={() => setIsCreateOpen(true)}
-                        className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 self-start sm:self-auto"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-xs transition self-start sm:self-auto"
                     >
                         <Plus className="size-4" />
-                        Tambah Program Studi
+                        <span>Tambah Program Studi</span>
                     </Button>
                 </div>
 
-                {/* Sub Navigation Tabs */}
-                <div className="flex items-center gap-2 border-b border-border-default pb-2">
+                {/* Sub-nav Tabs */}
+                <div className="flex items-center gap-2 border-b border-slate-200 pb-2 overflow-x-auto whitespace-nowrap text-xs font-medium">
+                    <Link
+                        href="/master/perguruan-tinggi"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Perguruan Tinggi
+                    </Link>
                     <Link
                         href="/master/fakultas"
-                        className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-base rounded-md transition-colors"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
                     >
                         Fakultas
                     </Link>
-                    <span className="px-3 py-1.5 text-xs font-semibold text-brand-primary border-b-2 border-brand-primary bg-brand-primary/5 rounded-t-md">
+                    <Link
+                        href="/master/program-studi"
+                        className="px-3.5 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200 shadow-2xs"
+                    >
                         Program Studi
-                    </span>
+                    </Link>
+                    <Link
+                        href="/master/tahun-ajaran"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Tahun Ajaran & Periode
+                    </Link>
+                    <Link
+                        href="/master/ruang-kuliah"
+                        className="px-3.5 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors"
+                    >
+                        Ruang Kuliah
+                    </Link>
                 </div>
 
-
-                {/* Data Table */}
-                <div className="rounded-lg border border-border-default bg-surface-card shadow-xs overflow-hidden">
-                    {programStudis.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <Building2 className="mx-auto size-10 text-text-secondary/50 mb-3" />
-                            <h3 className="text-sm font-semibold text-text-primary">Belum ada data program studi</h3>
-                            <p className="text-xs text-text-secondary mt-1 mb-4">
-                                Silakan tambahkan data program studi baru.
-                            </p>
-                            <Button
-                                onClick={() => setIsCreateOpen(true)}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md inline-flex items-center gap-1.5"
-                            >
-                                <Plus className="size-4" />
-                                Tambah Program Studi
-                            </Button>
-                        </div>
-                    ) : (
-                        <ResponsiveTable>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-12">No</TableHead>
-                                    <TableHead>Program Studi & Jenjang</TableHead>
-                                    <TableHead>Fakultas</TableHead>
-                                    <TableHead align="right" className="w-24">Aksi</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {programStudis.map((item, index) => (
-                                    <TableRow key={item.id}>
-                                        <TableCell className="text-muted-foreground font-medium">{index + 1}</TableCell>
-                                        <TableCell>
-                                            <StackedCell
-                                                primary={item.nama}
-                                                secondary={`Kode: ${item.kode} • Jenjang ${item.jenjang}`}
-                                            />
-                                        </TableCell>
-                                        <TableCell className="text-muted-foreground">{item.fakultas?.nama || '-'}</TableCell>
-                                        <TableCell align="right">
-                                            <div className="flex items-center justify-end gap-1">
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => openEditModal(item)}
-                                                    className="h-8 w-8 p-0"
-                                                    title="Edit Program Studi"
+                {/* Table Container */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-xs border-t-2 border-t-emerald-600">
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr className="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold uppercase tracking-wider">
+                                    <th className="p-3 w-16 text-center">Kode</th>
+                                    <th className="p-3">Program Studi</th>
+                                    <th className="p-3">Fakultas</th>
+                                    <th className="p-3 text-center w-24">Jenjang & Gelar</th>
+                                    <th className="p-3">Akreditasi</th>
+                                    <th className="p-3">Ketua Prodi</th>
+                                    <th className="p-3 text-center w-20">Status</th>
+                                    <th className="p-3 text-center w-24">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-border-default">
+                                {programStudis.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={8} className="p-8 text-center text-text-secondary italic">
+                                            Belum ada data program studi. Klik "Tambah Program Studi" untuk membuat data baru.
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    programStudis.map((item) => (
+                                        <tr key={item.id} className="hover:bg-surface-hover transition-colors">
+                                            <td className="p-3 text-center font-mono font-semibold text-text-primary">
+                                                {item.kode}
+                                            </td>
+                                            <td className="p-3">
+                                                <Link
+                                                    href={`/master/program-studi/${item.id}`}
+                                                    className="font-semibold text-brand-primary hover:underline block"
                                                 >
-                                                    <Edit className="size-3.5" />
-                                                </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={() => handleDelete(item)}
-                                                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                                                    title="Hapus Program Studi"
-                                                >
-                                                    <Trash2 className="size-3.5" />
-                                                </Button>
-                                            </div>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </ResponsiveTable>
-
-                    )}
+                                                    {item.nama}
+                                                </Link>
+                                                {item.nama_singkat && (
+                                                    <span className="text-[11px] text-text-secondary block">
+                                                        {item.nama_singkat}
+                                                    </span>
+                                                )}
+                                            </td>
+                                            <td className="p-3 text-text-primary">
+                                                {item.fakultas?.nama || '-'}
+                                            </td>
+                                            <td className="p-3 text-center font-medium text-text-primary">
+                                                <span className="px-1.5 py-0.5 rounded bg-surface-base border border-border-default text-[10px] font-bold mr-1">
+                                                    {item.jenjang}
+                                                </span>
+                                                <span className="text-text-secondary text-[11px] font-mono">
+                                                    {item.gelar_singkat || '-'}
+                                                </span>
+                                            </td>
+                                            <td className="p-3">
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 flex items-center gap-1 w-fit">
+                                                    <Award className="size-3" />
+                                                    <span>{item.akreditasi || 'Baik Sekali'}</span>
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-text-primary">
+                                                {item.ketua_prodi_nama || <span className="text-text-secondary italic">-</span>}
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-semibold capitalize ${
+                                                    item.status === 'aktif'
+                                                        ? 'bg-emerald-100 text-emerald-800'
+                                                        : 'bg-slate-100 text-slate-600'
+                                                }`}>
+                                                    {item.status || 'aktif'}
+                                                </span>
+                                            </td>
+                                            <td className="p-3 text-center">
+                                                <div className="flex items-center justify-center gap-1">
+                                                    <Link href={`/master/program-studi/${item.id}`}>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-7 w-7 p-0 text-text-secondary hover:text-brand-primary"
+                                                            title="Lihat Detail Lengkap"
+                                                        >
+                                                            <Eye className="size-3.5" />
+                                                        </Button>
+                                                    </Link>
+                                                    <Button
+                                                        onClick={() => handleDelete(item)}
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        className="h-7 w-7 p-0 text-text-secondary hover:text-red-600"
+                                                    >
+                                                        <Trash2 className="size-3.5" />
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
-            {/* Modal Tambah Program Studi */}
+            {/* Create Dialog */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogContent className="sm:max-w-md bg-surface-card border-border-default">
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                     <DialogHeader>
-                        <DialogTitle className="text-base font-semibold text-text-primary">Tambah Program Studi Baru</DialogTitle>
-                        <DialogDescription className="text-xs text-text-secondary">
-                            Isi formulir untuk menambahkan program studi.
+                        <DialogTitle>Tambah Program Studi Baru</DialogTitle>
+                        <DialogDescription>
+                            Isi informasi dasar program studi. Anda dapat melengkapi detail akreditasi dan pengaturan akademik lengkap setelah data dibuat.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleCreateSubmit} className="space-y-4 py-2">
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-text-primary">
-                                Fakultas <span className="text-status-danger">*</span>
-                            </Label>
-                            <Select
-                                value={createForm.data.fakultas_id}
-                                onValueChange={(value) => createForm.setData('fakultas_id', value)}
-                            >
-                                <SelectTrigger className="text-xs border-border-default">
-                                    <SelectValue placeholder="Pilih Fakultas" />
-                                </SelectTrigger>
-                                <SelectContent>
+                    <form onSubmit={handleCreateSubmit} className="space-y-4 pt-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div className="space-y-1">
+                                <Label className="text-xs">Fakultas</Label>
+                                <select
+                                    value={createForm.data.fakultas_id}
+                                    onChange={(e) => createForm.setData('fakultas_id', Number(e.target.value))}
+                                    className="w-full h-8 text-xs border border-border-default rounded-md px-2 bg-surface-base"
+                                    required
+                                >
                                     {fakultas.map((f) => (
-                                        <SelectItem key={f.id} value={String(f.id)} className="text-xs">
-                                            {f.kode} - {f.nama}
-                                        </SelectItem>
+                                        <option key={f.id} value={f.id}>{f.nama}</option>
                                     ))}
-                                </SelectContent>
-                            </Select>
-                            {createForm.errors.fakultas_id && (
-                                <p className="text-[11px] text-status-danger">{createForm.errors.fakultas_id}</p>
-                            )}
+                                </select>
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Kode Prodi</Label>
+                                <Input
+                                    value={createForm.data.kode}
+                                    onChange={(e) => createForm.setData('kode', e.target.value.toUpperCase())}
+                                    placeholder="e.g. 86231"
+                                    className="h-8 text-xs font-mono"
+                                    required
+                                />
+                                {createForm.errors.kode && <p className="text-[11px] text-red-600">{createForm.errors.kode}</p>}
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Jenjang</Label>
+                                <select
+                                    value={createForm.data.jenjang}
+                                    onChange={(e) => createForm.setData('jenjang', e.target.value)}
+                                    className="w-full h-8 text-xs border border-border-default rounded-md px-2 bg-surface-base"
+                                >
+                                    <option value="D3">D3 - Diploma</option>
+                                    <option value="S1">S1 - Sarjana</option>
+                                    <option value="S2">S2 - Magister</option>
+                                </select>
+                            </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <Label htmlFor="kode" className="text-xs font-semibold text-text-primary">
-                                Kode Program Studi <span className="text-status-danger">*</span>
-                            </Label>
-                            <Input
-                                id="kode"
-                                placeholder="Misal: PAI"
-                                value={createForm.data.kode}
-                                onChange={(e) => createForm.setData('kode', e.target.value)}
-                                className="text-xs border-border-default focus-visible:ring-brand-primary"
-                            />
-                            {createForm.errors.kode && (
-                                <p className="text-[11px] text-status-danger">{createForm.errors.kode}</p>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <Label className="text-xs">Nama Program Studi (ID)</Label>
+                                <Input
+                                    value={createForm.data.nama}
+                                    onChange={(e) => createForm.setData('nama', e.target.value)}
+                                    placeholder="e.g. Manajemen Pendidikan Islam"
+                                    className="h-8 text-xs"
+                                    required
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Nama Singkat</Label>
+                                <Input
+                                    value={createForm.data.nama_singkat}
+                                    onChange={(e) => createForm.setData('nama_singkat', e.target.value)}
+                                    placeholder="e.g. MPI"
+                                    className="h-8 text-xs"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <Label htmlFor="nama" className="text-xs font-semibold text-text-primary">
-                                Nama Program Studi <span className="text-status-danger">*</span>
-                            </Label>
-                            <Input
-                                id="nama"
-                                placeholder="Misal: Pendidikan Agama Islam"
-                                value={createForm.data.nama}
-                                onChange={(e) => createForm.setData('nama', e.target.value)}
-                                className="text-xs border-border-default focus-visible:ring-brand-primary"
-                            />
-                            {createForm.errors.nama && (
-                                <p className="text-[11px] text-status-danger">{createForm.errors.nama}</p>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <Label className="text-xs">Gelar Lengkap</Label>
+                                <Input
+                                    value={createForm.data.gelar}
+                                    onChange={(e) => createForm.setData('gelar', e.target.value)}
+                                    placeholder="e.g. Sarjana Pendidikan"
+                                    className="h-8 text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Gelar Singkat</Label>
+                                <Input
+                                    value={createForm.data.gelar_singkat}
+                                    onChange={(e) => createForm.setData('gelar_singkat', e.target.value)}
+                                    placeholder="e.g. S.Pd."
+                                    className="h-8 text-xs"
+                                />
+                            </div>
                         </div>
 
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-text-primary">
-                                Jenjang <span className="text-status-danger">*</span>
-                            </Label>
-                            <Select
-                                value={createForm.data.jenjang}
-                                onValueChange={(value) => createForm.setData('jenjang', value)}
-                            >
-                                <SelectTrigger className="text-xs border-border-default">
-                                    <SelectValue placeholder="Pilih Jenjang" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="S1" className="text-xs">S1 - Sarjana</SelectItem>
-                                    <SelectItem value="S2" className="text-xs">S2 - Magister</SelectItem>
-                                    <SelectItem value="D3" className="text-xs">D3 - Diploma III</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {createForm.errors.jenjang && (
-                                <p className="text-[11px] text-status-danger">{createForm.errors.jenjang}</p>
-                            )}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <Label className="text-xs">Ketua Program Studi (Kaprodi)</Label>
+                                <Input
+                                    value={createForm.data.ketua_prodi_nama}
+                                    onChange={(e) => createForm.setData('ketua_prodi_nama', e.target.value)}
+                                    placeholder="e.g. Dr. H. Ja'far, M.Pd.I"
+                                    className="h-8 text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">Lembaga & Peringkat Akreditasi</Label>
+                                <Input
+                                    value={createForm.data.akreditasi}
+                                    onChange={(e) => createForm.setData('akreditasi', e.target.value)}
+                                    placeholder="e.g. Baik Sekali (LAMDIK)"
+                                    className="h-8 text-xs"
+                                />
+                            </div>
                         </div>
 
-                        <DialogFooter className="pt-2 gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setIsCreateOpen(false)}
-                                className="border-border-default text-text-primary text-xs"
-                            >
+                        <DialogFooter>
+                            <Button type="button" variant="outline" size="sm" onClick={() => setIsCreateOpen(false)}>
                                 Batal
                             </Button>
-                            <Button
-                                type="submit"
-                                disabled={createForm.processing}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold"
-                            >
-                                {createForm.processing ? 'Menyimpan...' : 'Simpan Program Studi'}
-                            </Button>
-                        </DialogFooter>
-                    </form>
-                </DialogContent>
-            </Dialog>
-
-            {/* Modal Edit Program Studi */}
-            <Dialog open={!!editingProdi} onOpenChange={(open) => !open && setEditingProdi(null)}>
-                <DialogContent className="sm:max-w-md bg-surface-card border-border-default">
-                    <DialogHeader>
-                        <DialogTitle className="text-base font-semibold text-text-primary">Edit Program Studi</DialogTitle>
-                        <DialogDescription className="text-xs text-text-secondary">
-                            Perbarui informasi program studi.
-                        </DialogDescription>
-                    </DialogHeader>
-
-                    <form onSubmit={handleEditSubmit} className="space-y-4 py-2">
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-text-primary">
-                                Fakultas <span className="text-status-danger">*</span>
-                            </Label>
-                            <Select
-                                value={editForm.data.fakultas_id}
-                                onValueChange={(value) => editForm.setData('fakultas_id', value)}
-                            >
-                                <SelectTrigger className="text-xs border-border-default">
-                                    <SelectValue placeholder="Pilih Fakultas" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {fakultas.map((f) => (
-                                        <SelectItem key={f.id} value={String(f.id)} className="text-xs">
-                                            {f.kode} - {f.nama}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            {editForm.errors.fakultas_id && (
-                                <p className="text-[11px] text-status-danger">{editForm.errors.fakultas_id}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="edit_kode" className="text-xs font-semibold text-text-primary">
-                                Kode Program Studi <span className="text-status-danger">*</span>
-                            </Label>
-                            <Input
-                                id="edit_kode"
-                                value={editForm.data.kode}
-                                onChange={(e) => editForm.setData('kode', e.target.value)}
-                                className="text-xs border-border-default focus-visible:ring-brand-primary"
-                            />
-                            {editForm.errors.kode && (
-                                <p className="text-[11px] text-status-danger">{editForm.errors.kode}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label htmlFor="edit_nama" className="text-xs font-semibold text-text-primary">
-                                Nama Program Studi <span className="text-status-danger">*</span>
-                            </Label>
-                            <Input
-                                id="edit_nama"
-                                value={editForm.data.nama}
-                                onChange={(e) => editForm.setData('nama', e.target.value)}
-                                className="text-xs border-border-default focus-visible:ring-brand-primary"
-                            />
-                            {editForm.errors.nama && (
-                                <p className="text-[11px] text-status-danger">{editForm.errors.nama}</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-1.5">
-                            <Label className="text-xs font-semibold text-text-primary">
-                                Jenjang <span className="text-status-danger">*</span>
-                            </Label>
-                            <Select
-                                value={editForm.data.jenjang}
-                                onValueChange={(value) => editForm.setData('jenjang', value)}
-                            >
-                                <SelectTrigger className="text-xs border-border-default">
-                                    <SelectValue placeholder="Pilih Jenjang" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="S1" className="text-xs">S1 - Sarjana</SelectItem>
-                                    <SelectItem value="S2" className="text-xs">S2 - Magister</SelectItem>
-                                    <SelectItem value="D3" className="text-xs">D3 - Diploma III</SelectItem>
-                                </SelectContent>
-                            </Select>
-                            {editForm.errors.jenjang && (
-                                <p className="text-[11px] text-status-danger">{editForm.errors.jenjang}</p>
-                            )}
-                        </div>
-
-                        <DialogFooter className="pt-2 gap-2">
-                            <Button
-                                type="button"
-                                variant="outline"
-                                onClick={() => setEditingProdi(null)}
-                                className="border-border-default text-text-primary text-xs"
-                            >
-                                Batal
-                            </Button>
-                            <Button
-                                type="submit"
-                                disabled={editForm.processing}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold"
-                            >
-                                {editForm.processing ? 'Menyimpan...' : 'Perbarui Program Studi'}
+                            <Button type="submit" size="sm" disabled={createForm.processing} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
+                                {createForm.processing ? 'Menyimpan...' : 'Simpan & Lanjutkan'}
                             </Button>
                         </DialogFooter>
                     </form>
@@ -430,17 +407,9 @@ export default function ProgramStudiIndex({
 
 ProgramStudiIndex.layout = {
     breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: '/dashboard',
-        },
-        {
-            title: 'Master Data',
-            href: '#',
-        },
-        {
-            title: 'Program Studi',
-            href: '/master/program-studi',
-        },
+        { title: 'Beranda', href: '/dashboard' },
+        { title: 'Data Pelengkap', href: '/master/program-studi' },
+        { title: 'Program Studi', href: '/master/program-studi' },
     ],
 };
+

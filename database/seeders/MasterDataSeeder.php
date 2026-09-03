@@ -21,17 +21,20 @@ class MasterDataSeeder extends Seeder
         $syariah = Fakultas::firstOrCreate(['kode' => 'FASYA'], ['nama' => 'Fakultas Syariah dan Ekonomi Islam']);
 
         // 2. Program Studi
-        ProgramStudi::firstOrCreate(['kode' => 'PAI'], [
+        ProgramStudi::withTrashed()->firstOrCreate(['kode' => 'PAI'], [
             'fakultas_id' => $tarbiyah->id,
             'nama' => 'Pendidikan Agama Islam',
             'jenjang' => 'S1',
         ]);
-        ProgramStudi::firstOrCreate(['kode' => 'PBA'], [
+        $pba = ProgramStudi::withTrashed()->firstOrCreate(['kode' => 'PBA'], [
             'fakultas_id' => $tarbiyah->id,
             'nama' => 'Pendidikan Bahasa Arab',
             'jenjang' => 'S1',
         ]);
-        ProgramStudi::firstOrCreate(['kode' => 'PGMI'], [
+        if ($pba->trashed()) {
+            $pba->restore();
+        }
+        ProgramStudi::withTrashed()->firstOrCreate(['kode' => 'PGMI'], [
             'fakultas_id' => $tarbiyah->id,
             'nama' => 'Pendidikan Guru Madrasah Ibtidaiyah',
             'jenjang' => 'S1',

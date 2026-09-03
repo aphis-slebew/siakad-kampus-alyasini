@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
 use App\Models\RuangKuliah;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -40,7 +41,9 @@ class RuangKuliahController extends Controller
             'kapasitas.min' => 'Kapasitas minimal 1 orang.',
         ]);
 
-        RuangKuliah::create($validated);
+        $ruang = RuangKuliah::create($validated);
+
+        ActivityLogger::log('master.ruang_kuliah.create', 'RuangKuliah', $ruang->id, null, $validated);
 
         return back()->with('success', 'Ruang kuliah berhasil ditambahkan.');
     }
@@ -62,7 +65,10 @@ class RuangKuliahController extends Controller
             'kapasitas.min' => 'Kapasitas minimal 1 orang.',
         ]);
 
+        $oldValues = $ruangKuliah->only(['kode', 'nama', 'kapasitas']);
         $ruangKuliah->update($validated);
+
+        ActivityLogger::log('master.ruang_kuliah.update', 'RuangKuliah', $ruangKuliah->id, $oldValues, $validated);
 
         return back()->with('success', 'Ruang kuliah berhasil diperbarui.');
     }
@@ -72,7 +78,15 @@ class RuangKuliahController extends Controller
      */
     public function destroy(RuangKuliah $ruangKuliah): RedirectResponse
     {
+        if ($ruangKuliah->jadwalPerkuliahans()->exists()) {
+            return back()->withErrors(['error' => 'Ruang kuliah "'.$ruangKuliah->nama.'" tidak dapat dihapus karena masih digunakan dalam jadwal perkuliahan.']);
+        }
+
+        $oldValues = $ruangKuliah->only(['kode', 'nama', 'kapasitas']);
+        $id = $ruangKuliah->id;
         $ruangKuliah->delete();
+
+        ActivityLogger::log('master.ruang_kuliah.delete', 'RuangKuliah', $id, $oldValues, null);
 
         return back()->with('success', 'Ruang kuliah berhasil dihapus.');
     }

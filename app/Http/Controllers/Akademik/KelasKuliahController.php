@@ -8,6 +8,8 @@ use App\Models\DosenPengajar;
 use App\Models\JadwalPerkuliahan;
 use App\Models\KelasKuliah;
 use App\Models\KurikulumMatakuliah;
+use App\Models\KurikulumProdi;
+use App\Models\ProgramStudi;
 use App\Models\RuangKuliah;
 use App\Models\TahunAjaran;
 use App\Services\ScheduleConflictValidationService;
@@ -22,21 +24,54 @@ class KelasKuliahController extends Controller
 {
     public function index(Request $request): Response
     {
-        $kelases = KelasKuliah::with([
+        $tahunAjaranId = $request->input('tahun_ajaran_id')
+            ?: (TahunAjaran::where('is_active', true)->first()?->id ?: TahunAjaran::latest('id')->first()?->id);
+        $prodiId = $request->input('program_studi_id');
+        $kurikulumId = $request->input('kurikulum_id');
+        $sistemKuliah = $request->input('sistem_kuliah');
+        $statusKelas = $request->input('status_kelas');
+        $search = $request->input('search');
+
+        $query = KelasKuliah::with([
             'kurikulumMatakuliah.matakuliah',
             'kurikulumMatakuliah.kurikulumProdi.programStudi',
             'tahunAjaran',
             'dosenPengajars.dosen',
             'jadwalPerkuliahans.ruangKuliah',
-        ])
-            ->orderByDesc('tahun_ajaran_id')
-            ->orderBy('id')
-            ->get();
+        ])->withCount('krsDetails');
+
+        if ($tahunAjaranId && $tahunAjaranId !== 'all') {
+            $query->where('tahun_ajaran_id', $tahunAjaranId);
+        }
+
+        if ($prodiId && $prodiId !== 'all') {
+            $query->whereHas('kurikulumMatakuliah.kurikulumProdi', fn ($q) => $q->where('program_studi_id', $prodiId));
+        }
+
+        if ($kurikulumId && $kurikulumId !== 'all') {
+            $query->whereHas('kurikulumMatakuliah', fn ($q) => $q->where('kurikulum_prodi_id', $kurikulumId));
+        }
+
+        if ($sistemKuliah && $sistemKuliah !== 'all') {
+            $query->where('sistem_kuliah', $sistemKuliah);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('nama_kelas', 'ilike', "%{$search}%")
+                    ->orWhereHas('kurikulumMatakuliah.matakuliah', fn ($m) => $m->where('nama', 'ilike', "%{$search}%")->orWhere('kode', 'ilike', "%{$search}%"))
+                    ->orWhereHas('dosenPengajars.dosen', fn ($d) => $d->where('nama_lengkap', 'ilike', "%{$search}%"));
+            });
+        }
+
+        $kelases = $query->orderByDesc('tahun_ajaran_id')->orderBy('nama_kelas')->get();
 
         $tahunAjarans = TahunAjaran::orderByDesc('id')->get();
         $kurikulumMatakuliahs = KurikulumMatakuliah::with(['matakuliah', 'kurikulumProdi.programStudi'])->get();
         $dosens = Dosen::orderBy('nama_lengkap')->get();
         $ruangs = RuangKuliah::orderBy('kode')->get();
+        $programStudis = ProgramStudi::orderBy('nama')->get(['id', 'kode', 'nama']);
+        $kurikulums = KurikulumProdi::with('programStudi')->orderByDesc('tahun_kurikulum')->get();
 
         return Inertia::render('akademik/kelas-kuliah/index', [
             'kelases' => $kelases,
@@ -44,6 +79,16 @@ class KelasKuliahController extends Controller
             'kurikulumMatakuliahs' => $kurikulumMatakuliahs,
             'dosens' => $dosens,
             'ruangs' => $ruangs,
+            'programStudis' => $programStudis,
+            'kurikulums' => $kurikulums,
+            'filters' => [
+                'tahun_ajaran_id' => $tahunAjaranId ? (int) $tahunAjaranId : 'all',
+                'program_studi_id' => $prodiId ?? 'all',
+                'kurikulum_id' => $kurikulumId ?? 'all',
+                'sistem_kuliah' => $sistemKuliah ?? 'all',
+                'status_kelas' => $statusKelas ?? 'all',
+                'search' => $search ?? '',
+            ],
         ]);
     }
 
@@ -54,6 +99,7 @@ class KelasKuliahController extends Controller
             'tahun_ajaran_id' => ['required', 'exists:tahun_ajarans,id'],
             'nama_kelas' => ['required', 'string', 'max:50'],
             'kuota' => ['required', 'integer', 'min:1', 'max:500'],
+            'sistem_kuliah' => ['required', 'in:reguler,hibrida,online'],
             'dosen_ids' => ['required', 'array', 'min:1'],
             'dosen_ids.*' => ['exists:dosens,id'],
             'ruang_kuliah_id' => ['required', 'exists:ruang_kuliahs,id'],
@@ -75,12 +121,12 @@ class KelasKuliahController extends Controller
         try {
             DB::transaction(function () use ($validated, $conflictService) {
                 // 1. Create Kelas Kuliah
-                // TODO: Langkah 6 - validasi kuota saat KRS dibangun
                 $kelas = KelasKuliah::create([
                     'kurikulum_matakuliah_id' => $validated['kurikulum_matakuliah_id'],
                     'tahun_ajaran_id' => $validated['tahun_ajaran_id'],
                     'nama_kelas' => $validated['nama_kelas'],
                     'kuota' => $validated['kuota'],
+                    'sistem_kuliah' => $validated['sistem_kuliah'],
                 ]);
 
                 // 2. Assign Dosen Pengajar
@@ -127,6 +173,7 @@ class KelasKuliahController extends Controller
             'tahun_ajaran_id' => ['required', 'exists:tahun_ajarans,id'],
             'nama_kelas' => ['required', 'string', 'max:50'],
             'kuota' => ['required', 'integer', 'min:1', 'max:500'],
+            'sistem_kuliah' => ['required', 'in:reguler,hibrida,online'],
             'dosen_ids' => ['nullable', 'array'],
             'dosen_ids.*' => ['exists:dosens,id'],
             'ruang_kuliah_id' => ['nullable', 'exists:ruang_kuliahs,id'],
@@ -137,12 +184,12 @@ class KelasKuliahController extends Controller
 
         try {
             DB::transaction(function () use ($kela, $validated, $conflictService) {
-                // TODO: Langkah 6 - validasi kuota saat KRS dibangun
                 $kela->update([
                     'kurikulum_matakuliah_id' => $validated['kurikulum_matakuliah_id'],
                     'tahun_ajaran_id' => $validated['tahun_ajaran_id'],
                     'nama_kelas' => $validated['nama_kelas'],
                     'kuota' => $validated['kuota'],
+                    'sistem_kuliah' => $validated['sistem_kuliah'],
                 ]);
 
                 // Update Dosen Pengajar
@@ -191,6 +238,14 @@ class KelasKuliahController extends Controller
 
     public function destroy(KelasKuliah $kela): RedirectResponse
     {
+        if ($kela->krsDetails()->exists()) {
+            return back()->withErrors(['error' => 'Kelas kuliah tidak dapat dihapus karena sudah memiliki mahasiswa terdaftar di KRS.']);
+        }
+
+        if ($kela->presensis()->exists()) {
+            return back()->withErrors(['error' => 'Kelas kuliah tidak dapat dihapus karena sudah memiliki riwayat presensi perkuliahan.']);
+        }
+
         $kela->delete();
 
         return back()->with('success', 'Kelas kuliah berhasil dihapus.');

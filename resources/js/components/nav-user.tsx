@@ -39,15 +39,16 @@ export function NavUser() {
                         </SidebarMenuButton>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent
-                        className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+                        className="w-(--radix-dropdown-menu-trigger-width) min-w-64 rounded-xl bg-white border border-slate-200 shadow-xl shadow-slate-900/15 p-1.5 z-50"
                         align="end"
                         side={
                             isMobile
-                                ? 'bottom'
+                                ? 'top'
                                 : state === 'collapsed'
-                                  ? 'left'
-                                  : 'bottom'
+                                  ? 'right'
+                                  : 'top'
                         }
+                        sideOffset={8}
                     >
                         <UserMenuContent user={auth.user} />
                     </DropdownMenuContent>

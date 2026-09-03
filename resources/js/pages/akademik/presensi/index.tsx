@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, useForm, usePage } from '@inertiajs/react';
 import { AlertCircle, Calendar, CheckCircle2, Clock, MapPin, Save, Users } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -105,7 +105,10 @@ export default function PresensiIndex({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedKelas) return;
+
+        if (!selectedKelas) {
+return;
+}
 
         const presensisPayload = students.map((s) => ({
             mahasiswa_id: s.id,
@@ -130,7 +133,7 @@ export default function PresensiIndex({
         <>
             <Head title="Jurnal & Presensi Perkuliahan" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -164,6 +167,7 @@ export default function PresensiIndex({
                         value={selectedKelas?.id || ''}
                         onChange={(e) => {
                             const val = e.target.value;
+
                             if (val) {
                                 window.location.href = `/akademik/presensi?kelas_kuliah_id=${val}`;
                             }

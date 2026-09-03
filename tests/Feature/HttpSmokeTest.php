@@ -33,6 +33,7 @@ use App\Models\Tagihan;
 use App\Models\TahunAjaran;
 use App\Models\User;
 use App\Models\Yudisium;
+use App\Notifications\YudisiumNotification;
 use Illuminate\Support\Facades\Hash;
 
 beforeEach(function () {
@@ -197,7 +198,6 @@ test('all 30 page routes (Langkah 2 - Langkah 8) return 200 OK with populated re
     $admin->update(['two_factor_secret' => encrypt('DEV_2FA')]);
     $admin->assignRole('superadmin');
 
-
     $dosenUser = $seeded['userDosen'];
     $mhsUser = $seeded['userMhs'];
     $yudisium = $seeded['yudisium'];
@@ -218,27 +218,35 @@ test('all 30 page routes (Langkah 2 - Langkah 8) return 200 OK with populated re
         '/akademik/matakuliah',
         '/akademik/kurikulum',
         '/akademik/kelas-kuliah',
+        '/akademik/dosen-wali',
         '/perwalian/krs',
         '/skripsi/proposal',
         '/skripsi/bimbingan',
         '/yudisium',
+        '/kemahasiswaan/aktivitas',
         '/kemahasiswaan/beasiswa',
+        '/kemahasiswaan/pelanggaran',
+        '/kepegawaian/dosen',
+        '/kepegawaian/pegawai',
+        '/kepegawaian/unit-kerja',
+        '/mahasiswa',
+        '/mahasiswa/'.$seeded['mahasiswa']->id,
         '/settings/system-configs',
+        '/superadmin/monitoring',
+        '/users',
+        '/pddikti',
         '/notifications',
         '/laporan/krs',
         '/laporan/rekap-nilai',
         '/laporan/piutang-ukt',
+        '/dashboard',
     ];
 
-
-    $admin->notify(new \App\Notifications\YudisiumNotification($yudisium->id, $yudisium->nomor_dokumen));
+    $admin->notify(new YudisiumNotification($yudisium->id, $yudisium->nomor_dokumen));
 
     foreach ($adminRoutes as $r) {
         $this->actingAs($admin)->get($r)->assertStatus(200);
     }
-
-
-
 
     $this->actingAs($dosenUser)->get('/akademik/presensi')->assertStatus(200);
     $this->actingAs($dosenUser)->get('/akademik/penilaian')->assertStatus(200);
@@ -248,4 +256,12 @@ test('all 30 page routes (Langkah 2 - Langkah 8) return 200 OK with populated re
     $this->actingAs($mhsUser)->get('/krs/saya')->assertStatus(200);
     $this->actingAs($mhsUser)->get('/khs/saya')->assertStatus(200);
     $this->actingAs($mhsUser)->get('/pmb/daftar')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/mahasiswa/profil')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/mahasiswa/jadwal')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/mahasiswa/presensi')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/mahasiswa/riwayat-pembayaran')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/dokumen/transkrip')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/dokumen/kartu-ujian')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/dokumen/khs')->assertStatus(200);
+    $this->actingAs($mhsUser)->get('/dokumen/krs')->assertStatus(200);
 });

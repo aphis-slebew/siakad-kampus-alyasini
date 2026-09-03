@@ -7,7 +7,6 @@ use App\Models\KelasKuliah;
 use App\Models\ProgramStudi;
 use App\Models\TahunAjaran;
 use App\Services\LaporanService;
-use Exception;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,7 +28,6 @@ class LaporanController extends Controller
         } catch (\DomainException $e) {
             abort(403, $e->getMessage());
         }
-
 
         $tahunAjarans = TahunAjaran::latest()->get(['id', 'nama', 'is_active']);
         $programStudis = ProgramStudi::all(['id', 'kode', 'nama']);
@@ -74,19 +72,33 @@ class LaporanController extends Controller
             // Write UTF-8 BOM header for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            fputcsv($file, ['No', 'Kode Prodi', 'Program Studi', 'Draft', 'Diajukan', 'Disetujui Wali', 'Ditolak', 'Total KRS']);
+            if (! empty($reportData['drilldown']) && count($reportData['drilldown']) > 0) {
+                fputcsv($file, ['No', 'NIM', 'Nama Mahasiswa', 'Program Studi', 'Status KRS', 'Tanggal Pembaruan']);
+                foreach ($reportData['drilldown'] as $index => $row) {
+                    fputcsv($file, [
+                        $index + 1,
+                        $row->mahasiswa->nim ?? '-',
+                        $row->mahasiswa->nama_lengkap ?? '-',
+                        $row->mahasiswa->programStudi->nama ?? '-',
+                        strtoupper($row->status ?? '-'),
+                        $row->updated_at ? date('d/m/Y H:i', strtotime($row->updated_at)) : '-',
+                    ]);
+                }
+            } else {
+                fputcsv($file, ['No', 'Kode Prodi', 'Program Studi', 'Draft', 'Diajukan', 'Disetujui Wali', 'Ditolak', 'Total KRS']);
 
-            foreach ($reportData['summary'] as $index => $row) {
-                fputcsv($file, [
-                    $index + 1,
-                    $row->program_studi_kode,
-                    $row->program_studi_nama,
-                    $row->draft_count,
-                    $row->diajukan_count,
-                    $row->disetujui_wali_count,
-                    $row->ditolak_count,
-                    $row->total_krs,
-                ]);
+                foreach ($reportData['summary'] as $index => $row) {
+                    fputcsv($file, [
+                        $index + 1,
+                        $row->program_studi_kode,
+                        $row->program_studi_nama,
+                        $row->draft_count,
+                        $row->diajukan_count,
+                        $row->disetujui_wali_count,
+                        $row->ditolak_count,
+                        $row->total_krs,
+                    ]);
+                }
             }
             fclose($file);
         };
@@ -224,7 +236,6 @@ class LaporanController extends Controller
         } catch (\DomainException $e) {
             abort(403, $e->getMessage());
         }
-
 
         $filename = 'Laporan_Piutang_UKT_'.date('Y-m-d').'.csv';
         $headers = [

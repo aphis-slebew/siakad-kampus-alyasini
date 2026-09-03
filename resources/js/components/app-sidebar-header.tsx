@@ -156,18 +156,18 @@ export function AppSidebarHeader({
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <div className="h-4 w-px bg-border-default" />
+                <div className="h-5 w-px bg-border-default mx-1" />
 
-                <div className="flex items-center gap-2 text-xs">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-brand-primary/10 text-brand-primary font-semibold">
+                <div className="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100/80 transition-colors py-1 px-2.5 rounded-full border border-border-default">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-gradient-to-br from-brand-primary to-brand-primary-dark text-white font-bold text-xs shadow-xs">
                         {user?.name ? user.name.charAt(0).toUpperCase() : <UserIcon className="size-3.5" />}
                     </div>
-                    <div className="hidden sm:block leading-tight text-left">
-                        <p className="font-semibold text-text-primary truncate max-w-[120px]">
+                    <div className="hidden sm:block leading-tight text-left pr-1">
+                        <p className="font-semibold text-xs text-text-primary truncate max-w-[130px]">
                             {user?.name || 'Pengguna'}
                         </p>
-                        <p className="text-[11px] text-text-secondary capitalize">
-                            {user?.roles?.[0] || user?.user_type || 'User'}
+                        <p className="text-[10px] font-medium text-brand-primary capitalize">
+                            {user?.roles?.[0]?.replace('_', ' ') || user?.user_type || 'Civitas'}
                         </p>
                     </div>
                 </div>

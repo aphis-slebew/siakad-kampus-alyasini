@@ -12,11 +12,13 @@ use App\Models\ProgramStudi;
 use App\Models\User;
 use App\Services\ActivityLogger;
 use App\Services\PmbStateService;
+use App\Services\SecureFileUploadService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -58,7 +60,7 @@ class PmbPublicController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'asal_sekolah' => ['required', 'string', 'max:255'],
             'tahun_lulus_sekolah' => ['required', 'integer', 'min:2000', 'max:'.((int) date('Y'))],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['nullable', 'string', 'min:6', 'confirmed'],
 
             // Security Whitelist & MIME Validation (04-Security.md §3)
             'berkas_ijazah' => ['nullable', 'file', 'mimetypes:application/pdf,image/jpeg,image/png', 'max:2048'],
@@ -76,6 +78,11 @@ class PmbPublicController extends Controller
             'berkas_foto.max' => 'Ukuran pasfoto maksimal 1MB.',
         ]);
 
+        // Auto-generate password from tanggal lahir if blank (format: ddmmyyyy)
+        $rawPassword = ! empty($validated['password'])
+            ? $validated['password']
+            : date('dmY', strtotime($validated['tanggal_lahir']));
+
         // Point 2: Blind Index NIK Duplication Check (Indexed DB Query)
         $nikHash = CalonMahasiswa::generateBlindIndex($validated['nik']);
 
@@ -86,12 +93,12 @@ class PmbPublicController extends Controller
             return back()->withErrors(['nik' => 'NIK ini telah terdaftar dalam sistem (sebagai calon mahasiswa atau mahasiswa aktif). Satu NIK hanya boleh mendaftar 1 kali.'])->withInput();
         }
 
-        $calon = DB::transaction(function () use ($request, $validated, $pmbStateService) {
+        $calon = DB::transaction(function () use ($request, $validated, $rawPassword, $pmbStateService) {
             // 1. Buat User baru dengan role calon_mahasiswa
             $user = User::create([
                 'name' => $validated['nama_lengkap'],
                 'email' => $validated['email'],
-                'password' => Hash::make($validated['password']),
+                'password' => Hash::make($rawPassword),
                 'user_type' => 'calon_mahasiswa',
                 'status' => 'aktif',
             ]);
@@ -133,14 +140,14 @@ class PmbPublicController extends Controller
                     $maxKb = $isFoto ? 1024 : 2048;
 
                     try {
-                        $path = \App\Services\SecureFileUploadService::uploadPrivate(
+                        $path = SecureFileUploadService::uploadPrivate(
                             $file,
                             'private/berkas_pmb',
                             $maxKb,
                             $isFoto
                         );
                     } catch (\InvalidArgumentException $e) {
-                        throw \Illuminate\Validation\ValidationException::withMessages([
+                        throw ValidationException::withMessages([
                             $field => [$e->getMessage()],
                         ]);
                     }
@@ -153,7 +160,6 @@ class PmbPublicController extends Controller
                     ]);
                 }
             }
-
 
             // 4. Transisi resmi status pendaftaran dari draft -> diajukan
             $pmbStateService->transition($calon, 'diajukan');

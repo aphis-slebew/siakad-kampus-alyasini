@@ -6,6 +6,7 @@ use App\Models\Cekal;
 use App\Models\CicilanTagihan;
 use App\Models\Mahasiswa;
 use App\Models\RegistrasiUlang;
+use App\Models\SystemConfig;
 use App\Models\Tagihan;
 
 class KrsEligibilityService
@@ -23,8 +24,8 @@ class KrsEligibilityService
     {
         $reasons = [];
         $today = date('Y-m-d');
-        $openDate = \App\Models\SystemConfig::getValue('KRS_OPENING_DATE', '');
-        $closeDate = \App\Models\SystemConfig::getValue('KRS_CLOSING_DATE', '');
+        $openDate = SystemConfig::getValue('KRS_OPENING_DATE', '');
+        $closeDate = SystemConfig::getValue('KRS_CLOSING_DATE', '');
 
         if ($openDate && $today < $openDate) {
             $reasons[] = "Pengajuan KRS belum dibuka (Jadwal Pembukaan: {$openDate}).";

@@ -52,6 +52,10 @@ class JalurPendaftaranController extends Controller
 
     public function destroy(JalurPendaftaran $jalur): RedirectResponse
     {
+        if ($jalur->calonMahasiswas()->exists()) {
+            return back()->with('error', 'Jalur pendaftaran tidak dapat dihapus karena sudah memiliki calon mahasiswa terdaftar.');
+        }
+
         $jalur->delete();
 
         return back()->with('success', 'Jalur pendaftaran berhasil dihapus.');

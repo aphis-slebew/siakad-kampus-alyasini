@@ -24,10 +24,12 @@ class ProposalSkripsiController extends Controller
         $user = auth()->user();
 
         if ($user->hasRole('mahasiswa')) {
-            $mahasiswa = Mahasiswa::where('user_id', $user->id)->firstOrFail();
-            $proposal = ProposalSkripsi::with(['dosenPembimbing', 'bimbinganProposals'])
-                ->where('mahasiswa_id', $mahasiswa->id)
-                ->first();
+            $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
+            $proposal = $mahasiswa
+                ? ProposalSkripsi::with(['dosenPembimbing', 'bimbinganProposals'])
+                    ->where('mahasiswa_id', $mahasiswa->id)
+                    ->first()
+                : null;
             $dosens = Dosen::all();
 
             return Inertia::render('skripsi/proposal', [
@@ -38,11 +40,12 @@ class ProposalSkripsiController extends Controller
         }
 
         if ($user->hasRole('dosen')) {
-            $dosen = Dosen::where('user_id', $user->id)->firstOrFail();
-            $proposals = ProposalSkripsi::with(['mahasiswa', 'dosenPembimbing', 'bimbinganProposals'])
-                ->where('dosen_pembimbing_id', $dosen->id)
-                ->get();
-
+            $dosen = Dosen::where('user_id', $user->id)->first();
+            $proposals = $dosen
+                ? ProposalSkripsi::with(['mahasiswa', 'dosenPembimbing', 'bimbinganProposals'])
+                    ->where('dosen_pembimbing_id', $dosen->id)
+                    ->get()
+                : collect();
 
             return Inertia::render('skripsi/proposal', [
                 'proposals' => $proposals,

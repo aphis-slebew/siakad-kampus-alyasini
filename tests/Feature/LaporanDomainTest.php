@@ -4,10 +4,8 @@ use App\Models\Dosen;
 use App\Models\DosenPengajar;
 use App\Models\Fakultas;
 use App\Models\KelasKuliah;
-
 use App\Models\Krs;
 use App\Models\KrsDetail;
-use App\Models\Kurikulum;
 use App\Models\KurikulumMatakuliah;
 use App\Models\KurikulumProdi;
 use App\Models\Mahasiswa;
@@ -29,7 +27,8 @@ beforeEach(function () {
     $this->artisan('db:seed', ['--class' => RoleAndPermissionSeeder::class]);
 });
 
-function createLaporanTestEnvironment() {
+function createLaporanTestEnvironment()
+{
     $fakultas = Fakultas::firstOrCreate(['kode' => 'FTIK'], ['nama' => 'Fakultas Tarbiyah']);
     $prodi1 = ProgramStudi::firstOrCreate(['kode' => 'PAI'], ['fakultas_id' => $fakultas->id, 'nama' => 'Pendidikan Agama Islam', 'jenjang' => 'S1']);
     $prodi2 = ProgramStudi::firstOrCreate(['kode' => 'PBA'], ['fakultas_id' => $fakultas->id, 'nama' => 'Pendidikan Bahasa Arab', 'jenjang' => 'S1']);
@@ -161,7 +160,6 @@ test('dosen auto scopes silently to own taught classes in rekap nilai', function
     expect($report['rekap']->firstWhere('kelas_kuliah_id', $kelasB->id))->toBeNull();
 });
 
-
 test('piutang ukt summary and student list restricted to finance and superadmin', function () {
     $env = createLaporanTestEnvironment();
 
@@ -191,7 +189,7 @@ test('piutang ukt summary and student list restricted to finance and superadmin'
 
     // Dosen access -> Throws DomainException 403
     expect(fn () => $service->getLaporanPiutangUkt($env['tahun']->id, null, $userDosen))
-        ->toThrow(\DomainException::class, 'AKSES DITOLAK: Laporan piutang UKT hanya dapat diakses oleh Superadmin dan Staf Keuangan.');
+        ->toThrow(DomainException::class, 'AKSES DITOLAK: Laporan piutang UKT hanya dapat diakses oleh Superadmin dan Staf Keuangan.');
 });
 
 test('laporan queries are efficient without n plus one', function () {
@@ -217,7 +215,6 @@ test('csv exports return streamed csv response', function () {
 
     $userAdmin = User::factory()->create(['user_type' => 'superadmin', 'two_factor_secret' => encrypt('DEV_2FA')]);
     $userAdmin->assignRole('superadmin');
-
 
     $responseKrs = $this->actingAs($userAdmin)->get("/laporan/krs/export?tahun_ajaran_id={$env['tahun']->id}");
     $responseKrs->assertStatus(200);

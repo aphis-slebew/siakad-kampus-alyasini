@@ -24,10 +24,12 @@ class SkripsiController extends Controller
         $user = auth()->user();
 
         if ($user->hasRole('mahasiswa')) {
-            $mahasiswa = Mahasiswa::where('user_id', $user->id)->firstOrFail();
-            $skripsi = Skripsi::with(['dosenPembimbing', 'bimbinganSkripsis'])
-                ->where('mahasiswa_id', $mahasiswa->id)
-                ->first();
+            $mahasiswa = Mahasiswa::where('user_id', $user->id)->first();
+            $skripsi = $mahasiswa
+                ? Skripsi::with(['dosenPembimbing', 'bimbinganSkripsis'])
+                    ->where('mahasiswa_id', $mahasiswa->id)
+                    ->first()
+                : null;
 
             return Inertia::render('skripsi/index', [
                 'skripsi' => $skripsi,
@@ -36,11 +38,12 @@ class SkripsiController extends Controller
         }
 
         if ($user->hasRole('dosen')) {
-            $dosen = Dosen::where('user_id', $user->id)->firstOrFail();
-            $skripsis = Skripsi::with(['mahasiswa', 'dosenPembimbing', 'bimbinganSkripsis'])
-                ->where('dosen_pembimbing_id', $dosen->id)
-                ->get();
-
+            $dosen = Dosen::where('user_id', $user->id)->first();
+            $skripsis = $dosen
+                ? Skripsi::with(['mahasiswa', 'dosenPembimbing', 'bimbinganSkripsis'])
+                    ->where('dosen_pembimbing_id', $dosen->id)
+                    ->get()
+                : collect();
 
             return Inertia::render('skripsi/index', [
                 'skripsis' => $skripsis,

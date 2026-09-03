@@ -59,7 +59,7 @@ export default function PmbPublicRegister({
     };
 
     return (
-        <div className="min-h-screen bg-surface-base flex flex-col justify-center py-12 px-4 sm:px-6 lg:px-8 font-sans">
+        <div className="min-h-screen bg-surface-base flex flex-col justify-center py-6 sm:py-12 px-3 sm:px-6 lg:px-8 font-sans">
             <Head title="Pendaftaran Calon Mahasiswa Baru - STAI Al-Yasini" />
 
             <div className="sm:mx-auto sm:w-full sm:max-w-2xl">
@@ -68,7 +68,7 @@ export default function PmbPublicRegister({
                         SY
                     </div>
                 </div>
-                <h2 className="text-center text-2xl font-bold text-text-primary">
+                <h2 className="text-center text-xl sm:text-2xl font-bold text-text-primary">
                     Pendaftaran Mahasiswa Baru
                 </h2>
                 <p className="mt-1 text-center text-xs text-text-secondary">
@@ -77,7 +77,7 @@ export default function PmbPublicRegister({
             </div>
 
             <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-2xl">
-                <div className="bg-surface-card py-8 px-6 shadow-xs border border-border-default rounded-lg sm:px-10">
+                <div className="bg-surface-card py-6 sm:py-8 px-4 sm:px-10 shadow-xs border border-border-default rounded-lg">
                     <form onSubmit={handleSubmit} className="space-y-6" encType="multipart/form-data">
                         {/* Section 1: Pilihan Gelombang & Jalur */}
                         <div className="border-b border-border-default pb-4 space-y-4">
@@ -389,19 +389,24 @@ export default function PmbPublicRegister({
 
                         {/* Section 5: Kata Sandi Akun PMB */}
                         <div className="space-y-4">
-                            <h3 className="text-sm font-semibold text-brand-primary flex items-center gap-2">
-                                <UserCheck className="size-4" />
-                                5. Kata Sandi Akun PMB
-                            </h3>
+                            <div>
+                                <h3 className="text-sm font-semibold text-brand-primary flex items-center gap-2">
+                                    <UserCheck className="size-4" />
+                                    5. Kata Sandi Akun PMB (Opsional)
+                                </h3>
+                                <p className="text-[11px] text-text-secondary mt-0.5">
+                                    Jika dikosongkan, kata sandi login PMB otomatis dibuat dari tanggal lahir Anda (format: <strong>ddmmyyyy</strong>, contoh: <em>17082004</em>).
+                                </p>
+                            </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-semibold text-text-primary">
-                                        Kata Sandi <span className="text-status-danger">*</span>
+                                        Kata Sandi (Opsional)
                                     </Label>
                                     <Input
                                         type="password"
-                                        placeholder="Minimal 8 karakter"
+                                        placeholder="Kosongkan jika ingin auto tanggal lahir"
                                         value={form.data.password}
                                         onChange={(e) => form.setData('password', e.target.value)}
                                         className="text-xs border-border-default focus-visible:ring-brand-primary"
@@ -413,11 +418,11 @@ export default function PmbPublicRegister({
 
                                 <div className="space-y-1.5">
                                     <Label className="text-xs font-semibold text-text-primary">
-                                        Konfirmasi Kata Sandi <span className="text-status-danger">*</span>
+                                        Konfirmasi Kata Sandi
                                     </Label>
                                     <Input
                                         type="password"
-                                        placeholder="Ulangi kata sandi"
+                                        placeholder="Ulangi kata sandi jika diisi"
                                         value={form.data.password_confirmation}
                                         onChange={(e) => form.setData('password_confirmation', e.target.value)}
                                         className="text-xs border-border-default focus-visible:ring-brand-primary"

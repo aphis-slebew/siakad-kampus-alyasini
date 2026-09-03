@@ -3,9 +3,13 @@
 namespace App\Services;
 
 use App\Models\Pembayaran;
+use App\Models\SystemConfig;
 use App\Models\Tagihan;
+use App\Notifications\KeuanganPembayaranNotification;
+use Carbon\Carbon;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PaymentVerificationService
 {
@@ -75,17 +79,15 @@ class PaymentVerificationService
             $studentUser = $tagihan->mahasiswa->user ?? null;
             if ($studentUser) {
                 try {
-                    $studentUser->notify(new \App\Notifications\KeuanganPembayaranNotification(
+                    $studentUser->notify(new KeuanganPembayaranNotification(
                         $statusVerifikasi,
                         (float) $pembayaran->nominal_dibayar,
                         $pembayaran->catatan
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Keuangan: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Keuangan: '.$e->getMessage());
                 }
             }
-
-
 
             // Audit Overpayment if excess occurs
             $totalPaidFinal = Pembayaran::where('tagihan_id', $tagihan->id)->where('status_verifikasi', 'diverifikasi')->sum('nominal_dibayar');
@@ -174,10 +176,9 @@ class PaymentVerificationService
             return 0.0;
         }
 
-        $dendaPerHari = (float) \App\Models\SystemConfig::getValue('DENDA_UKT_PER_HARI', '5000.00');
-        $daysLate = now()->diffInDays(\Carbon\Carbon::parse($tagihan->jatuh_tempo));
+        $dendaPerHari = (float) SystemConfig::getValue('DENDA_UKT_PER_HARI', '5000.00');
+        $daysLate = now()->diffInDays(Carbon::parse($tagihan->jatuh_tempo));
 
         return round($daysLate * $dendaPerHari, 2);
     }
 }
-

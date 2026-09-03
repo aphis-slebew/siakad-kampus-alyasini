@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, Link, router, useForm } from '@inertiajs/react';
 import { CreditCard, Edit, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -45,7 +46,10 @@ export default function JalurIndex({ jalurs = [] }: { jalurs: Jalur[] }) {
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingJalur) return;
+
+        if (!editingJalur) {
+return;
+}
 
         editForm.put(`/pmb/jalur/${editingJalur.id}`, {
             onSuccess: () => {
@@ -55,10 +59,18 @@ export default function JalurIndex({ jalurs = [] }: { jalurs: Jalur[] }) {
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: Jalur) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus jalur pendaftaran ${item.nama}?`)) {
-            router.delete(`/pmb/jalur/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Jalur Pendaftaran',
+            description: `Apakah Anda yakin ingin menghapus jalur pendaftaran "${item.nama}" (Biaya: Rp ${Number(item.biaya_pendaftaran).toLocaleString('id-ID')})? Calon mahasiswa yang mendaftar melalui jalur ini akan terpengaruh.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/pmb/jalur/${item.id}`);
+            },
+        });
     };
 
     const openEditModal = (item: Jalur) => {
@@ -71,9 +83,10 @@ export default function JalurIndex({ jalurs = [] }: { jalurs: Jalur[] }) {
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Jalur PMB" />
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -93,7 +106,7 @@ export default function JalurIndex({ jalurs = [] }: { jalurs: Jalur[] }) {
                 </div>
 
                 {/* Sub Navigation Tabs */}
-                <div className="flex items-center gap-2 border-b border-border-default pb-2">
+                <div className="flex items-center gap-2 border-b border-border-default pb-2 overflow-x-auto whitespace-nowrap">
                     <Link
                         href="/pmb/gelombang"
                         className="px-3 py-1.5 text-xs font-medium text-text-secondary hover:text-text-primary hover:bg-surface-base rounded-md transition-colors"

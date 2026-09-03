@@ -30,6 +30,7 @@ ke VPS produksi).
 | 4 | `04-Security.md` | Checklist keamanan wajib — termasuk §7 khusus aturan untuk AI-assisted coding (hal yang harus dicek manual sebelum merge kode hasil AI agent) | Dibaca sebelum coding, **dan** dijadikan checklist review sebelum tiap PR di-merge |
 | 5 | `05-Installation-Guide.md` | Langkah instalasi awal project (scaffolding Laravel, Docker Compose untuk Postgres/Redis, environment) | Sudah dieksekusi — dipakai ulang kalau ada developer/mesin baru yang perlu setup dari nol |
 | 6 | `06-Neo-Feeder-Integration.md` | Integrasi PD-DIKTI lewat Neo Feeder Web Service — arsitektur, keamanan jaringan, strategi sinkronisasi per kategori data, dashboard monitoring & rekonsiliasi | Dibaca saat mulai mengerjakan modul integrasi PD-DIKTI (fase belakangan, bukan MVP awal) |
+| 7 | `07-Panduan-Operasional-dan-Pembaruan.md` | Panduan operasional harian, changelog pembaruan fitur (PD-DIKTI, Cetak Dokumen, UI Upgrade), kredensial dev-auth, serta fitur Impersonation Superadmin | Dibaca untuk referensi operasional, login cepat pengujian, dan panduan akses universal Superadmin |
 
 ## Aturan tidak tertulis yang wajib diikuti Antigravity
 

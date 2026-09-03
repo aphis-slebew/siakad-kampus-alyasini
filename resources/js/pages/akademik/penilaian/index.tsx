@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { AlertCircle, CheckCircle2, Award, Edit, Lock, RefreshCw, Save, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -93,7 +94,10 @@ export default function PenilaianIndex({
 
     const handleSaveComposition = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedKelas) return;
+
+        if (!selectedKelas) {
+return;
+}
 
         router.post('/akademik/penilaian/komposisi', {
             kelas_kuliah_id: selectedKelas.id,
@@ -109,7 +113,9 @@ export default function PenilaianIndex({
     };
 
     const handleInputScore = (krsDetailId: number, scores: Record<string, number>) => {
-        if (!selectedKelas) return;
+        if (!selectedKelas) {
+return;
+}
 
         router.post('/akademik/penilaian/input', {
             kelas_kuliah_id: selectedKelas.id,
@@ -118,18 +124,32 @@ export default function PenilaianIndex({
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleFinalize = () => {
-        if (!selectedKelas) return;
-        if (confirm('Apakah Anda yakin ingin memfinalisasi nilai kelas ini? Nilai yang sudah final tidak bisa diedit langsung.')) {
-            router.post('/akademik/penilaian/finalize', {
-                kelas_kuliah_id: selectedKelas.id,
-            });
-        }
+        if (!selectedKelas) {
+return;
+}
+
+        confirm({
+            title: 'Finalisasi Nilai Perkuliahan',
+            description: `Apakah Anda yakin ingin memfinalisasi nilai untuk kelas ${selectedKelas.nama_kelas} (${selectedKelas.kurikulum_matakuliah?.matakuliah?.nama || 'Mata Kuliah'})? Nilai yang sudah final akan terkunci dan tidak dapat diubah tanpa prosedur pemutihan resmi.`,
+            variant: 'warning',
+            confirmText: 'Ya, Finalisasi Nilai',
+            onConfirm: () => {
+                router.post('/akademik/penilaian/finalize', {
+                    kelas_kuliah_id: selectedKelas.id,
+                });
+            },
+        });
     };
 
     const handleWhitewashSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!whitewashTarget) return;
+
+        if (!whitewashTarget) {
+return;
+}
 
         router.post('/akademik/penilaian/whitewash', {
             nilai_id: whitewashTarget.nilaiId,
@@ -147,9 +167,10 @@ export default function PenilaianIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Pengelolaan & Input Nilai Perkuliahan" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Header Title */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -160,11 +181,11 @@ export default function PenilaianIndex({
                     </div>
 
                     {selectedKelas && (
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                             <Button
                                 onClick={() => setIsCompositionOpen(true)}
                                 variant="outline"
-                                className="border-border-default text-text-primary text-xs font-semibold px-3 py-2 rounded-md flex items-center gap-1.5"
+                                className="border-border-default text-text-primary text-xs font-semibold px-3 py-2 rounded-md flex items-center justify-center gap-1.5"
                             >
                                 <Award className="size-3.5" />
                                 Atur Komposisi Bobot ({totalBobot}%)
@@ -172,7 +193,7 @@ export default function PenilaianIndex({
 
                             <Button
                                 onClick={handleFinalize}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5"
+                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md flex items-center justify-center gap-1.5"
                             >
                                 <Lock className="size-3.5" />
                                 Finalisasi Nilai Kelas
@@ -204,8 +225,9 @@ export default function PenilaianIndex({
                         value={selectedKelas?.id || ''}
                         onChange={(e) => {
                             const val = e.target.value;
+
                             if (val) {
-                                window.location.href = `/akademik/penilaian?kelas_kuliah_id=${val}`;
+                                router.get('/akademik/penilaian', { kelas_kuliah_id: val }, { preserveState: true });
                             }
                         }}
                         className="w-full text-xs rounded-md border border-border-default bg-surface-card p-2 text-text-primary font-medium"
@@ -219,7 +241,23 @@ export default function PenilaianIndex({
                     </select>
                 </div>
 
-                {selectedKelas && (
+                {kelases.length === 0 ? (
+                    <div className="bg-surface-card p-10 rounded-xl border border-border-default text-center space-y-3">
+                        <Award className="mx-auto size-12 text-slate-400" />
+                        <h3 className="text-base font-bold text-text-primary">Belum Ada Kelas yang Diampu</h3>
+                        <p className="text-xs text-text-secondary max-w-md mx-auto">
+                            Anda belum terdaftar mengampu kelas perkuliahan aktif pada semester ini. Silakan berkoordinasi dengan Bagian Administrasi Akademik (BAA) atau Kaprodi.
+                        </p>
+                    </div>
+                ) : !selectedKelas ? (
+                    <div className="bg-surface-card p-10 rounded-xl border border-border-default text-center space-y-3">
+                        <Award className="mx-auto size-12 text-emerald-600" />
+                        <h3 className="text-base font-bold text-text-primary">Pilih Kelas Perkuliahan</h3>
+                        <p className="text-xs text-text-secondary max-w-md mx-auto">
+                            Silakan pilih salah satu kelas perkuliahan di atas untuk mulai mengatur komposisi bobot dan menginput nilai mahasiswa.
+                        </p>
+                    </div>
+                ) : (
                     <div className="space-y-6">
                         {/* Grade Sheet Table */}
                         <div className="rounded-lg border border-border-default bg-surface-card shadow-xs overflow-hidden">
@@ -271,6 +309,7 @@ export default function PenilaianIndex({
                                                         </td>
                                                         {['tugas', 'uts', 'uas', 'presensi'].map((comp) => {
                                                             const sc = row.scores[comp];
+
                                                             return (
                                                                 <td key={comp} className="py-3 px-4 text-center font-mono">
                                                                     <Input
@@ -281,6 +320,7 @@ export default function PenilaianIndex({
                                                                         defaultValue={sc?.nilai_angka || ''}
                                                                         onBlur={(e) => {
                                                                             const val = Number(e.target.value);
+
                                                                             if (!isFinal && val >= 0) {
                                                                                 const currentScores: Record<string, number> = {
                                                                                     tugas: row.scores['tugas']?.nilai_angka || 0,
@@ -315,6 +355,7 @@ export default function PenilaianIndex({
                                                                     type="button"
                                                                     onClick={() => {
                                                                         const targetNilai = row.scores['uas'] || row.scores['uts'] || row.scores['tugas'];
+
                                                                         if (targetNilai?.id) {
                                                                             setWhitewashTarget({
                                                                                 nilaiId: targetNilai.id,

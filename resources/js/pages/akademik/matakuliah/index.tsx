@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { BookOpen, Edit, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -66,7 +67,10 @@ export default function MatakuliahIndex({
 
     const handleEditSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingMk) return;
+
+        if (!editingMk) {
+return;
+}
 
         editForm.put(`/akademik/matakuliah/${editingMk.id}`, {
             onSuccess: () => {
@@ -76,10 +80,18 @@ export default function MatakuliahIndex({
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: Matakuliah) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus matakuliah ${item.nama}?`)) {
-            router.delete(`/akademik/matakuliah/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Mata Kuliah',
+            description: `Apakah Anda yakin ingin menghapus mata kuliah ${item.nama} (${item.kode} - ${item.sks} SKS)? Tindakan ini akan menghapus referensi mata kuliah dari master data.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/akademik/matakuliah/${item.id}`);
+            },
+        });
     };
 
     const openEditModal = (item: Matakuliah) => {
@@ -95,9 +107,10 @@ export default function MatakuliahIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Matakuliah Master" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-xl font-semibold text-text-primary">Master Data Matakuliah</h1>
@@ -140,7 +153,7 @@ export default function MatakuliahIndex({
                                         <th className="py-3 px-4 font-mono w-32">Kode MK</th>
                                         <th className="py-3 px-4">Nama Matakuliah</th>
                                         <th className="py-3 px-4 font-mono text-center w-24">SKS</th>
-                                        <th className="py-3 px-4 text-center w-28">Jenis</th>
+                                        <th className="py-3 px-4 text-center w-28 hidden sm:table-cell">Jenis</th>
                                         <th className="py-3 px-4 text-right w-28">Aksi</th>
                                     </tr>
                                 </thead>
@@ -149,9 +162,14 @@ export default function MatakuliahIndex({
                                         <tr key={item.id} className="even:bg-surface-base/50 hover:bg-surface-base transition-colors duration-150">
                                             <td className="py-3 px-4 text-text-secondary">{index + 1}</td>
                                             <td className="py-3 px-4 font-mono font-semibold text-brand-primary">{item.kode}</td>
-                                            <td className="py-3 px-4 font-semibold text-text-primary">{item.nama}</td>
+                                            <td className="py-3 px-4 font-semibold text-text-primary">
+                                                <div>{item.nama}</div>
+                                                <div className="sm:hidden text-[10px] text-text-secondary capitalize mt-0.5">
+                                                    Jenis: {item.jenis}
+                                                </div>
+                                            </td>
                                             <td className="py-3 px-4 font-mono text-center font-semibold">{item.sks} SKS</td>
-                                            <td className="py-3 px-4 text-center">
+                                            <td className="py-3 px-4 text-center hidden sm:table-cell">
                                                 <span className={`capitalize px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
                                                     item.jenis === 'wajib'
                                                         ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/20'

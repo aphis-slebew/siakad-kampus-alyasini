@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { Head, router, useForm } from '@inertiajs/react';
 import { BookOpenCheck, Edit, Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -75,15 +76,26 @@ export default function KurikulumProdiIndex({
         });
     };
 
+    const { confirm, confirmDialog } = useConfirmDialog();
+
     const handleDelete = (item: Kurikulum) => {
-        if (confirm(`Apakah Anda yakin ingin menghapus Kurikulum ${item.tahun_kurikulum}?`)) {
-            router.delete(`/akademik/kurikulum/${item.id}`);
-        }
+        confirm({
+            title: 'Hapus Kurikulum Program Studi',
+            description: `Apakah Anda yakin ingin menghapus Kurikulum ${item.tahun_kurikulum} (${item.program_studi?.nama || 'Prodi'})? Seluruh pemetaan mata kuliah di kurikulum ini akan ikut terhapus.`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus',
+            onConfirm: () => {
+                router.delete(`/akademik/kurikulum/${item.id}`);
+            },
+        });
     };
 
     const handleAddMkSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!selectedKurikulumDetail) return;
+
+        if (!selectedKurikulumDetail) {
+return;
+}
 
         addMkForm.post(`/akademik/kurikulum/${selectedKurikulumDetail.id}/matakuliah`, {
             onSuccess: () => {
@@ -95,9 +107,10 @@ export default function KurikulumProdiIndex({
 
     return (
         <>
+            {confirmDialog}
             <Head title="Kelola Kurikulum Program Studi" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h1 className="text-xl font-semibold text-text-primary">Kurikulum Program Studi</h1>
@@ -139,7 +152,7 @@ export default function KurikulumProdiIndex({
                                         <th className="py-3 px-4 w-12">No</th>
                                         <th className="py-3 px-4">Program Studi</th>
                                         <th className="py-3 px-4 font-mono w-32">Tahun Kurikulum</th>
-                                        <th className="py-3 px-4 text-center w-28">Jumlah MK</th>
+                                        <th className="py-3 px-4 text-center w-28 hidden sm:table-cell">Jumlah MK</th>
                                         <th className="py-3 px-4 text-center w-28">Status Active</th>
                                         <th className="py-3 px-4 text-right w-36">Aksi Struktur</th>
                                     </tr>
@@ -149,10 +162,13 @@ export default function KurikulumProdiIndex({
                                         <tr key={item.id} className="even:bg-surface-base/50 hover:bg-surface-base transition-colors duration-150">
                                             <td className="py-3 px-4 text-text-secondary">{index + 1}</td>
                                             <td className="py-3 px-4 font-semibold text-text-primary">
-                                                {item.program_studi?.nama} ({item.program_studi?.kode})
+                                                <div>{item.program_studi?.nama} ({item.program_studi?.kode})</div>
+                                                <div className="sm:hidden text-[10px] text-text-secondary mt-0.5">
+                                                    {item.kurikulum_matakuliahs?.length || 0} Matakuliah
+                                                </div>
                                             </td>
                                             <td className="py-3 px-4 font-mono font-semibold text-brand-primary">{item.tahun_kurikulum}</td>
-                                            <td className="py-3 px-4 text-center font-semibold font-mono">
+                                            <td className="py-3 px-4 text-center font-semibold font-mono hidden sm:table-cell">
                                                 {item.kurikulum_matakuliahs?.length || 0} MK
                                             </td>
                                             <td className="py-3 px-4 text-center">

@@ -17,7 +17,9 @@ export function toUrl(url: NonNullable<InertiaLinkProps['href']>): string {
  * Example: with includeTime = true -> '10 Agustus 2026 14:30'
  */
 export function formatDateIndonesian(dateString: string | null | undefined, includeTime: boolean = false): string {
-    if (!dateString) return '-';
+    if (!dateString) {
+return '-';
+}
 
     try {
         const rawStr = String(dateString).trim();
@@ -38,7 +40,10 @@ export function formatDateIndonesian(dateString: string | null | undefined, incl
         }
 
         const fallbackDate = new Date(rawStr);
-        if (isNaN(fallbackDate.getTime())) return dateString;
+
+        if (isNaN(fallbackDate.getTime())) {
+return dateString;
+}
 
         return new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }).format(fallbackDate);
     } catch {

@@ -17,14 +17,12 @@ use Illuminate\Hashing\Argon2IdHasher as BaseArgon2IdHasher;
  * php artisan tinker --execute="echo User::where('password', 'LIKE', '\$2y\$%')->orWhere('password', 'LIKE', '\$2a\$%')->count();"
  */
 class FallbackArgon2IdHasher extends BaseArgon2IdHasher
-
 {
     /**
      * Check the given plain value against a hash with legacy Bcrypt fallback support.
      *
      * @param  string  $value
      * @param  string  $hashedValue
-     * @param  array  $options
      * @return bool
      */
     public function check(#[\SensitiveParameter] $value, $hashedValue, array $options = [])

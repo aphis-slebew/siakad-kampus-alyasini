@@ -1,12 +1,12 @@
-import AppLayout from '@/layouts/app-layout';
-import { Head, useForm } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
+import { Award, AlertTriangle, Gift, CheckCircle, Plus } from 'lucide-react';
+import type { FormEventHandler } from 'react';
+import { EmptyState } from '@/components/empty-state';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Badge } from '@/components/ui/badge';
-import { Award, AlertTriangle, Gift, CheckCircle, Plus } from 'lucide-react';
 import { formatDateIndonesian } from '@/lib/utils';
 
 
@@ -37,19 +37,19 @@ type Beasiswa = {
 };
 
 export default function KemahasiswaanIndexPage({
-    activeTab,
-    aktivitases,
-    pelanggarans,
-    beasiswas,
-    jenisAktivitases,
-    jenisPelanggarans,
-    sanksis,
-    jenisBeasiswas,
-    mahasiswas,
-    role,
-    errors,
+    activeTab = 'aktivitas',
+    aktivitases = [],
+    pelanggarans = [],
+    beasiswas = [],
+    jenisAktivitases = [],
+    jenisPelanggarans = [],
+    sanksis = [],
+    jenisBeasiswas = [],
+    mahasiswas = [],
+    role = 'admin',
+    errors = {},
 }: {
-    activeTab: 'aktivitas' | 'pelanggaran' | 'beasiswa';
+    activeTab?: 'aktivitas' | 'pelanggaran' | 'beasiswa';
     aktivitases?: Aktivitas[];
     pelanggarans?: Pelanggaran[];
     beasiswas?: Beasiswa[];
@@ -58,7 +58,7 @@ export default function KemahasiswaanIndexPage({
     sanksis?: Referensi[];
     jenisBeasiswas?: Referensi[];
     mahasiswas?: Mahasiswa[];
-    role: string;
+    role?: string;
     errors?: Record<string, string>;
 }) {
     const aktivitasForm = useForm({
@@ -83,7 +83,7 @@ export default function KemahasiswaanIndexPage({
     };
 
     const handleValidateAktivitas = (id: number) => {
-        useForm({}).post(`/kemahasiswaan/aktivitas/${id}/validate`);
+        router.post(`/kemahasiswaan/aktivitas/${id}/validate`);
     };
 
     const handleAddPelanggaran: FormEventHandler = (e) => {
@@ -97,39 +97,39 @@ export default function KemahasiswaanIndexPage({
     };
 
     const handleApproveBeasiswa = (id: number, status: 'diterima' | 'ditolak') => {
-        useForm({ status }).post(`/kemahasiswaan/beasiswa/${id}/approve`);
+        router.post(`/kemahasiswaan/beasiswa/${id}/approve`, { status });
     };
 
     return (
-        <AppLayout breadcrumbs={[{ title: 'Dashboard', href: '/dashboard' }, { title: 'Kemahasiswaan', href: '/kemahasiswaan/aktivitas' }]}>
+        <>
             <Head title="Layanan & Catatan Kemahasiswaan" />
 
-            <div className="space-y-6 p-6">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 <div>
-                    <h1 className="text-2xl font-bold tracking-tight text-foreground-default">Portofolio & Layanan Kemahasiswaan</h1>
-                    <p className="text-sm text-foreground-muted">Pencatatan aktivitas ekstrakurikuler, beasiswa, dan catatan kedisiplinan mahasiswa.</p>
+                    <h1 className="text-2xl font-bold tracking-tight text-foreground">Portofolio & Layanan Kemahasiswaan</h1>
+                    <p className="text-sm text-muted-foreground">Pencatatan aktivitas ekstrakurikuler, beasiswa, dan catatan kedisiplinan mahasiswa.</p>
                 </div>
 
                 {/* Tab Navigation */}
-                <div className="flex border-b space-x-6 text-sm font-medium">
-                    <a
+                <div className="flex border-b space-x-6 text-sm font-medium overflow-x-auto whitespace-nowrap">
+                    <Link
                         href="/kemahasiswaan/aktivitas"
                         className={`pb-3 border-b-2 flex items-center gap-2 ${activeTab === 'aktivitas' ? 'border-primary text-primary font-bold' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <Award className="h-4 w-4" /> Aktivitas & Prestasi
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/kemahasiswaan/pelanggaran"
                         className={`pb-3 border-b-2 flex items-center gap-2 ${activeTab === 'pelanggaran' ? 'border-primary text-primary font-bold' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <AlertTriangle className="h-4 w-4" /> Catatan Pelanggaran
-                    </a>
-                    <a
+                    </Link>
+                    <Link
                         href="/kemahasiswaan/beasiswa"
                         className={`pb-3 border-b-2 flex items-center gap-2 ${activeTab === 'beasiswa' ? 'border-primary text-primary font-bold' : 'border-transparent text-muted-foreground hover:text-foreground'}`}
                     >
                         <Gift className="h-4 w-4" /> Beasiswa Mahasiswa
-                    </a>
+                    </Link>
                 </div>
 
                 {/* TAB 1: AKTIVITAS */}
@@ -407,6 +407,13 @@ export default function KemahasiswaanIndexPage({
                     </div>
                 )}
             </div>
-        </AppLayout>
+        </>
     );
 }
+
+KemahasiswaanIndexPage.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Kemahasiswaan', href: '/kemahasiswaan/aktivitas' },
+    ],
+};

@@ -1,6 +1,5 @@
 <?php
 
-use App\Models\User;
 use Database\Seeders\DevDummySeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PragmaRX\Google2FA\Google2FA;
@@ -44,7 +43,7 @@ test('METODE B PROOF: Dev B can log in via browser using TOTP OTP code generated
     $loginResponse->assertRedirect('/two-factor-challenge');
 
     // 3. Generate Live TOTP OTP Code from Base32 Secret JBSWY3DPEHPK3PXP
-    $google2fa = new Google2FA();
+    $google2fa = new Google2FA;
     $liveOtpCode = $google2fa->getCurrentOtp('JBSWY3DPEHPK3PXP');
 
     expect(strlen($liveOtpCode))->toBe(6);

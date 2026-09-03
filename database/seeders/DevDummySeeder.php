@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Dosen;
+use App\Models\DosenPengajar;
+use App\Models\KelasKuliah;
 use App\Models\KelompokUkt;
 use App\Models\Mahasiswa;
 use App\Models\MahasiswaUkt;
@@ -99,8 +102,21 @@ class DevDummySeeder extends Seeder
         );
         $kaprodiUser->assignRole('kaprodi');
 
-        // 6. Dosen User
-        $dosen = User::firstOrCreate(
+        $kaprodiModel = Dosen::firstOrCreate(
+            ['user_id' => $kaprodiUser->id],
+            [
+                'program_studi_id' => ProgramStudi::first()?->id ?? 1,
+                'nidn' => '0712345602',
+                'nama_lengkap' => 'Dr. H. Kaprodi PAI, M.Pd.I.',
+                'gelar_depan' => 'Dr. H.',
+                'gelar_belakang' => 'M.Pd.I.',
+                'jenis_kelamin' => 'L',
+                'status_kepegawaian' => 'tetap',
+            ]
+        );
+
+        // 6. Dosen User & Model
+        $dosenUser = User::firstOrCreate(
             ['email' => 'dosen@alyasini.ac.id'],
             [
                 'name' => 'Dr. Ahmad Dosen',
@@ -109,7 +125,28 @@ class DevDummySeeder extends Seeder
                 'status' => 'aktif',
             ]
         );
-        $dosen->assignRole('dosen');
+        $dosenUser->assignRole('dosen');
+
+        $dosenModel = Dosen::firstOrCreate(
+            ['user_id' => $dosenUser->id],
+            [
+                'program_studi_id' => ProgramStudi::first()?->id ?? 1,
+                'nidn' => '0712345601',
+                'nama_lengkap' => 'Dr. Ahmad Dosen, M.Pd.',
+                'gelar_depan' => 'Dr.',
+                'gelar_belakang' => 'M.Pd.',
+                'jenis_kelamin' => 'L',
+                'status_kepegawaian' => 'tetap',
+            ]
+        );
+
+        $sampleKelas = KelasKuliah::first();
+        if ($sampleKelas && $dosenModel) {
+            DosenPengajar::firstOrCreate(
+                ['kelas_kuliah_id' => $sampleKelas->id, 'dosen_id' => $dosenModel->id],
+                ['peran' => 'utama', 'bobot_sks' => 3.0]
+            );
+        }
 
         // 7. Staf Kepegawaian User
         $stafKepegawaian = User::firstOrCreate(
@@ -158,7 +195,6 @@ class DevDummySeeder extends Seeder
             ]
         );
         $opKemahasiswaan->assignRole('operator_kemahasiswaan');
-
 
         $prodi = ProgramStudi::first();
         $tahunAjaran = TahunAjaran::first();

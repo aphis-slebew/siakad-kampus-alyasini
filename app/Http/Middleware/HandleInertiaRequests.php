@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -49,6 +50,11 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
 
+            'impersonation' => [
+                'is_impersonating' => $request->session()->has('impersonator_id'),
+                'impersonator_name' => $request->session()->get('impersonator_name'),
+            ],
+
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
 
             'notifications' => fn () => $request->user() ? $request->user()->notifications()->take(5)->get()->map(function ($n) {
@@ -59,7 +65,7 @@ class HandleInertiaRequests extends Middleware
                     'url' => $n->data['url'] ?? '#',
                     'category' => $n->data['category'] ?? 'system',
                     'read_at' => $n->read_at ? $n->read_at->toISOString() : null,
-                    'created_at_human' => \Carbon\Carbon::parse($n->created_at)->locale('id')->diffForHumans(),
+                    'created_at_human' => Carbon::parse($n->created_at)->locale('id')->diffForHumans(),
                 ];
             })->values()->toArray() : [],
 
@@ -73,6 +79,4 @@ class HandleInertiaRequests extends Middleware
             ],
         ];
     }
-
 }
-

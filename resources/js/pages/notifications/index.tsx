@@ -1,6 +1,6 @@
-import { useState } from 'react';
 import { Head, router } from '@inertiajs/react';
 import { Award, Bell, BookOpen, CheckCheck, CreditCard, GraduationCap, Shield, UserCheck } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
 import type { NotificationItem } from '@/types';
@@ -47,7 +47,7 @@ export default function NotificationsIndex({
         <>
             <Head title="Semua Notifikasi" />
 
-            <div className="p-6 space-y-6 font-sans">
+            <div className="p-4 sm:p-6 space-y-6 font-sans">
                 {/* Page Title & Filter Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
@@ -168,3 +168,10 @@ export default function NotificationsIndex({
         </>
     );
 }
+
+NotificationsIndex.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/dashboard' },
+        { title: 'Notifikasi', href: '/notifications' },
+    ],
+};

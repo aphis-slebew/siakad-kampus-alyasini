@@ -60,4 +60,3 @@ test('end-to-end production initial superadmin onboarding flow forces 2fa setup 
     // VERIFICATION: Normal 200 OK access restored to dashboard and admin routes
     $postActivationResponse->assertStatus(200);
 });
-

@@ -10,8 +10,10 @@ use App\Models\Skripsi;
 use App\Models\SystemConfig;
 use App\Models\Tagihan;
 use App\Models\Yudisium;
+use App\Notifications\YudisiumNotification;
 use DomainException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class YudisiumService
 {
@@ -51,8 +53,6 @@ class YudisiumService
         if ($totalSks > 0 && $totalSks < $minSks) {
             throw new DomainException("SYARAT SKS YUDISIUM BELUM TERPENUHI: Total SKS Lulus ({$totalSks} SKS) di bawah batas minimal ({$minSks} SKS).");
         }
-
-
 
         $periodeWisuda = PeriodeWisuda::findOrFail($periodeWisudaId);
         $year = date('Y', strtotime($periodeWisuda->tanggal_wisuda ?? date('Y-m-d')));
@@ -97,20 +97,18 @@ class YudisiumService
 
             if ($mahasiswa->user) {
                 try {
-                    $mahasiswa->user->notify(new \App\Notifications\YudisiumNotification(
+                    $mahasiswa->user->notify(new YudisiumNotification(
                         $yudisium->id,
                         $nomorDokumen
                     ));
                 } catch (\Throwable $e) {
-                    \Illuminate\Support\Facades\Log::error('Gagal mengirim notification Yudisium: '.$e->getMessage());
+                    Log::error('Gagal mengirim notification Yudisium: '.$e->getMessage());
                 }
             }
-
 
             return $yudisium->fresh(['mahasiswa.programStudi', 'periodeWisuda']);
         });
     }
-
 
     /**
      * Calculate IPK Akhir for student:
@@ -203,4 +201,3 @@ class YudisiumService
         return $totalSks;
     }
 }
-

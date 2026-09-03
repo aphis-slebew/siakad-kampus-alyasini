@@ -129,4 +129,44 @@ class Mahasiswa extends Model
     {
         return $this->hasMany(Yudisium::class, 'mahasiswa_id');
     }
+
+    /**
+     * Get the KRS records for the mahasiswa.
+     *
+     * @return HasMany<Krs, $this>
+     */
+    public function krss(): HasMany
+    {
+        return $this->hasMany(Krs::class, 'mahasiswa_id');
+    }
+
+    /**
+     * Get the tagihan records for the mahasiswa.
+     *
+     * @return HasMany<Tagihan, $this>
+     */
+    public function tagihans(): HasMany
+    {
+        return $this->hasMany(Tagihan::class, 'mahasiswa_id');
+    }
+
+    /**
+     * Get the presensi records for the mahasiswa.
+     *
+     * @return HasMany<Presensi, $this>
+     */
+    public function presensis(): HasMany
+    {
+        return $this->hasMany(Presensi::class, 'mahasiswa_id');
+    }
+
+    /**
+     * Get the beasiswa mahasiswa records.
+     *
+     * @return HasMany<BeasiswaMahasiswa, $this>
+     */
+    public function beasiswaMahasiswas(): HasMany
+    {
+        return $this->hasMany(BeasiswaMahasiswa::class, 'mahasiswa_id');
+    }
 }
