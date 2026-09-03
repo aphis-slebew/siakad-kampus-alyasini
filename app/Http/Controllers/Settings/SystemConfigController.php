@@ -7,6 +7,7 @@ use App\Models\SystemConfig;
 use App\Services\ActivityLogger;
 use Database\Seeders\SystemConfigSeeder;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,6 +27,8 @@ class SystemConfigController extends Controller
                 'value' => $config->value,
                 'description' => $config->description ?? ($whitelistMeta['description'] ?? ''),
                 'type' => $whitelistMeta['type'] ?? 'text',
+                'category' => $whitelistMeta['category'] ?? 'akademik',
+                'options' => $whitelistMeta['options'] ?? [],
                 'updated_at' => $config->updated_at ? $config->updated_at->toISOString() : null,
             ];
         });
@@ -50,6 +53,7 @@ class SystemConfigController extends Controller
             'number' => ['required', 'integer', 'min:0'],
             'decimal' => ['required', 'numeric', 'min:0'],
             'date' => ['required', 'date'],
+            'select' => ['required', 'string', Rule::in($whitelistMeta['options'] ?? [])],
             default => ['required', 'string', 'max:255'],
         };
 
