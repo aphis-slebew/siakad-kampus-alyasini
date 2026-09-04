@@ -24,6 +24,29 @@ test('Superadmin can view user management list', function () {
     $response->assertOk();
 });
 
+test('Superadmin can search users by name and email without database error', function () {
+    $superadmin = User::factory()->create([
+        'user_type' => 'superadmin',
+        'name' => 'Super Administrator',
+        'email' => 'admin@test.ac.id',
+        'two_factor_secret' => encrypt('DEV_2FA'),
+    ]);
+    $superadmin->assignRole('superadmin');
+
+    $target = User::factory()->create([
+        'name' => 'Fulan bin Fulan',
+        'email' => 'fulan@test.ac.id',
+        'user_type' => 'mahasiswa',
+    ]);
+    $target->assignRole('mahasiswa');
+
+    $response = $this->actingAs($superadmin)->get(route('users.index', ['search' => 'Fulan']));
+    $response->assertOk();
+
+    $responseEmail = $this->actingAs($superadmin)->get(route('users.index', ['search' => 'fulan@test.ac.id']));
+    $responseEmail->assertOk();
+});
+
 test('Non-superadmin cannot access user management', function () {
     $mahasiswa = User::factory()->create([
         'user_type' => 'mahasiswa',

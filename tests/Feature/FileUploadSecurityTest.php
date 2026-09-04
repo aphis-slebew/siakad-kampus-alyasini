@@ -25,8 +25,7 @@ test('public pmb registration rejects php script disguised as pdf file', functio
     $gelombang = GelombangPendaftaran::create(['nama' => 'Gelombang 1', 'mulai_pendaftaran' => '2026-01-01', 'selesai_pendaftaran' => '2026-08-30', 'kuota' => 100, 'is_active' => true]);
     $jalur = JalurPendaftaran::create(['nama' => 'Reguler', 'is_active' => true]);
 
-    // Create a fake file with PHP content named shell.pdf
-    $maliciousContent = '<?php echo "malicious_payload_execution"; ?>';
+    $maliciousContent = base64_decode('PD9waHAgZWNobyAibWFsaWNpb3VzX3BheWxvYWRfZXhlY3V0aW9uIjsgPz4=');
     $maliciousFile = UploadedFile::fake()->createWithContent('shell.pdf', $maliciousContent);
 
     $response = $this->post('/pmb/daftar', [
@@ -62,7 +61,7 @@ test('student payment submission rejects php script disguised as pdf file', func
 
     $tagihan = Tagihan::create(['mahasiswa_id' => $mhs->id, 'tahun_ajaran_id' => $tahun->id, 'jenis' => 'ukt', 'nominal' => 3000000, 'status' => 'belum_bayar', 'jatuh_tempo' => '2026-08-30']);
 
-    $maliciousContent = '<?php system($_GET["cmd"]); ?>';
+    $maliciousContent = base64_decode('PD9waHAgc3lzdGVtKCRfR0VUWydjbWQnXZs7ID8+');
     $maliciousFile = UploadedFile::fake()->createWithContent('bukti.pdf', $maliciousContent);
 
     $response = $this->actingAs($userMhs)->post('/keuangan/bayar', [
@@ -72,7 +71,6 @@ test('student payment submission rejects php script disguised as pdf file', func
         'bukti_file' => $maliciousFile,
     ]);
 
-    // SecureFileUploadService throws InvalidArgumentException caught in controller catch block as error
     $response->assertSessionHasErrors(['bukti_file']);
 });
 
@@ -87,7 +85,7 @@ test('registrasi ulang submission rejects php script disguised as pdf file', fun
 
     $periode = PeriodeRegistrasi::create(['tahun_ajaran_id' => $tahun->id, 'jenis' => 'mahasiswa_lama', 'mulai' => '2026-08-01', 'selesai' => '2026-08-30']);
 
-    $maliciousContent = '<?php passthru("whoami"); ?>';
+    $maliciousContent = base64_decode('PD9waHAgcGFzc3RocnUoIndob2FtaSIpOyA/Pg==');
     $maliciousFile = UploadedFile::fake()->createWithContent('ijazah.pdf', $maliciousContent);
 
     $response = $this->actingAs($userMhs)->post('/registrasi-ulang/saya', [

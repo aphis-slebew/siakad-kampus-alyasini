@@ -1,0 +1,29 @@
+flowchart TD
+    Start(["Mulai: Calon Mahasiswa"]) --> BukaWeb["Akses Portal PMB Online"]
+    BukaWeb --> IsiForm["Isi Biodata, NIK, Asal Sekolah, & Pilihan Prodi"]
+    IsiForm --> CekNIK{"Apakah NIK Sudah Terdaftar?"}
+    CekNIK -- "Ya" --> NotifGagal["Peringatan: NIK Sudah Terdaftar"] --> IsiForm
+    CekNIK -- "Tidak" --> SimpanDraft["Simpan Data & Terbitkan Akun Calon Maba"]
+    
+    SimpanDraft --> UploadBerkas["Unggah Berkas: Ijazah, KTP, KK, & Pasfoto"]
+    UploadBerkas --> TungguVerif["Menunggu Verifikasi Panitia PMB"]
+    
+    subgraph VerifikasiPanitia ["Verifikasi Panitia PMB"]
+        TungguVerif --> VerifBerkas{"Panitia Cek Keabsahan Berkas"}
+        VerifBerkas -- "Berkas Tidak Valid / Kurang" --> TolakBerkas["Minta Perbaikan / Unggah Ulang"]
+        TolakBerkas --> UploadBerkas
+        VerifBerkas -- "Berkas Valid" --> SetujuiBerkas["Terbitkan Kartu Peserta Ujian"]
+    end
+
+    SetujuiBerkas --> IkutUjian["Pelaksanaan Ujian / Tes Seleksi Masuk"]
+    IkutUjian --> InputNilai["Panitia Input Nilai & Keputusan Seleksi"]
+    
+    InputNilai --> CekHasil{"Hasil Seleksi?"}
+    CekHasil -- "Tidak Lulus" --> PengumumanGagal["Dinyatakan Tidak Diterima"] --> End1(["Selesai"])
+    CekHasil -- "Lulus" --> TerbitkanTagihan["Terbitkan Tagihan Registrasi Ulang & UKT Awal"]
+    
+    TerbitkanTagihan --> BayarRegistrasi["Calon Maba Bayar Biaya Daftar Ulang"]
+    BayarRegistrasi --> VerifKeuangan{"Verifikasi Pembayaran oleh Keuangan"}
+    VerifKeuangan -- "Belum Valid" --> TungguKonfirmasi["Konfirmasi Pembayaran Ulang"] --> BayarRegistrasi
+    VerifKeuangan -- "Sah / Lunas" --> GenerateNIM["BAA Konversi Data: Penerbitan NIM & Akun Mahasiswa Aktif"]
+    GenerateNIM --> End2(["Selesai: Mahasiswa Resmi Terdaftar"])

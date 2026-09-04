@@ -1,0 +1,114 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 980" width="1180" height="980" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a" />
+    </marker>
+  </defs>
+
+  <rect x="30" y="30" width="1120" height="920" fill="#ffffff" stroke="#0f172a" stroke-width="2" rx="4" />
+
+  <rect x="30" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">MAHASISWA</text>
+
+  <rect x="400" y="30" width="380" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="590" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">DOSEN PENGAJAR</text>
+
+  <rect x="780" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="965" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">SISTEM SIAKAD</text>
+
+  <line x1="400" y1="80" x2="400" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+  <line x1="780" y1="80" x2="780" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- 1 START ONLY in Col 2 -->
+  <rect x="535" y="105" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="590" y="129" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">START</text>
+
+  <!-- D1 -->
+  <rect x="480" y="170" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="191" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Jurnal & Presensi (1-16)</text>
+  <text x="590" y="208" text-anchor="middle" font-size="11" fill="#475569">Materi, Jam Masuk, & Hadir</text>
+
+  <!-- S1 -->
+  <rect x="855" y="170" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="191" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Kalkulasi Kehadiran Mhs</text>
+  <text x="965" y="208" text-anchor="middle" font-size="11" fill="#475569">Hitung Otomatis Persentase</text>
+
+  <!-- M1 -->
+  <rect x="105" y="260" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="281" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Pantau Kehadiran Perkuliahan</text>
+  <text x="215" y="298" text-anchor="middle" font-size="11" fill="#475569">Menu: /mahasiswa/presensi</text>
+
+  <!-- S2: Decision -->
+  <polygon points="965,320 1065,350 965,380 865,350" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="347" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Syarat Ambang Ujian?</text>
+  <text x="965" y="362" text-anchor="middle" font-size="10" fill="#475569">UTS >= 50%, UAS >= 75%</text>
+
+  <!-- S3 -->
+  <rect x="855" y="430" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="451" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Cekal Ujian (Blokir Kartu)</text>
+  <text x="965" y="468" text-anchor="middle" font-size="11" fill="#475569">Pembinaan / Tugas Tambahan</text>
+
+  <!-- M2 -->
+  <rect x="105" y="430" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="451" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Cetak Kartu & Ikut Ujian</text>
+  <text x="215" y="468" text-anchor="middle" font-size="11" fill="#475569">Evaluasi UTS & UAS</text>
+
+  <!-- D2 -->
+  <rect x="480" y="530" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="551" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Atur Bobot & Input Nilai</text>
+  <text x="590" y="568" text-anchor="middle" font-size="11" fill="#475569">Tugas, Absen, UTS, UAS = 100%</text>
+
+  <!-- S4 -->
+  <rect x="855" y="620" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="641" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Kalkulasi Huruf & IPS/IPK</text>
+  <text x="965" y="658" text-anchor="middle" font-size="11" fill="#475569">A, B+, B, C+, C, D, E</text>
+
+  <!-- D3 -->
+  <rect x="480" y="710" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="731" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Finalisasi & Kunci Nilai</text>
+  <text x="590" y="748" text-anchor="middle" font-size="11" fill="#475569">Publikasi Nilai Akhir</text>
+
+  <!-- M3 -->
+  <rect x="105" y="790" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="811" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Cetak Dokumen KHS Resmi</text>
+  <text x="215" y="828" text-anchor="middle" font-size="11" fill="#475569">Evaluasi Prestasi Semester</text>
+
+  <!-- 1 END ONLY -->
+  <rect x="160" y="885" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="909" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">END</text>
+
+  <!-- Connectors -->
+  <path d="M 590 143 L 590 170" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 700 194 L 855 194" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 855 204 L 215 204 L 215 260" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 325 284 L 965 284 L 965 320" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S2 (Kurang) -> S3 -> M2 (Reconnected via Pembinaan) -->
+  <path d="M 965 380 L 965 430" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="935" y="395" width="60" height="18" fill="#ffffff" />
+  <text x="965" y="408" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Kurang</text>
+
+  <path d="M 855 454 L 325 454" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="560" y="445" width="80" height="18" fill="#ffffff" />
+  <text x="600" y="458" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Tugas Khusus</text>
+
+  <!-- S2 (Lolos) -> M2 -->
+  <path d="M 865 350 L 215 350 L 215 430" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="510" y="340" width="60" height="18" fill="#ffffff" />
+  <text x="540" y="353" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Lolos</text>
+
+  <!-- M2 -> D2 -->
+  <path d="M 215 478 L 215 554 L 480 554" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- D2 -> S4 -->
+  <path d="M 700 554 L 965 554 L 965 620" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S4 -> D3 -->
+  <path d="M 965 668 L 965 734 L 700 734" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- D3 -> M3 -->
+  <path d="M 480 734 L 215 734 L 215 790" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M3 -> 1 END -->
+  <path d="M 215 838 L 215 885" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+</svg>

@@ -1,0 +1,37 @@
+flowchart TD
+    Start3(["Mulai: Mahasiswa Semester Akhir"]) --> CekSyaratTA{"Cek Syarat SKS min. 100 SKS & Lulus Metodologi Penelitian"}
+    CekSyaratTA -- "Belum Terpenuhi" --> AmbilMKSyarat["Lengkapi SKS Prasyarat di Semester Aktif"] --> End4(["Kembali Perkuliahan"])
+    CekSyaratTA -- "Terpenuhi" --> AjukanProposal["Mahasiswa Mengajukan Judul & Proposal Skripsi"]
+    
+    AjukanProposal --> ReviewKaprodi{"Kaprodi Review Kelayakan Judul"}
+    ReviewKaprodi -- "Ditolak" --> RevisiJudul["Ganti Judul / Topik Penelitian"] --> AjukanProposal
+    ReviewKaprodi -- "Diterima" --> PlottingPembimbing["Kaprodi Tetapkan Dosen Pembimbing"]
+    
+    PlottingPembimbing --> Sempro["Seminar Proposal Skripsi"]
+    Sempro --> CekSempro{"Lulus Seminar Proposal?"}
+    CekSempro -- "Mengulang" --> PerbaikanProposal["Revisi Naskah Proposal"] --> Sempro
+    CekSempro -- "Lulus" --> BimbinganRutin["Bimbingan Skripsi & Penelitian Mandiri"]
+    
+    subgraph Bimbingan ["Proses Bimbingan Skripsi"]
+        BimbinganRutin --> CatatLog["Dosen & Mahasiswa Catat Log Bimbingan"]
+        CatatLog --> CekLog{"Sudah Memenuhi Minimal 8x Bimbingan?"}
+        CekLog -- "Belum" --> BimbinganRutin
+        CekLog -- "Ya" --> AccSidang["Dosen Pembimbing Terbitkan ACC Sidang Munaqasyah"]
+    end
+
+    AccSidang --> DaftarSidang["Daftar Ujian Skripsi / Sidang Munaqasyah"]
+    DaftarSidang --> ValidasiBerkasSidang{"Validasi Bebas SPP & Bebas Pustaka"}
+    ValidasiBerkasSidang -- "Ada Tunggakan" --> LunasiKewajiban["Selesaikan Administrasi"] --> ValidasiBerkasSidang
+    ValidasiBerkasSidang -- "Lengkap & Bebas" --> JadwalSidang["BAA Terbitkan Jadwal Sidang & Tim Penguji"]
+    
+    JadwalSidang --> SidangSkripsi["Pelaksanaan Sidang Ujian Skripsi"]
+    SidangSkripsi --> NilaiSidang{"Keputusan Sidang?"}
+    NilaiSidang -- "Tidak Lulus" --> UjianUlang["Ujian Ulang Skripsi"] --> SidangSkripsi
+    NilaiSidang -- "Lulus dengan Revisi" --> SelesaikanRevisi["Perbaikan Naskah & Tanda Tangan Penguji"]
+    NilaiSidang -- "Lulus Murni" --> DaftarYudisium["Mahasiswa Mendaftar Yudisium"]
+    SelesaikanRevisi --> DaftarYudisium
+
+    DaftarYudisium --> SidangYudisium["Rapat Pleno Yudisium Kelulusan"]
+    SidangYudisium --> TerbitkanIjazah["Penerbitan SK Yudisium, Transkrip Lengkap, & Ijazah"]
+    TerbitkanIjazah --> Wisuda["Pelaksanaan Wisuda Sarjana"]
+    Wisuda --> End5(["Selesai: Alumni Bergelar Sarjana"])

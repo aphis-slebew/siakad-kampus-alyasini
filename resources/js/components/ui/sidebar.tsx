@@ -187,7 +187,10 @@ function Sidebar({
           data-sidebar="sidebar"
           data-slot="sidebar"
           data-mobile="true"
-          className="bg-sidebar text-sidebar-foreground w-(--sidebar-width) p-0 [&>button]:hidden"
+          className={cn(
+            "bg-white text-slate-900 w-(--sidebar-width) p-0 [&>button]:hidden border-r border-slate-200 shadow-2xl flex flex-col",
+            className
+          )}
           style={
             {
               "--sidebar-width": SIDEBAR_WIDTH_MOBILE,
@@ -195,7 +198,7 @@ function Sidebar({
           }
           side={side}
         >
-          <div className="flex h-full w-full flex-col">{children}</div>
+          <div className="flex h-full w-full flex-col bg-white overflow-hidden">{children}</div>
         </SheetContent>
       </Sheet>
     )
@@ -636,7 +639,7 @@ function SidebarMenuSub({ className, ...props }: React.ComponentProps<"ul">) {
       data-slot="sidebar-menu-sub"
       data-sidebar="menu-sub"
       className={cn(
-        "border-sidebar-border mx-3.5 flex min-w-0 translate-x-px flex-col gap-1 border-l px-2.5 py-0.5",
+        "border-l-2 border-slate-200 ml-4.5 flex min-w-0 translate-x-px flex-col gap-1 pl-3 py-1 my-0.5",
         "group-data-[collapsible=icon]:hidden",
         className
       )}
@@ -679,10 +682,10 @@ function SidebarMenuSubButton({
       data-size={size}
       data-active={isActive}
       className={cn(
-        "text-sidebar-foreground ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground [&>svg]:text-sidebar-accent-foreground flex h-7 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2 outline-hidden focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
-        "data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground",
-        size === "sm" && "text-xs",
-        size === "md" && "text-sm",
+        "text-slate-700 ring-sidebar-ring hover:bg-emerald-50 hover:text-brand-primary-dark active:bg-emerald-100 active:text-brand-primary-dark [&>svg]:text-slate-700 hover:[&>svg]:text-brand-primary-dark flex h-8 min-w-0 -translate-x-px items-center gap-2 overflow-hidden rounded-md px-2.5 outline-hidden transition-colors focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0",
+        "data-[active=true]:bg-emerald-100 data-[active=true]:text-brand-primary-dark data-[active=true]:font-semibold data-[active=true]:border-l-2 data-[active=true]:border-brand-primary data-[active=true]:-ml-[14px] data-[active=true]:pl-[12px]",
+        size === "sm" && "text-xs h-7",
+        size === "md" && "text-sm h-8",
         "group-data-[collapsible=icon]:hidden",
         className
       )}

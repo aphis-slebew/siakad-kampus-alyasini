@@ -23,7 +23,7 @@ class TahunAjaranController extends Controller
         $query = TahunAjaran::query()->orderByDesc('mulai');
 
         if ($search) {
-            $query->where('nama', 'ilike', "%{$search}%");
+            $query->where('nama', 'like', "%{$search}%");
         }
 
         if ($status === 'active') {

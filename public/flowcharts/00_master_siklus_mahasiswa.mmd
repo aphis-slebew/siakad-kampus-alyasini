@@ -1,0 +1,65 @@
+flowchart TD
+    Start(["Mulai: Calon Mahasiswa"]) --> FormPMB["Isi Formulir Biodata & Pilihan Prodi"]
+    FormPMB --> UploadBerkas["Unggah Berkas: Ijazah, KK, KTP, Foto"]
+    UploadBerkas --> VerifBerkas{"Verifikasi Berkas oleh Panitia PMB"}
+
+    VerifBerkas -- "Ditolak / Perlu Perbaikan" --> RevisiBerkas["Perbaiki & Unggah Ulang Berkas"]
+    RevisiBerkas --> VerifBerkas
+    VerifBerkas -- "Lolos Verifikasi" --> JadwalTes["Penjadwalan & Pelaksanaan Seleksi Masuk"]
+
+    JadwalTes --> Seleksi{"Hasil Seleksi Masuk"}
+    Seleksi -- "Tidak Lulus" --> SelesaiGagal(["Tidak Diterima"])
+    Seleksi -- "Lulus Seleksi" --> HerRegMaba["Her-Registrasi / Registrasi Ulang MABA"]
+
+    HerRegMaba --> BayarAwal["Pembayaran Awal / UKT & Verifikasi Dokumen Fisik"]
+    BayarAwal --> KonversiService["Eksekusi Service Konversi Mahasiswa"]
+    
+    subgraph Konversi ["Proses Konversi Calon ke Mahasiswa Aktif"]
+        KonversiService --> GenNIM["1. Generate NIM Otomatis"]
+        GenNIM --> CreateMhs["2. Salin Data ke Tabel mahasiswas"]
+        CreateMhs --> CreateUser["3. Terbitkan Akun User Mahasiswa Baru"]
+    end
+
+    CreateUser --> SiklusSemester["Memasuki Siklus Perkuliahan Semester"]
+
+    subgraph Semesteran ["Siklus Setiap Semester (Semester 1 - 8)"]
+        SiklusSemester --> CekUkt{"Tagihan UKT Lunas / Cicilan Disetujui?"}
+        CekUkt -- "Belum" --> BayarUkt["Bayar via Kasir Loket TU / Transfer Bank"]
+        BayarUkt --> CekUkt
+        CekUkt -- "Lunas" --> RegUlangSmt["Registrasi Ulang Semester"]
+        
+        RegUlangSmt --> InputKRS["Mahasiswa Mengisi KRS Online"]
+        InputKRS --> ValidasiKRS{"Approval KRS oleh Dosen Wali (DPA)"}
+        ValidasiKRS -- "Ditolak / Revisi" --> RevisiKRS["Perbaiki Rencana Studi KRS"]
+        RevisiKRS --> InputKRS
+        ValidasiKRS -- "Disetujui" --> CetakKRS["Cetak KRS Resmi & Masuk Kelas"]
+
+        CetakKRS --> Kuliah["Proses Perkuliahan: 16 Pertemuan"]
+        Kuliah --> Presensi["Dosen Catat Presensi & Jurnal Perkuliahan"]
+        Presensi --> SyaratUjian{"Syarat Presensi Terpenuhi?
+UTS >= 50%, UAS >= 75%"}
+        SyaratUjian -- "Tidak Memenuhi" --> CekalUjian["Cekal: Tidak Berhak Kartu Ujian"]
+        SyaratUjian -- "Memenuhi" --> CetakKartuUjian["Cetak Kartu Ujian UTS & UAS"]
+
+        CetakKartuUjian --> Ujian["Pelaksanaan Ujian UTS & UAS"]
+        Ujian --> InputNilai["Dosen Input Nilai: Tugas, Presensi, UTS, UAS"]
+        InputNilai --> KunciNilai["Kunci Nilai oleh Dosen / Admin"]
+        KunciNilai --> TerbitKHS["Terbit Kartu Hasil Studi (KHS) & Hitung IP/IPS"]
+    end
+
+    TerbitKHS --> CekSemester{"Semester Akhir & SKS >= 144?"}
+    CekSemester -- "Belum" --> SiklusSemester
+    CekSemester -- "Ya" --> TahapAkhir["Memasuki Fase Tugas Akhir / Skripsi"]
+
+    subgraph SkripsiYudisium ["Fase Skripsi & Kelulusan"]
+        TahapAkhir --> AjukanProposal["Pengajuan Judul & Proposal Skripsi"]
+        AjukanProposal --> SeminarProp["Seminar / Ujian Proposal"]
+        SeminarProp --> BimbinganSkripsi["Bimbingan Skripsi Berkala dengan Dosen Pembimbing"]
+        BimbinganSkripsi --> SidangMunaqasyah["Pendaftaran & Ujian Sidang Skripsi"]
+        SidangMunaqasyah --> LulusSkripsi{"Lulus Sidang Skripsi?"}
+        LulusSkripsi -- "Revisi / Ulang" --> BimbinganSkripsi
+        LulusSkripsi -- "Lulus" --> DaftarYudisium["Pendaftaran Yudisium & Cek Bebas Tanggungan"]
+        DaftarYudisium --> SidangYudisium["Rapat Yudisium: Penetapan IPK & Predikat"]
+        SidangYudisium --> TerbitSK["Penerbitan SK Yudisium & Sertifikat"]
+        TerbitSK --> Wisuda(["Wisuda: Ijazah, Transkrip & SKPI"])
+    end

@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 980" width="1180" height="980" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a" />
+    </marker>
+  </defs>
+
+  <rect x="30" y="30" width="1120" height="920" fill="#ffffff" stroke="#0f172a" stroke-width="2" rx="4" />
+
+  <rect x="30" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">MAHASISWA</text>
+
+  <rect x="400" y="30" width="380" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="590" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">STAF KEUANGAN (BAU) / KASIR</text>
+
+  <rect x="780" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="965" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">SISTEM SIAKAD</text>
+
+  <line x1="400" y1="80" x2="400" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+  <line x1="780" y1="80" x2="780" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- 1 START ONLY in Col 2 -->
+  <rect x="535" y="105" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="590" y="129" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">START</text>
+
+  <!-- K1 -->
+  <rect x="480" y="170" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="191" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Generate Tagihan Massal</text>
+  <text x="590" y="208" text-anchor="middle" font-size="11" fill="#475569">Awal Semester Baru</text>
+
+  <!-- S1: Decision -->
+  <polygon points="965,160 1065,190 965,220 865,190" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="187" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Cek Status Beasiswa?</text>
+  <text x="965" y="202" text-anchor="middle" font-size="10" fill="#475569">(beasiswa_mahasiswas)</text>
+
+  <!-- S2 -->
+  <rect x="855" y="270" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="291" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Tagihan Normal per UKT</text>
+  <text x="965" y="308" text-anchor="middle" font-size="11" fill="#475569">SPP Penuh Mahasiswa</text>
+
+  <!-- M1: Decision -->
+  <polygon points="215,350 315,380 215,410 115,380" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="377" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Pilih Kanal Bayar?</text>
+  <text x="215" y="392" text-anchor="middle" font-size="10" fill="#475569">Loket TU atau Transfer</text>
+
+  <!-- M2 -->
+  <rect x="105" y="460" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="481" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Datang ke Loket TU Kampus</text>
+  <text x="215" y="498" text-anchor="middle" font-size="11" fill="#475569">Membawa Uang/Kartu</text>
+
+  <!-- K2 -->
+  <rect x="480" y="460" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="481" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Kasir POS Simpan Bayar</text>
+  <text x="590" y="498" text-anchor="middle" font-size="11" fill="#475569">Scan NIM & Cetak Kuitansi</text>
+
+  <!-- M3 -->
+  <rect x="105" y="555" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="576" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Transfer Bank & Bukti</text>
+  <text x="215" y="593" text-anchor="middle" font-size="11" fill="#475569">Upload Bukti di Portal</text>
+
+  <!-- K3: Decision -->
+  <polygon points="590,545 690,575 590,605 490,575" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="572" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Verifikasi Mutasi?</text>
+  <text x="590" y="587" text-anchor="middle" font-size="10" fill="#475569">Cek Rekening Koran</text>
+
+  <!-- S3 -->
+  <rect x="855" y="670" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="691" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Set LUNAS & Buka KRS</text>
+  <text x="965" y="708" text-anchor="middle" font-size="11" fill="#475569">Bebas Cekal Keuangan</text>
+
+  <!-- M4: Final Step -->
+  <rect x="105" y="770" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="791" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Status Aktif & Siap KRS</text>
+  <text x="215" y="808" text-anchor="middle" font-size="11" fill="#475569">Registrasi Ulang Lengkap</text>
+
+  <!-- 1 END ONLY -->
+  <rect x="160" y="865" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="889" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">END</text>
+
+  <!-- Connectors -->
+  <path d="M 590 143 L 590 170" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 700 190 L 865 190" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S1 (Beasiswa) -> S3 -->
+  <path d="M 1065 190 L 1110 190 L 1110 694 L 1075 694" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="1080" y="340" width="60" height="18" fill="#ffffff" />
+  <text x="1110" y="353" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Beasiswa</text>
+
+  <!-- S1 (Bukan) -> S2 -->
+  <path d="M 965 220 L 965 270" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="935" y="235" width="60" height="18" fill="#ffffff" />
+  <text x="965" y="248" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Reguler</text>
+
+  <!-- S2 -> M1 -->
+  <path d="M 855 294 L 215 294 L 215 350" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M1 (Loket) -> M2 -> K2 -->
+  <path d="M 215 410 L 215 460" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="185" y="425" width="60" height="18" fill="#ffffff" />
+  <text x="215" y="438" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Loket TU</text>
+
+  <path d="M 325 484 L 480 484" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 700 484 L 800 484 L 800 684 L 855 684" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M1 (Transfer) -> M3 -->
+  <path d="M 115 380 L 70 380 L 70 579 L 105 579" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="50" y="430" width="60" height="18" fill="#ffffff" />
+  <text x="80" y="443" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Transfer</text>
+
+  <!-- M3 -> K3 -->
+  <path d="M 325 575 L 490 575" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- K3 (Tidak Valid) -> M3 -->
+  <path d="M 590 605 L 590 635 L 215 635 L 215 603" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="360" y="625" width="80" height="18" fill="#ffffff" />
+  <text x="400" y="638" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Unggah Ulang</text>
+
+  <!-- K3 (Valid) -> S3 -->
+  <path d="M 690 575 L 965 575 L 965 670" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="740" y="565" width="60" height="18" fill="#ffffff" />
+  <text x="770" y="578" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Valid</text>
+
+  <!-- S3 -> M4 -->
+  <path d="M 855 704 L 215 704 L 215 770" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M4 -> 1 END -->
+  <path d="M 215 818 L 215 865" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+</svg>

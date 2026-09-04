@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 980" width="1180" height="980" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a" />
+    </marker>
+  </defs>
+
+  <rect x="30" y="30" width="1120" height="920" fill="#ffffff" stroke="#0f172a" stroke-width="2" rx="4" />
+
+  <rect x="30" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">ADMIN BAA / SUPERADMIN</text>
+
+  <rect x="400" y="30" width="380" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="590" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">SISTEM SIAKAD (JOB WORKER)</text>
+
+  <rect x="780" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="965" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">SERVER NEO FEEDER PD-DIKTI</text>
+
+  <line x1="400" y1="80" x2="400" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+  <line x1="780" y1="80" x2="780" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- 1 START ONLY -->
+  <rect x="160" y="105" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="129" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">START</text>
+
+  <!-- A1 -->
+  <rect x="105" y="170" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="191" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Buka /pddikti & Uji Koneksi</text>
+  <text x="215" y="208" text-anchor="middle" font-size="11" fill="#475569">Klik: Test Connection</text>
+
+  <!-- S1 -->
+  <rect x="480" y="170" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="191" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Kirim Request Ping Token</text>
+  <text x="590" y="208" text-anchor="middle" font-size="11" fill="#475569">Autentikasi Web Service</text>
+
+  <!-- F1: Decision -->
+  <polygon points="965,160 1065,190 965,220 865,190" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="187" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Koneksi Berhasil?</text>
+  <text x="965" y="202" text-anchor="middle" font-size="10" fill="#475569">Respons Server Feeder</text>
+
+  <!-- A2 -->
+  <rect x="105" y="270" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="291" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Pilih Entitas & Eksekusi Batch</text>
+  <text x="215" y="308" text-anchor="middle" font-size="11" fill="#475569">Mahasiswa, KRS, Nilai, AKM</text>
+
+  <!-- S2: Decision -->
+  <polygon points="590,260 690,290 590,320 490,290" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="287" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Field Wajib Lengkap?</text>
+  <text x="590" y="302" text-anchor="middle" font-size="10" fill="#475569">Validasi Lokal</text>
+
+  <!-- S3 -->
+  <rect x="480" y="370" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="391" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Kirim Batch Payload JSON</text>
+  <text x="590" y="408" text-anchor="middle" font-size="11" fill="#475569">Background Queue Job</text>
+
+  <!-- F2: Decision -->
+  <polygon points="965,360 1065,390 965,420 865,390" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="387" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Validasi Server Feeder?</text>
+  <text x="965" y="402" text-anchor="middle" font-size="10" fill="#475569">Aturan Bisnis Kementerian</text>
+
+  <!-- S4 -->
+  <rect x="480" y="480" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="501" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Catat Log Error (pddikti_logs)</text>
+  <text x="590" y="518" text-anchor="middle" font-size="11" fill="#475569">Tandai Status FAILED</text>
+
+  <!-- S5 -->
+  <rect x="480" y="580" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="601" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Simpan ID Feeder ke Record</text>
+  <text x="590" y="618" text-anchor="middle" font-size="11" fill="#475569">Tandai Status SYNCED</text>
+
+  <!-- A3: Final Status -->
+  <rect x="105" y="680" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="701" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Tinjau Rekonsiliasi & Audit</text>
+  <text x="215" y="718" text-anchor="middle" font-size="11" fill="#475569">Laporan Sinkronisasi Berhasil</text>
+
+  <!-- 1 END ONLY -->
+  <rect x="160" y="790" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="814" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">END</text>
+
+  <!-- Connectors -->
+  <path d="M 215 143 L 215 170" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 325 194 L 480 194" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 700 194 L 865 194" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- F1 (Gagal) -> A1 -->
+  <path d="M 965 160 L 965 140 L 215 140 L 215 170" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="560" y="130" width="80" height="18" fill="#ffffff" />
+  <text x="600" y="143" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Gagal Token</text>
+
+  <!-- F1 (Sukses) -> A2 -->
+  <path d="M 965 220 L 965 240 L 215 240 L 215 270" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="560" y="230" width="80" height="18" fill="#ffffff" />
+  <text x="600" y="243" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Terhubung</text>
+
+  <!-- A2 -> S2 -->
+  <path d="M 325 294 L 490 294" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S2 (Data Kurang) -> S4 -->
+  <path d="M 690 290 L 730 290 L 730 504 L 700 504" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="700" y="380" width="70" height="18" fill="#ffffff" />
+  <text x="735" y="393" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Anomali</text>
+
+  <!-- S2 (Lengkap) -> S3 -->
+  <path d="M 590 320 L 590 370" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S3 -> F2 -->
+  <path d="M 700 390 L 865 390" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- F2 (Gagal) -> S4 -->
+  <path d="M 965 420 L 965 504 L 700 504" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="800" y="494" width="70" height="18" fill="#ffffff" />
+  <text x="835" y="507" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Ditolak</text>
+
+  <!-- F2 (Sukses) -> S5 -->
+  <path d="M 1065 390 L 1100 390 L 1100 604 L 700 604" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="1060" y="480" width="60" height="18" fill="#ffffff" />
+  <text x="1090" y="493" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Sukses</text>
+
+  <!-- S4 (Retry) -> A3 -->
+  <path d="M 480 504 L 350 504 L 350 704 L 325 704" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+
+  <!-- S5 -> A3 -->
+  <path d="M 480 604 L 215 604 L 215 680" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- A3 -> 1 END -->
+  <path d="M 215 728 L 215 790" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+</svg>

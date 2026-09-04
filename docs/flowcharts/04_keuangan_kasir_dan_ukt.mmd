@@ -1,0 +1,43 @@
+flowchart TD
+    StartAdmin(["Mulai: Awal Periode Akademik"]) --> SetupTarif["BAU Kelola Tarif & Komponen Biaya UKT"]
+    SetupTarif --> GenTagihan["Jalankan Generator Tagihan Massal"]
+
+    GenTagihan --> CekBeasiswa{"Apakah Mahasiswa Penerima Beasiswa?"}
+    CekBeasiswa -- "Ya" --> TagihanNol["Tagihan Otomatis Rp 0 (Diskon 100% / Status LUNAS)"]
+    CekBeasiswa -- "Tidak" --> TagihanNormal["Terbitkan Tagihan Normal Sesuai Kelompok UKT"]
+
+    TagihanNormal --> OpsiBayar{"Pilihan Metode Pembayaran"}
+
+    subgraph KasirLoket ["Kanal 1: Kasir POS Loket TU"]
+        OpsiBayar -- "Bayar di Loket" --> K1["Mahasiswa Datang ke Loket TU Kampus"]
+        K1 --> K2["Kasir Cari Data via NIM / Barcode Scanner"]
+        K2 --> K3["Sistem Menampilkan Tagihan Aktif"]
+        K3 --> K4["Pilih Pembayaran: Tunai, QRIS, atau Kartu Debit/EDC"]
+        K4 --> K5["Kasir Simpan Pembayaran"]
+        K5 --> K6["Status Tagihan Langsung Menjadi LUNAS"]
+        K6 --> K7["Cetak Kuitansi Resmi Pembayaran Seketika"]
+    end
+
+    subgraph PortalOnline ["Kanal 2: Portal Mahasiswa (Transfer Bank)"]
+        OpsiBayar -- "Transfer Online" --> M1["Mahasiswa Login ke Portal Keuangan"]
+        M1 --> M2{"Ajukan Cicilan?"}
+        M2 -- "Ya" --> M3["Mahasiswa Ajukan Jadwal Cicilan"]
+        M3 --> M4{"Persetujuan BAU"}
+        M4 -- "Ditolak" --> M1
+        M4 -- "Disetujui" --> M5["Tagihan Dipecah Sesuai Termin"]
+        M2 -- "Tidak (Bayar Penuh)" --> M5
+        M5 --> M6["Transfer ke Rekening Bank Kampus"]
+        M6 --> M7["Unggah Foto Bukti Transfer"]
+        M7 --> M8["Staf Keuangan Verifikasi Mutasi"]
+        M8 --> M9{"Bukti Valid?"}
+        M9 -- "Tidak" --> M10["Tolak Pembayaran + Alasan"]
+        M10 --> M7
+        M9 -- "Valid" --> M11["Status Tagihan Terupdate LUNAS"]
+    end
+
+    K7 --> RegStatus["Status Registrasi Ulang Terbuka"]
+    M11 --> RegStatus
+    TagihanNol --> RegStatus
+
+    RegStatus --> BukaKRS["Sistem Membuka Akses Pengisian KRS Mahasiswa"]
+    BukaKRS --> SelesaiKeu(["Selesai: Bebas Cekal & Siap Kontrak KRS"])

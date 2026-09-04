@@ -13,6 +13,7 @@ export type NavItem = {
     isActive?: boolean;
     roles?: string[];
     permissions?: string[];
+    items?: NavItem[];
 };
 
 export type NavGroup = {

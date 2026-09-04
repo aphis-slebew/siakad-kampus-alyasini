@@ -22,7 +22,6 @@ use App\Models\Tagihan;
 use App\Models\TahunAjaran;
 use App\Models\User;
 use App\Services\KrsService;
-use DomainException;
 
 beforeEach(function () {
     $this->artisan('db:seed', ['--class' => 'RoleAndPermissionSeeder']);

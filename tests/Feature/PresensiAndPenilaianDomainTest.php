@@ -21,7 +21,6 @@ use App\Services\KhsService;
 use App\Services\PenilaianService;
 use App\Services\PresensiService;
 use Carbon\Carbon;
-use DomainException;
 
 beforeEach(function () {
     $this->artisan('db:seed', ['--class' => 'RoleAndPermissionSeeder']);

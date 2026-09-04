@@ -1,0 +1,34 @@
+flowchart TD
+    Start2(["Mulai: Periode Semester Baru"]) --> SettingSemester["BAA & Kaprodi Buka Semester & Plotting Kelas Kuliah"]
+    SettingSemester --> BukaTagihan["Keuangan Terbitkan Tagihan UKT Semester"]
+    
+    BukaTagihan --> CekBayar{"Mahasiswa Melunasi UKT?"}
+    CekBayar -- "Belum" --> KenaCekal["Status: Cekal Keuangan / KRS Terkunci"] --> BayarUKT["Mahasiswa Bayar Tagihan di Kasir / Transfer Bank"]
+    BayarUKT --> VerifUKT["Keuangan Verifikasi Pembayaran"] --> CekBayar
+    CekBayar -- "Lunas" --> BukaAksesKRS["Sistem Buka Form Kontrak KRS Mahasiswa"]
+    
+    BukaAksesKRS --> PilihMK["Mahasiswa Memilih Kelas Matakuliah"]
+    PilihMK --> ValidasiSKS{"Cek Kuota Kelas & Batas Maks SKS"}
+    ValidasiSKS -- "Melebihi Batas / Kelas Penuh" --> SesuaikanMK["Sesuaikan Pilihan Matakuliah / Pilih Kelas Lain"] --> PilihMK
+    ValidasiSKS -- "Valid" --> AjukanKRS["Kirim Draft KRS ke Dosen Wali"]
+    
+    subgraph ApprovalWali ["Approval Dosen Wali / Kaprodi"]
+        AjukanKRS --> ReviewWali{"Dosen Wali Review KRS"}
+        ReviewWali -- "Ditolak / Perlu Revisi" --> CatatRevisi["Beri Catatan Penolakan"] --> NotifMhs["KRS Status: Ditolak"] --> PilihMK
+        ReviewWali -- "Disetujui" --> ApproveKRS["Status KRS: Disetujui & Terkunci"]
+    end
+
+    ApproveKRS --> CetakKRS["Mahasiswa Cetak Kartu Rencana Studi Resmi"]
+    CetakKRS --> MasukKelas["Nama Mahasiswa Otomatis Masuk Daftar Presensi Kelas"]
+    
+    subgraph Perkuliahan ["Perkuliahan 16 Pertemuan"]
+        MasukKelas --> MulaiKuliah["Perkuliahan Tatap Muka / Praktikum"]
+        MulaiKuliah --> Absensi["Dosen Isi Jurnal & Presensi Mahasiswa"]
+        Absensi --> Ujian["Pelaksanaan UTS & UAS"]
+    end
+
+    Ujian --> InputNilaiDosen["Dosen Pengajar Input Bobot Komposisi & Nilai"]
+    InputNilaiDosen --> FinalisasiNilai["Dosen Tekan Finalisasi Nilai"]
+    FinalisasiNilai --> HitungKHS["Sistem Otomatis Hitung Nilai Akhir, Nilai Huruf, & IPS"]
+    HitungKHS --> CetakKHS["Mahasiswa Dapat Melihat & Mencetak KHS / Transkrip"]
+    CetakKHS --> End3(["Selesai Semester"])

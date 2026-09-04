@@ -1,0 +1,123 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 980" width="1180" height="980" style="background:#ffffff; font-family: 'Segoe UI', Arial, sans-serif;">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 10 5 L 0 9 z" fill="#0f172a" />
+    </marker>
+  </defs>
+
+  <rect x="30" y="30" width="1120" height="920" fill="#ffffff" stroke="#0f172a" stroke-width="2" rx="4" />
+
+  <rect x="30" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">MAHASISWA</text>
+
+  <rect x="400" y="30" width="380" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="590" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">DOSEN WALI (DPA)</text>
+
+  <rect x="780" y="30" width="370" height="50" fill="#f8fafc" stroke="#0f172a" stroke-width="2" />
+  <text x="965" y="62" text-anchor="middle" font-size="14" font-weight="700" fill="#0f172a">SISTEM SIAKAD</text>
+
+  <line x1="400" y1="80" x2="400" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+  <line x1="780" y1="80" x2="780" y2="950" stroke="#cbd5e1" stroke-width="1.5" stroke-dasharray="4 4" />
+
+  <!-- 1 START ONLY -->
+  <rect x="160" y="105" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="129" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">START</text>
+
+  <!-- M1 -->
+  <rect x="105" y="170" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="191" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Akses Portal: /krs/saya</text>
+  <text x="215" y="208" text-anchor="middle" font-size="11" fill="#475569">Mulai Pemilihan Kelas</text>
+
+  <!-- S1: Decision -->
+  <polygon points="965,160 1065,190 965,220 865,190" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="187" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Cek Bebas Cekal?</text>
+  <text x="965" y="202" text-anchor="middle" font-size="10" fill="#475569">Lunas & Jadwal Buka</text>
+
+  <!-- S2 -->
+  <rect x="855" y="260" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="281" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Hitung Batas Kuota SKS</text>
+  <text x="965" y="298" text-anchor="middle" font-size="11" fill="#475569">Berdasarkan IPS Lalu</text>
+
+  <!-- M2 -->
+  <rect x="105" y="340" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="361" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Pilih Kelas Matakuliah</text>
+  <text x="215" y="378" text-anchor="middle" font-size="11" fill="#475569">Paket Smt / MK Pilihan</text>
+
+  <!-- S3: Decision -->
+  <polygon points="965,330 1065,360 965,390 865,360" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="357" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Validasi SKS & Kuota?</text>
+  <text x="965" y="372" text-anchor="middle" font-size="10" fill="#475569">Prasyarat & Kursi Kelas</text>
+
+  <!-- M3 -->
+  <rect x="105" y="440" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="461" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Ajukan KRS ke DPA</text>
+  <text x="215" y="478" text-anchor="middle" font-size="11" fill="#475569">Status: SUBMITTED</text>
+
+  <!-- D1: Decision -->
+  <polygon points="590,430 690,460 590,490 490,460" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="457" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Review Rencana Studi?</text>
+  <text x="590" y="472" text-anchor="middle" font-size="10" fill="#475569">Dosen Wali Evaluasi</text>
+
+  <!-- D2 -->
+  <rect x="480" y="530" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="590" y="551" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Tolak & Beri Catatan</text>
+  <text x="590" y="568" text-anchor="middle" font-size="11" fill="#475569">Status: REJECTED</text>
+
+  <!-- S4 -->
+  <rect x="855" y="630" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="965" y="651" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Kunci KRS Menjadi APPROVED</text>
+  <text x="965" y="668" text-anchor="middle" font-size="11" fill="#475569">Injeksi Peserta ke Presensi</text>
+
+  <!-- M4 -->
+  <rect x="105" y="740" width="220" height="48" rx="6" fill="#ffffff" stroke="#0f172a" stroke-width="1.8" />
+  <text x="215" y="761" text-anchor="middle" font-size="12" font-weight="600" fill="#0f172a">Cetak KRS Resmi Kuliah</text>
+  <text x="215" y="778" text-anchor="middle" font-size="11" fill="#475569">Dokumen Sah Siap Kuliah</text>
+
+  <!-- 1 END ONLY -->
+  <rect x="160" y="855" width="110" height="38" rx="19" fill="#ffffff" stroke="#0f172a" stroke-width="2" />
+  <text x="215" y="879" text-anchor="middle" font-size="13" font-weight="700" fill="#0f172a">END</text>
+
+  <!-- Connectors -->
+  <path d="M 215 143 L 215 170" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 325 190 L 865 190" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S1 (Cekal) -> M1 -->
+  <path d="M 965 160 L 965 140 L 325 140 L 325 175" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="580" y="130" width="80" height="18" fill="#ffffff" />
+  <text x="620" y="143" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Kena Cekal</text>
+
+  <!-- S1 (Bebas) -> S2 -->
+  <path d="M 965 220 L 965 260" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 855 284 L 215 284 L 215 340" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M2 -> S3 -->
+  <path d="M 325 364 L 865 364" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- S3 (Penuh/Batas) -> M2 -->
+  <path d="M 965 390 L 965 415 L 215 415 L 215 388" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="560" y="405" width="80" height="18" fill="#ffffff" />
+  <text x="600" y="418" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Kelas Penuh</text>
+
+  <!-- S3 (Valid) -> M3 -->
+  <path d="M 865 375 L 325 375 L 325 440" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M3 -> D1 -->
+  <path d="M 325 464 L 490 464" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- D1 (Tolak) -> D2 -> M2 -->
+  <path d="M 590 490 L 590 530" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <path d="M 480 554 L 80 554 L 80 364 L 105 364" fill="none" stroke="#0f172a" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrow)" />
+  <rect x="50" y="450" width="80" height="18" fill="#ffffff" />
+  <text x="90" y="463" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Revisi MK</text>
+
+  <!-- D1 (Setuju) -> S4 -->
+  <path d="M 690 460 L 965 460 L 965 630" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+  <rect x="780" y="450" width="60" height="18" fill="#ffffff" />
+  <text x="810" y="463" text-anchor="middle" font-size="10" font-weight="600" fill="#0f172a">Approve</text>
+
+  <!-- S4 -> M4 -->
+  <path d="M 855 654 L 215 654 L 215 740" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+
+  <!-- M4 -> 1 END -->
+  <path d="M 215 788 L 215 855" fill="none" stroke="#0f172a" stroke-width="1.8" marker-end="url(#arrow)" />
+</svg>

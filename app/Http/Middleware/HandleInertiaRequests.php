@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\PerguruanTinggi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
