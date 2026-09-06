@@ -1,8 +1,12 @@
-import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
-import { AlertCircle, BookOpen, CheckCircle2, Printer, Send, ShieldAlert, Users } from 'lucide-react';
-import { useState } from 'react';
 
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { AlertCircle, BookOpen, CheckCircle2, Printer, Send, ShieldAlert } from 'lucide-react';
+import { useState } from 'react';
 import { useConfirmDialog } from '@/components/confirm-dialog';
+import { EmptyState } from '@/components/empty-state';
+import { PageContainer } from '@/components/page-container';
+import { PageHeader } from '@/components/page-header';
+import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { ResponsiveTable, TableHeader, TableBody, TableRow, TableHead, TableCell, StackedCell } from '@/components/ui/table';
 import type { SharedData } from '@/types';
@@ -160,49 +164,47 @@ return;
             {confirmDialog}
             <Head title="Pengisian Kartu Rencana Studi (KRS)" />
 
-            <div className="p-4 sm:p-6 space-y-6 font-sans">
+            <PageContainer variant="default">
                 {/* Header Title */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-semibold text-text-primary">Kartu Rencana Studi (KRS) Portal</h1>
-                        <p className="text-xs text-text-secondary mt-0.5">
-                            Pengajuan matakuliah & jadwal perkuliahan semester {tahunAjaran?.nama}.
-                        </p>
-                    </div>
+                <PageHeader
+                    title="Kartu Rencana Studi (KRS) Portal"
+                    description={`Pengajuan matakuliah & jadwal perkuliahan semester ${tahunAjaran?.nama || ''}.`}
+                    icon={BookOpen}
+                    actions={
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="bg-surface-base px-3 py-1.5 rounded-md border border-border-default text-xs font-mono">
+                                Total SKS Dipilih: <span className="font-bold text-brand-primary text-sm">{totalSks}</span> / 24 SKS
+                            </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
-                        <div className="bg-surface-base px-3 py-1.5 rounded-md border border-border-default text-xs font-mono">
-                            Total SKS Dipilih: <span className="font-bold text-brand-primary text-sm">{totalSks}</span> / 24 SKS
+                            <Link href="/dokumen/krs">
+                                <Button variant="outline" size="sm" className="text-xs h-9 flex items-center gap-1.5 border-border-default hover:bg-surface-base">
+                                    <Printer className="size-3.5" />
+                                    Cetak KRS
+                                </Button>
+                            </Link>
+
+                            <Link href="/dokumen/kartu-ujian">
+                                <Button variant="outline" size="sm" className="text-xs h-9 flex items-center gap-1.5 border-border-default hover:bg-surface-base">
+                                    <Printer className="size-3.5" />
+                                    Kartu Ujian
+                                </Button>
+                            </Link>
+
+                            <Button
+                                onClick={handleSubmitKrs}
+                                disabled={isSubmitDisabled}
+                                className={`text-xs font-semibold px-4 py-2 h-9 rounded-md flex items-center gap-1.5 transition-all ${
+                                    isSubmitDisabled
+                                        ? 'bg-surface-base text-text-secondary/60 border border-border-default cursor-not-allowed opacity-60'
+                                        : 'bg-brand-primary text-white hover:bg-brand-primary-dark shadow-xs'
+                                }`}
+                            >
+                                <Send className="size-3.5" />
+                                Ajukan KRS ke Dosen Wali
+                            </Button>
                         </div>
-
-                        <Link href="/dokumen/krs">
-                            <Button variant="outline" size="sm" className="text-xs h-9 flex items-center gap-1.5 border-border-default hover:bg-surface-base">
-                                <Printer className="size-3.5" />
-                                Cetak KRS
-                            </Button>
-                        </Link>
-
-                        <Link href="/dokumen/kartu-ujian">
-                            <Button variant="outline" size="sm" className="text-xs h-9 flex items-center gap-1.5 border-border-default hover:bg-surface-base">
-                                <Printer className="size-3.5" />
-                                Kartu Ujian
-                            </Button>
-                        </Link>
-
-                        <Button
-                            onClick={handleSubmitKrs}
-                            disabled={isSubmitDisabled}
-                            className={`text-xs font-semibold px-4 py-2 h-9 rounded-md flex items-center gap-1.5 transition-all ${
-                                isSubmitDisabled
-                                    ? 'bg-surface-base text-text-secondary/60 border border-border-default cursor-not-allowed opacity-60'
-                                    : 'bg-brand-primary text-white hover:bg-brand-primary-dark shadow-xs'
-                            }`}
-                        >
-                            <Send className="size-3.5" />
-                            Ajukan KRS ke Dosen Wali
-                        </Button>
-                    </div>
-                </div>
+                    }
+                />
 
                 {/* Eligibility Status Banner */}
                 {!eligibility.is_eligible ? (
@@ -236,22 +238,44 @@ return;
                 )}
 
                 {/* Status KRS Badge */}
-                <div className="bg-surface-card p-4 rounded-lg border border-border-default flex items-center justify-between">
+                <div className="bg-surface-card p-4 rounded-lg border border-border-default flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <span className="text-text-secondary text-xs block">Status Dokumen KRS:</span>
-                        <span className="font-bold text-sm uppercase tracking-wide text-text-primary">
-                            {krs?.status.replace('_', ' ')}
-                        </span>
+                        <span className="text-text-secondary text-xs block mb-1.5 font-medium">Status Dokumen KRS</span>
+                        <StatusBadge
+                            variant={
+                                krs?.status === 'disetujui_wali'
+                                    ? 'success'
+                                    : krs?.status === 'diajukan'
+                                      ? 'warning'
+                                      : krs?.status === 'ditolak'
+                                        ? 'danger'
+                                        : 'neutral'
+                            }
+                            label={
+                                krs?.status === 'disetujui_wali'
+                                    ? 'Disetujui Wali'
+                                    : krs?.status === 'diajukan'
+                                      ? 'Diajukan'
+                                      : krs?.status === 'ditolak'
+                                        ? 'Ditolak'
+                                        : 'Draft'
+                            }
+                            size="md"
+                        />
                         {krs?.catatan_penolakan && (
-                            <p className="text-status-danger text-xs mt-1 font-medium">
+                            <p className="text-status-danger text-xs mt-1.5 font-medium">
                                 Catatan Penolakan Dosen Wali: &quot;{krs.catatan_penolakan}&quot;
                             </p>
                         )}
                     </div>
 
-                    <div className="text-right text-xs">
-                        <span className="text-text-secondary block">Mahasiswa: {mahasiswa?.nama_lengkap} ({mahasiswa?.nim})</span>
-                        <span className="text-text-secondary">Semester: {tahunAjaran?.nama}</span>
+                    <div className="sm:text-right text-xs space-y-0.5 border-t sm:border-t-0 pt-2 sm:pt-0 border-border-default">
+                        <span className="text-text-secondary block">
+                            Mahasiswa: <strong className="text-text-primary">{mahasiswa?.nama_lengkap}</strong> ({mahasiswa?.nim})
+                        </span>
+                        <span className="text-text-secondary">
+                            Semester: <strong className="text-text-primary">{tahunAjaran?.nama}</strong>
+                        </span>
                     </div>
                 </div>
 
@@ -267,13 +291,11 @@ return;
                     </div>
 
                     {availableClasses.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <BookOpen className="mx-auto size-10 text-text-secondary/50 mb-3" />
-                            <h3 className="text-sm font-semibold text-text-primary">Belum ada kelas perkuliahan terbuka</h3>
-                            <p className="text-xs text-text-secondary mt-1">
-                                Belum ada kelas kuliah yang dijadwalkan lengkap untuk semester ini.
-                            </p>
-                        </div>
+                        <EmptyState
+                            icon={BookOpen}
+                            title="Belum ada kelas perkuliahan terbuka"
+                            description="Belum ada kelas kuliah yang dijadwalkan lengkap untuk semester ini."
+                        />
                     ) : (
                         <ResponsiveTable>
                             <TableHeader>
@@ -336,15 +358,11 @@ return;
                                                 </div>
                                             </TableCell>
                                             <TableCell align="center">
-                                                {isFull ? (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                                                        Penuh ({enrolled}/{item.kuota})
-                                                    </span>
-                                                ) : (
-                                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                                                        Tersedia ({enrolled}/{item.kuota})
-                                                    </span>
-                                                )}
+                                                <StatusBadge
+                                                    variant={isFull ? 'danger' : 'success'}
+                                                    label={isFull ? `Penuh (${enrolled}/${item.kuota})` : `Tersedia (${enrolled}/${item.kuota})`}
+                                                    size="sm"
+                                                />
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -353,7 +371,7 @@ return;
                         </ResponsiveTable>
                     )}
                 </div>
-            </div>
+            </PageContainer>
         </>
     );
 }

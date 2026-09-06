@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ActivityLog;
 use App\Models\CalonMahasiswa;
 use App\Models\Dosen;
 use App\Models\KelasKuliah;
@@ -21,13 +22,14 @@ class DashboardController extends Controller
      */
     public function __invoke(Request $request): Response
     {
-        $user = $request->user();
+        $user = $request->user() ?? auth()->user();
         $tahunAjaran = TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->first();
 
         $stats = [
             'total_mahasiswa_aktif' => Mahasiswa::where('status_mahasiswa', 'aktif')->count(),
             'total_dosen_aktif' => Dosen::count(),
             'total_prodi' => ProgramStudi::count(),
+            'prodi_names' => ProgramStudi::orderBy('nama')->pluck('nama')->take(4)->toArray(),
             'tahun_ajaran_aktif' => $tahunAjaran ? $tahunAjaran->nama : '2026/2027 Ganjil',
             'pending_krs_count' => Krs::where('status', 'diajukan')->count(),
             'pending_pembayaran_count' => Pembayaran::where('status_verifikasi', 'menunggu')->count(),
@@ -37,7 +39,7 @@ class DashboardController extends Controller
 
         // Specific data if student
         $studentData = null;
-        if ($user->hasRole('mahasiswa') || $user->user_type === 'mahasiswa') {
+        if ($user && ($user->hasRole('mahasiswa') || $user->user_type === 'mahasiswa')) {
             $mahasiswa = Mahasiswa::with(['programStudi', 'dataOrangTua'])->where('user_id', $user->id)->first();
             $activeKrs = null;
             if ($mahasiswa && $tahunAjaran) {
@@ -53,7 +55,7 @@ class DashboardController extends Controller
 
         // Specific data if dosen
         $dosenData = null;
-        if ($user->hasRole('dosen') || $user->hasRole('kaprodi') || $user->user_type === 'dosen') {
+        if ($user && ($user->hasRole('dosen') || $user->hasRole('kaprodi') || $user->user_type === 'dosen')) {
             $dosen = Dosen::where('user_id', $user->id)->first();
             $dosenData = [
                 'dosen' => $dosen,
@@ -64,10 +66,28 @@ class DashboardController extends Controller
             ];
         }
 
+        // Recent audit activities for Super Admin
+        $recentActivities = null;
+        if ($user && ($user->hasRole('superadmin') || $user->user_type === 'superadmin')) {
+            $recentActivities = ActivityLog::with('user:id,name,email')
+                ->latest('id')
+                ->take(5)
+                ->get()
+                ->map(fn ($log) => [
+                    'id' => $log->id,
+                    'action' => $log->action,
+                    'entity_type' => $log->entity_type,
+                    'entity_id' => $log->entity_id,
+                    'user_name' => $log->user?->name ?? 'Sistem',
+                    'created_at' => $log->created_at?->format('d/m H:i') ?? '-',
+                ]);
+        }
+
         return Inertia::render('dashboard', [
             'liveStats' => $stats,
             'studentData' => $studentData,
             'dosenData' => $dosenData,
+            'recentActivities' => $recentActivities,
         ]);
     }
 }

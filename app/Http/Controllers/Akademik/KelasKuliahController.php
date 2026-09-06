@@ -58,9 +58,9 @@ class KelasKuliahController extends Controller
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('nama_kelas', 'ilike', "%{$search}%")
-                    ->orWhereHas('kurikulumMatakuliah.matakuliah', fn ($m) => $m->where('nama', 'ilike', "%{$search}%")->orWhere('kode', 'ilike', "%{$search}%"))
-                    ->orWhereHas('dosenPengajars.dosen', fn ($d) => $d->where('nama_lengkap', 'ilike', "%{$search}%"));
+                $q->where('nama_kelas', 'like', "%{$search}%")
+                    ->orWhereHas('kurikulumMatakuliah.matakuliah', fn ($m) => $m->where('nama', 'like', "%{$search}%")->orWhere('kode', 'like', "%{$search}%"))
+                    ->orWhereHas('dosenPengajars.dosen', fn ($d) => $d->where('nama_lengkap', 'like', "%{$search}%"));
             });
         }
 
@@ -239,11 +239,15 @@ class KelasKuliahController extends Controller
     public function destroy(KelasKuliah $kela): RedirectResponse
     {
         if ($kela->krsDetails()->exists()) {
-            return back()->withErrors(['error' => 'Kelas kuliah tidak dapat dihapus karena sudah memiliki mahasiswa terdaftar di KRS.']);
+            return back()
+                ->with('error', 'Kelas kuliah tidak dapat dihapus karena sudah memiliki mahasiswa terdaftar di KRS.')
+                ->withErrors(['error' => 'Kelas kuliah tidak dapat dihapus karena sudah memiliki mahasiswa terdaftar di KRS.']);
         }
 
         if ($kela->presensis()->exists()) {
-            return back()->withErrors(['error' => 'Kelas kuliah tidak dapat dihapus karena sudah memiliki riwayat presensi perkuliahan.']);
+            return back()
+                ->with('error', 'Kelas kuliah tidak dapat dihapus karena sudah memiliki riwayat presensi perkuliahan.')
+                ->withErrors(['error' => 'Kelas kuliah tidak dapat dihapus karena sudah memiliki riwayat presensi perkuliahan.']);
         }
 
         $kela->delete();

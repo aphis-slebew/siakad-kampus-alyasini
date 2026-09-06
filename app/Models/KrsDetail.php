@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class KrsDetail extends Model
 {
@@ -42,7 +43,7 @@ class KrsDetail extends Model
      *
      * @return HasMany<Nilai, $this>
      */
-    public function nilais(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function nilais(): HasMany
     {
         return $this->hasMany(Nilai::class, 'krs_detail_id');
     }

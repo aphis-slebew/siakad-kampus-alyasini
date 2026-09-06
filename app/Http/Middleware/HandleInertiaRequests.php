@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use App\Models\PerguruanTinggi;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -40,7 +41,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'name' => config('app.name'),
-            'perguruanTinggi' => fn () => \App\Models\PerguruanTinggi::first(),
+            'perguruanTinggi' => fn () => Cache::remember('global_perguruan_tinggi', 86400, fn () => PerguruanTinggi::first()),
             'auth' => [
                 'user' => $request->user() ? [
                     'id' => $request->user()->id,

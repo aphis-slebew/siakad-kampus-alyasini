@@ -13,6 +13,9 @@ import {
     User,
     XCircle,
 } from 'lucide-react';
+import { PageContainer } from '@/components/page-container';
+import { PageHeader } from '@/components/page-header';
+import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -79,33 +82,38 @@ export default function CalonMahasiswaShow({
         <>
             <Head title={'Detail Pendaftaran — ' + calon.nama_lengkap} />
 
-            <div className="p-4 sm:p-6 space-y-6 font-sans">
+            <PageContainer variant="default">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => router.visit('/pmb/calon-mahasiswa')}
-                            className="h-8 w-8 p-0 text-text-secondary hover:text-brand-primary"
-                        >
-                            <ArrowLeft className="size-4" />
-                        </Button>
-                        <div>
-                            <h1 className="text-xl font-semibold text-text-primary flex items-center gap-2">
-                                <User className="size-5 text-brand-primary" />
-                                {calon.nama_lengkap}
-                            </h1>
-                            <p className="text-xs text-text-secondary mt-0.5">
-                                Detail berkas pendaftaran calon mahasiswa baru
-                            </p>
+                <PageHeader
+                    title={calon.nama_lengkap}
+                    description="Detail berkas dan tahapan seleksi calon mahasiswa baru STAI Al-Yasini."
+                    icon={User}
+                    bordered
+                    actions={
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => router.visit('/pmb/calon-mahasiswa')}
+                                className="h-9 text-xs flex items-center gap-1.5"
+                            >
+                                <ArrowLeft className="size-3.5" />
+                                <span>Kembali ke Daftar</span>
+                            </Button>
+                            <StatusBadge
+                                variant={
+                                    calon.status_pendaftaran === 'lulus_seleksi' || calon.status_pendaftaran === 'lolos_verifikasi'
+                                        ? 'success'
+                                        : calon.status_pendaftaran === 'tidak_lulus'
+                                          ? 'danger'
+                                          : 'warning'
+                                }
+                                label={STATUS_LABELS[calon.status_pendaftaran] || calon.status_pendaftaran}
+                                size="md"
+                            />
                         </div>
-                    </div>
-
-                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold bg-brand-primary/10 text-brand-primary border border-brand-primary/20 self-start sm:self-center">
-                        {STATUS_LABELS[calon.status_pendaftaran] || calon.status_pendaftaran}
-                    </span>
-                </div>
+                    }
+                />
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     {/* Left Column */}
@@ -208,9 +216,17 @@ export default function CalonMahasiswaShow({
                                                         </div>
                                                     </div>
                                                     <div className="flex items-center gap-2 shrink-0">
-                                                        <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-semibold ' + bs.color}>
-                                                            {bs.label}
-                                                        </span>
+                                                        <StatusBadge
+                                                            variant={
+                                                                b.status_verifikasi === 'diverifikasi'
+                                                                    ? 'success'
+                                                                    : b.status_verifikasi === 'ditolak'
+                                                                      ? 'danger'
+                                                                      : 'warning'
+                                                            }
+                                                            label={bs.label}
+                                                            size="sm"
+                                                        />
                                                         <Button
                                                             variant="ghost"
                                                             size="sm"
@@ -304,10 +320,11 @@ export default function CalonMahasiswaShow({
                                 <CardContent className="space-y-3 text-sm">
                                     <div className="flex items-center justify-between">
                                         <span className="text-xs font-medium text-text-secondary">Status</span>
-                                        <span className={'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold border ' + (calon.hasil_seleksi.status === 'lulus' ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-red-50 text-red-600 border-red-200')}>
-                                            {calon.hasil_seleksi.status === 'lulus' ? <CheckCircle2 className="size-3" /> : <XCircle className="size-3" />}
-                                            {calon.hasil_seleksi.status === 'lulus' ? 'Lulus' : 'Tidak Lulus'}
-                                        </span>
+                                        <StatusBadge
+                                            variant={calon.hasil_seleksi.status === 'lulus' ? 'success' : 'danger'}
+                                            label={calon.hasil_seleksi.status === 'lulus' ? 'Lulus' : 'Tidak Lulus'}
+                                            size="sm"
+                                        />
                                     </div>
                                     {calon.hasil_seleksi.nilai_tes != null && (
                                         <div className="flex items-center justify-between">
@@ -333,7 +350,7 @@ export default function CalonMahasiswaShow({
                         )}
                     </div>
                 </div>
-            </div>
+            </PageContainer>
         </>
     );
 }

@@ -27,7 +27,7 @@ class ProgramStudiController extends Controller
             ->get();
 
         $fakultas = Fakultas::orderBy('kode')->get(['id', 'kode', 'nama']);
-        $dosens = Dosen::orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn', 'gelar_depan', 'gelar_belakang']);
+        $dosens = Dosen::orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn', 'gelar_depan', 'gelar_belakang', 'niy_nip']);
 
         return Inertia::render('master/program-studi/index', [
             'programStudis' => $programStudis,
@@ -41,9 +41,9 @@ class ProgramStudiController extends Controller
      */
     public function show(ProgramStudi $programStudi): Response
     {
-        $programStudi->load(['fakultas']);
+        $programStudi->load(['fakultas', 'konsentrasis']);
         $pt = PerguruanTinggi::first();
-        $dosens = Dosen::orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn', 'gelar_depan', 'gelar_belakang']);
+        $dosens = Dosen::orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn', 'gelar_depan', 'gelar_belakang', 'niy_nip']);
         $fakultas = Fakultas::orderBy('kode')->get(['id', 'kode', 'nama']);
 
         return Inertia::render('master/program-studi/show', [

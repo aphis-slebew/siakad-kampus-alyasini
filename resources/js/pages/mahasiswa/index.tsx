@@ -80,6 +80,7 @@ export default function DataMahasiswaIndex({
                 program_studi_id: prodiFilter !== 'all' ? prodiFilter : undefined,
                 status: statusFilter !== 'all' ? statusFilter : undefined,
                 angkatan: angkatanFilter !== 'all' ? angkatanFilter : undefined,
+                page: 1,
             },
             { preserveState: true, replace: true }
         );

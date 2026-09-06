@@ -25,6 +25,8 @@ class MonitoringController extends Controller
     {
         $search = $request->input('search');
         $actionFilter = $request->input('action');
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
 
         $query = ActivityLog::with('user')->latest('id');
 
@@ -41,7 +43,17 @@ class MonitoringController extends Controller
             $query->where('action', $actionFilter);
         }
 
+        if ($startDate) {
+            $query->whereDate('created_at', '>=', $startDate);
+        }
+
+        if ($endDate) {
+            $query->whereDate('created_at', '<=', $endDate);
+        }
+
         $logs = $query->paginate(20)->withQueryString();
+
+        $availableActions = ActivityLog::distinct()->orderBy('action')->pluck('action')->filter()->values();
 
         // Database entity counts
         $dbStats = [
@@ -77,9 +89,12 @@ class MonitoringController extends Controller
             'dbStats' => $dbStats,
             'queueStats' => $queueStats,
             'systemInfo' => $systemInfo,
+            'availableActions' => $availableActions,
             'filters' => [
                 'search' => $search,
                 'action' => $actionFilter ?? 'all',
+                'start_date' => $startDate ?? '',
+                'end_date' => $endDate ?? '',
             ],
         ]);
     }

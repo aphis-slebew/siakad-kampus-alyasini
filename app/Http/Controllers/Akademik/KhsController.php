@@ -20,9 +20,9 @@ class KhsController extends Controller
     {
         $user = auth()->user();
         $mahasiswa = Mahasiswa::with('programStudi')->where('user_id', $user->id)->firstOrFail();
-        $tahunAjaran = TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->first();
+        $tahunAjaran = TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->firstOrFail();
 
-        $khsData = $khsService->generateKhs($mahasiswa, $tahunAjaran->id, auth()->id());
+        $khsData = $khsService->generateKhs($mahasiswa, $tahunAjaran->id, auth()->id() ? (int) auth()->id() : null);
 
         return Inertia::render('khs/student', [
             'khsData' => $khsData,
@@ -35,10 +35,10 @@ class KhsController extends Controller
      */
     public function showMahasiswaKhs(Request $request, Mahasiswa $mahasiswa, KhsService $khsService): Response
     {
-        $tahunAjaran = TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->first();
+        $tahunAjaran = TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->firstOrFail();
 
         try {
-            $khsData = $khsService->generateKhs($mahasiswa, $tahunAjaran->id, auth()->id());
+            $khsData = $khsService->generateKhs($mahasiswa, $tahunAjaran->id, auth()->id() ? (int) auth()->id() : null);
 
             return Inertia::render('khs/student', [
                 'khsData' => $khsData,

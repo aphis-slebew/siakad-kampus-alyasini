@@ -32,10 +32,16 @@ class PresensiController extends Controller
             'jadwalPerkuliahans.ruangKuliah',
         ])
             ->where('tahun_ajaran_id', $tahunAjaran->id)
-            ->when(! $user->hasRole('superadmin') && ! $user->hasRole('admin_akademik'), function ($q) use ($dosen) {
-                $q->whereHas('dosenPengajars', function ($dq) use ($dosen) {
-                    $dq->where('dosen_id', $dosen?->id);
-                });
+            ->when(! $user->hasRole('superadmin') && ! $user->hasRole('admin_akademik'), function ($q) use ($user, $dosen) {
+                if ($user->hasRole('kaprodi') && $dosen?->program_studi_id) {
+                    $q->whereHas('kurikulumMatakuliah.kurikulumProdi', function ($kq) use ($dosen) {
+                        $kq->where('program_studi_id', $dosen->program_studi_id);
+                    });
+                } else {
+                    $q->whereHas('dosenPengajars', function ($dq) use ($dosen) {
+                        $dq->where('dosen_id', $dosen?->id);
+                    });
+                }
             })
             ->get()
             ->filter(fn ($k) => $k->isReadyForKrs())

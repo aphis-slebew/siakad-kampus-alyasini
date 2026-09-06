@@ -262,3 +262,24 @@ test('KrsService prevents student from selecting duplicate courses or multiple c
     expect(fn () => $krsService->submitKrs($krs, [$kelasA->id, $kelasB->id]))
         ->toThrow(DomainException::class, 'DUPLIKASI MATAKULIAH');
 });
+
+test('Admin can search data mahasiswa without database error', function () {
+    $userAdmin = User::factory()->create(['user_type' => 'pegawai', 'two_factor_secret' => encrypt('DEV_2FA')]);
+    $userAdmin->assignRole('admin_akademik');
+    $this->actingAs($userAdmin);
+
+    $response = $this->get(route('mahasiswa.index', ['search' => 'Student']));
+    $response->assertOk();
+
+    $responseNim = $this->get(route('mahasiswa.index', ['search' => '2026']));
+    $responseNim->assertOk();
+});
+
+test('Admin can search dosen wali assignments without database error', function () {
+    $userAdmin = User::factory()->create(['user_type' => 'pegawai', 'two_factor_secret' => encrypt('DEV_2FA')]);
+    $userAdmin->assignRole('admin_akademik');
+    $this->actingAs($userAdmin);
+
+    $response = $this->get(route('akademik.dosen-wali.index', ['search' => 'Student']));
+    $response->assertOk();
+});

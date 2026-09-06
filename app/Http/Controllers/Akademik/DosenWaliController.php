@@ -40,8 +40,8 @@ class DosenWaliController extends Controller
 
         if ($search) {
             $query->whereHas('mahasiswa', function ($q) use ($search) {
-                $q->where('nama_lengkap', 'ilike', "%{$search}%")
-                    ->orWhere('nim', 'ilike', "%{$search}%");
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nim', 'like', "%{$search}%");
             });
         }
 

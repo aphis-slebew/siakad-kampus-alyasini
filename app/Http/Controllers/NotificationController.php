@@ -53,7 +53,11 @@ class NotificationController extends Controller
             $notification->markAsRead();
         }
 
-        $targetUrl = $notification->data['url'] ?? '/dashboard';
+        $targetUrl = $notification->data['url'] ?? '';
+
+        if (empty($targetUrl) || $targetUrl === '#') {
+            return back();
+        }
 
         return redirect($targetUrl);
     }

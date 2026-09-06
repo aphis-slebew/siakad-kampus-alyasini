@@ -1,0 +1,317 @@
+# Domain ERD: Kepegawaian, Kemahasiswaan, Audit Logging, PDDIKTI & Sistem
+
+## 1. Deskripsi Domain
+Dokumentasi ERD untuk modul pendukung operasional: struktur kepegawaian (dosen, pegawai, riwayat pendidikan, riwayat jabatan fungsional, dosen wali), kemahasiswaan (mahasiswa, data orang tua, riwayat status akademik, cekal akademik, aktivitas, pelanggaran), audit logging, pemetaan Web Service Neo Feeder PD-DIKTI, serta tabel infrastruktur framework.
+
+## 2. Diagram ERD (Crow's Foot Notation)
+
+```mermaid
+erDiagram
+    unit_kerjas {
+        bigint id PK "id"
+        varchar kode UK "kode"
+        varchar nama "nama"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    pegawais {
+        bigint id PK "id"
+        bigint user_id FK "user_id"
+        bigint unit_kerja_id FK "unit_kerja_id"
+        varchar nip_internal "nip_internal"
+        varchar nip_hash UK "nip_hash"
+        varchar nama_lengkap "nama_lengkap"
+        varchar nik "nik"
+        varchar nik_hash UK "nik_hash"
+        date tanggal_lahir "tanggal_lahir"
+        varchar jenis_kelamin "jenis_kelamin"
+        text alamat "alamat"
+        varchar no_hp "no_hp"
+        varchar jabatan_struktural "jabatan_struktural"
+        varchar status_kepegawaian "status_kepegawaian"
+        varchar foto_path "foto_path"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+        timestamp deleted_at "deleted_at"
+    }
+    dosens {
+        bigint id PK "id"
+        bigint user_id FK "user_id"
+        bigint program_studi_id FK "program_studi_id"
+        varchar nidn UK "nidn"
+        varchar nidn_hash UK "nidn_hash"
+        varchar nuptk "nuptk"
+        varchar niy_nip "niy_nip"
+        varchar gelar_depan "gelar_depan"
+        varchar nama_lengkap "nama_lengkap"
+        varchar gelar_belakang "gelar_belakang"
+        varchar nik "nik"
+        varchar nik_hash UK "nik_hash"
+        varchar tempat_lahir "tempat_lahir"
+        date tanggal_lahir "tanggal_lahir"
+        varchar jenis_kelamin "jenis_kelamin"
+        text alamat "alamat"
+        varchar no_hp "no_hp"
+        varchar email_pribadi "email_pribadi"
+        varchar jabatan_fungsional_saat_ini "jabatan_fungsional_saat_ini"
+        varchar pangkat_golongan "pangkat_golongan"
+        varchar sk_kepangkatan_path "sk_kepangkatan_path"
+        varchar status_kepegawaian "status_kepegawaian"
+        tinyint sertifikasi_pendidik "sertifikasi_pendidik"
+        varchar foto_path "foto_path"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+        timestamp deleted_at "deleted_at"
+    }
+    riwayat_pendidikan_dosens {
+        bigint id PK "id"
+        bigint dosen_id FK "dosen_id"
+        varchar jenjang "jenjang"
+        varchar institusi "institusi"
+        varchar program_studi "program_studi"
+        int tahun_lulus "tahun_lulus"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    riwayat_jabatan_fungsionals {
+        bigint id PK "id"
+        bigint dosen_id FK "dosen_id"
+        varchar jabatan "jabatan"
+        date tmt "tmt"
+        varchar nomor_sk "nomor_sk"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    dosen_walis {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint dosen_id FK "dosen_id"
+        bigint tahun_ajaran_id FK "tahun_ajaran_id"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    mahasiswas {
+        bigint id PK "id"
+        bigint user_id FK "user_id"
+        bigint calon_mahasiswa_id FK "calon_mahasiswa_id"
+        bigint program_studi_id FK "program_studi_id"
+        varchar nim UK "nim"
+        varchar nama_lengkap "nama_lengkap"
+        varchar nik "nik"
+        varchar nik_hash UK "nik_hash"
+        varchar tempat_lahir "tempat_lahir"
+        date tanggal_lahir "tanggal_lahir"
+        varchar jenis_kelamin "jenis_kelamin"
+        bigint agama_referensi_biodata_id FK "agama_referensi_biodata_id"
+        text alamat_ktp "alamat_ktp"
+        text alamat_domisili "alamat_domisili"
+        varchar no_hp "no_hp"
+        varchar email_pribadi "email_pribadi"
+        varchar foto_path "foto_path"
+        int tahun_masuk "tahun_masuk"
+        varchar status_mahasiswa "status_mahasiswa"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+        timestamp deleted_at "deleted_at"
+    }
+    data_orang_tuas {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        varchar nama_ayah "nama_ayah"
+        varchar nama_ibu "nama_ibu"
+        bigint pekerjaan_ayah_referensi_id FK "pekerjaan_ayah_referensi_id"
+        bigint pekerjaan_ibu_referensi_id FK "pekerjaan_ibu_referensi_id"
+        bigint penghasilan_ortu_referensi_id FK "penghasilan_ortu_referensi_id"
+        varchar no_hp_kontak_darurat "no_hp_kontak_darurat"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    cekals {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        text alasan "alasan"
+        tinyint is_active "is_active"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    status_akademik_historis {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint tahun_ajaran_id FK "tahun_ajaran_id"
+        varchar status "status"
+        text keterangan "keterangan"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    aktivitas_mahasiswas {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint jenis_aktivitas_id FK "jenis_aktivitas_id"
+        varchar nama_kegiatan "nama_kegiatan"
+        tinyint divalidasi "divalidasi"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    pelanggaran_mahasiswas {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint jenis_pelanggaran_id FK "jenis_pelanggaran_id"
+        bigint sanksi_id FK "sanksi_id"
+        date tanggal "tanggal"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    activity_logs {
+        bigint id PK "id"
+        bigint user_id FK "user_id"
+        varchar action "action"
+        varchar entity_type "entity_type"
+        bigint entity_id "entity_id"
+        json old_values "old_values"
+        json new_values "new_values"
+        varchar ip_address "ip_address"
+        text user_agent "user_agent"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    pddikti_mappings {
+        bigint id PK "id"
+        varchar local_table "local_table"
+        bigint local_id "local_id"
+        varchar pddikti_table "pddikti_table"
+        varchar pddikti_id "pddikti_id"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    pddikti_sync_logs {
+        bigint id PK "id"
+        varchar table_name "table_name"
+        bigint record_id "record_id"
+        varchar action "action"
+        varchar status "status"
+        varchar pddikti_id "pddikti_id"
+        text error_message "error_message"
+        timestamp synced_at "synced_at"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    system_configs {
+        bigint id PK "id"
+        varchar key UK "key"
+        text value "value"
+        varchar description "description"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    notifications {
+        char id PK "id"
+        varchar type "type"
+        varchar notifiable_type "notifiable_type"
+        bigint notifiable_id "notifiable_id"
+        text data "data"
+        timestamp read_at "read_at"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    sessions {
+        varchar id PK "id"
+        bigint user_id "user_id"
+        varchar ip_address "ip_address"
+        text user_agent "user_agent"
+        longtext payload "payload"
+        int last_activity "last_activity"
+    }
+    jobs {
+        bigint id PK "id"
+        varchar queue "queue"
+        longtext payload "payload"
+        smallint attempts "attempts"
+        int reserved_at "reserved_at"
+        int available_at "available_at"
+        int created_at "created_at"
+    }
+    job_batches {
+        varchar id PK "id"
+        varchar name "name"
+        int total_jobs "total_jobs"
+        int pending_jobs "pending_jobs"
+        int failed_jobs "failed_jobs"
+        longtext failed_job_ids "failed_job_ids"
+        mediumtext options "options"
+        int cancelled_at "cancelled_at"
+        int created_at "created_at"
+        int finished_at "finished_at"
+    }
+    failed_jobs {
+        bigint id PK "id"
+        varchar uuid UK "uuid"
+        varchar connection "connection"
+        varchar queue "queue"
+        longtext payload "payload"
+        longtext exception "exception"
+        timestamp failed_at "failed_at"
+    }
+    cache {
+        varchar key PK "key"
+        mediumtext value "value"
+        bigint expiration "expiration"
+    }
+    cache_locks {
+        varchar key PK "key"
+        varchar owner "owner"
+        bigint expiration "expiration"
+    }
+    migrations {
+        int id PK "id"
+        varchar migration "migration"
+        int batch "batch"
+    }
+    password_reset_tokens {
+        varchar email PK "email"
+        varchar token "token"
+        timestamp created_at "created_at"
+    }
+    unit_kerjas |o--o{ pegawais : "unit_kerja_id"
+    dosens ||--o{ riwayat_pendidikan_dosens : "dosen_id"
+    dosens ||--o{ riwayat_jabatan_fungsionals : "dosen_id"
+    dosens ||--o{ dosen_walis : "dosen_id"
+    mahasiswas ||--o{ dosen_walis : "mahasiswa_id"
+    mahasiswas ||--o{ data_orang_tuas : "mahasiswa_id"
+    mahasiswas ||--o{ cekals : "mahasiswa_id"
+    mahasiswas ||--o{ status_akademik_historis : "mahasiswa_id"
+    mahasiswas ||--o{ aktivitas_mahasiswas : "mahasiswa_id"
+    mahasiswas ||--o{ pelanggaran_mahasiswas : "mahasiswa_id"
+```
+
+## 3. Inventarisasi Tabel Domain
+
+| Nama Tabel | Total Kolom | Primary Key | Total FK | Keterangan Fungsi |
+|---|---|---|---|---|
+| `unit_kerjas` | 5 | `id` | 0 | Tabel operasional modul unit kerjas |
+| `pegawais` | 18 | `id` | 2 | Tabel operasional modul pegawais |
+| `dosens` | 27 | `id` | 2 | Tabel operasional modul dosens |
+| `riwayat_pendidikan_dosens` | 8 | `id` | 1 | Tabel operasional modul riwayat pendidikan dosens |
+| `riwayat_jabatan_fungsionals` | 7 | `id` | 1 | Tabel operasional modul riwayat jabatan fungsionals |
+| `dosen_walis` | 6 | `id` | 3 | Tabel operasional modul dosen walis |
+| `mahasiswas` | 22 | `id` | 4 | Tabel operasional modul mahasiswas |
+| `data_orang_tuas` | 10 | `id` | 4 | Tabel operasional modul data orang tuas |
+| `cekals` | 6 | `id` | 1 | Tabel operasional modul cekals |
+| `status_akademik_historis` | 7 | `id` | 2 | Tabel operasional modul status akademik historis |
+| `aktivitas_mahasiswas` | 7 | `id` | 2 | Tabel operasional modul aktivitas mahasiswas |
+| `pelanggaran_mahasiswas` | 7 | `id` | 3 | Tabel operasional modul pelanggaran mahasiswas |
+| `activity_logs` | 11 | `id` | 1 | Tabel operasional modul activity logs |
+| `pddikti_mappings` | 7 | `id` | 0 | Tabel operasional modul pddikti mappings |
+| `pddikti_sync_logs` | 10 | `id` | 0 | Tabel operasional modul pddikti sync logs |
+| `system_configs` | 6 | `id` | 0 | Tabel operasional modul system configs |
+| `notifications` | 8 | `id` | 0 | Tabel operasional modul notifications |
+| `sessions` | 6 | `id` | 0 | Tabel operasional modul sessions |
+| `jobs` | 7 | `id` | 0 | Tabel operasional modul jobs |
+| `job_batches` | 10 | `id` | 0 | Tabel operasional modul job batches |
+| `failed_jobs` | 7 | `id` | 0 | Tabel operasional modul failed jobs |
+| `cache` | 3 | `key` | 0 | Tabel operasional modul cache |
+| `cache_locks` | 3 | `key` | 0 | Tabel operasional modul cache locks |
+| `migrations` | 3 | `id` | 0 | Tabel operasional modul migrations |
+| `password_reset_tokens` | 3 | `email` | 0 | Tabel operasional modul password reset tokens |
+
+---
+*Dokumentasi ini digenerate secara otomatis berdasarkan skema database fisik aktif `siakad_db`.*

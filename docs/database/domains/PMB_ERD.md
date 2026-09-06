@@ -1,0 +1,132 @@
+# Domain ERD: Penerimaan Mahasiswa Baru (PMB) & Registrasi Ulang
+
+## 1. Deskripsi Domain
+Dokumentasi ERD untuk proses seleksi calon mahasiswa baru: jalur pendaftaran, gelombang pendaftaran, biodata calon mahasiswa, upload berkas digital, jadwal tes seleksi, pengumuman hasil seleksi, periode her-registrasi, transaksi registrasi ulang, dan verifikasi dokumen fisik sebelum konversi menjadi mahasiswa resmi.
+
+## 2. Diagram ERD (Crow's Foot Notation)
+
+```mermaid
+erDiagram
+    jalur_pendaftarans {
+        bigint id PK "id"
+        varchar nama "nama"
+        decimal biaya_pendaftaran "biaya_pendaftaran"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    gelombang_pendaftarans {
+        bigint id PK "id"
+        varchar nama "nama"
+        date mulai_pendaftaran "mulai_pendaftaran"
+        date selesai_pendaftaran "selesai_pendaftaran"
+        int kuota "kuota"
+        tinyint is_active "is_active"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    calon_mahasiswas {
+        bigint id PK "id"
+        bigint user_id FK "user_id"
+        bigint gelombang_pendaftaran_id FK "gelombang_pendaftaran_id"
+        bigint jalur_pendaftaran_id FK "jalur_pendaftaran_id"
+        bigint program_studi_pilihan_1_id FK "program_studi_pilihan_1_id"
+        bigint program_studi_pilihan_2_id FK "program_studi_pilihan_2_id"
+        varchar nama_lengkap "nama_lengkap"
+        varchar nik UK "nik"
+        varchar nik_hash UK "nik_hash"
+        varchar tempat_lahir "tempat_lahir"
+        date tanggal_lahir "tanggal_lahir"
+        varchar jenis_kelamin "jenis_kelamin"
+        text alamat "alamat"
+        varchar no_hp "no_hp"
+        varchar email "email"
+        varchar asal_sekolah "asal_sekolah"
+        int tahun_lulus_sekolah "tahun_lulus_sekolah"
+        varchar status_pendaftaran "status_pendaftaran"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+        timestamp deleted_at "deleted_at"
+    }
+    berkas_pendaftarans {
+        bigint id PK "id"
+        bigint calon_mahasiswa_id FK "calon_mahasiswa_id"
+        varchar jenis_berkas "jenis_berkas"
+        varchar file_path "file_path"
+        varchar status_verifikasi "status_verifikasi"
+        text catatan_verifikasi "catatan_verifikasi"
+        bigint diverifikasi_oleh_user_id FK "diverifikasi_oleh_user_id"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    jadwal_seleksis {
+        bigint id PK "id"
+        bigint calon_mahasiswa_id FK "calon_mahasiswa_id"
+        varchar jenis_tes "jenis_tes"
+        date tanggal "tanggal"
+        varchar lokasi_atau_link "lokasi_atau_link"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    hasil_seleksis {
+        bigint id PK "id"
+        bigint calon_mahasiswa_id FK "calon_mahasiswa_id"
+        decimal nilai_tes "nilai_tes"
+        varchar status "status"
+        text catatan "catatan"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    periode_registrasis {
+        bigint id PK "id"
+        bigint tahun_ajaran_id FK "tahun_ajaran_id"
+        varchar jenis "jenis"
+        date mulai "mulai"
+        date selesai "selesai"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    registrasi_ulangs {
+        bigint id PK "id"
+        bigint periode_registrasi_id FK "periode_registrasi_id"
+        bigint calon_mahasiswa_id FK "calon_mahasiswa_id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        varchar status "status"
+        timestamp selesai_at "selesai_at"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    dokumen_registrasis {
+        bigint id PK "id"
+        bigint registrasi_ulang_id FK "registrasi_ulang_id"
+        varchar jenis_dokumen "jenis_dokumen"
+        varchar file_path "file_path"
+        varchar status_verifikasi "status_verifikasi"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    gelombang_pendaftarans ||--o{ calon_mahasiswas : "gelombang_pendaftaran_id"
+    jalur_pendaftarans ||--o{ calon_mahasiswas : "jalur_pendaftaran_id"
+    calon_mahasiswas ||--o{ berkas_pendaftarans : "calon_mahasiswa_id"
+    calon_mahasiswas ||--o{ jadwal_seleksis : "calon_mahasiswa_id"
+    calon_mahasiswas ||--o{ hasil_seleksis : "calon_mahasiswa_id"
+    calon_mahasiswas |o--o{ registrasi_ulangs : "calon_mahasiswa_id"
+    periode_registrasis ||--o{ registrasi_ulangs : "periode_registrasi_id"
+    registrasi_ulangs ||--o{ dokumen_registrasis : "registrasi_ulang_id"
+```
+
+## 3. Inventarisasi Tabel Domain
+
+| Nama Tabel | Total Kolom | Primary Key | Total FK | Keterangan Fungsi |
+|---|---|---|---|---|
+| `jalur_pendaftarans` | 5 | `id` | 0 | Tabel operasional modul jalur pendaftarans |
+| `gelombang_pendaftarans` | 8 | `id` | 0 | Tabel operasional modul gelombang pendaftarans |
+| `calon_mahasiswas` | 21 | `id` | 5 | Tabel operasional modul calon mahasiswas |
+| `berkas_pendaftarans` | 9 | `id` | 2 | Tabel operasional modul berkas pendaftarans |
+| `jadwal_seleksis` | 7 | `id` | 1 | Tabel operasional modul jadwal seleksis |
+| `hasil_seleksis` | 7 | `id` | 1 | Tabel operasional modul hasil seleksis |
+| `periode_registrasis` | 7 | `id` | 1 | Tabel operasional modul periode registrasis |
+| `registrasi_ulangs` | 8 | `id` | 3 | Tabel operasional modul registrasi ulangs |
+| `dokumen_registrasis` | 7 | `id` | 1 | Tabel operasional modul dokumen registrasis |
+
+---
+*Dokumentasi ini digenerate secara otomatis berdasarkan skema database fisik aktif `siakad_db`.*

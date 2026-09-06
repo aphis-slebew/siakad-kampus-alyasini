@@ -129,10 +129,29 @@ class KrsController extends Controller
      */
     public function approveKrs(Krs $krs, KrsService $krsService): RedirectResponse
     {
-        $dosen = Dosen::where('user_id', auth()->id())->first();
+        $user = auth()->user();
+        if (! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi', 'dosen'])
+            && ! in_array($user->user_type, ['superadmin', 'admin_akademik', 'kaprodi', 'dosen'])) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk menyetujui KRS.');
+        }
+
+        $dosen = Dosen::where('user_id', $user->id)->first();
+        if ($user->hasRole('dosen') && ! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi'])) {
+            if (! $dosen) {
+                abort(403, 'Profil dosen tidak ditemukan.');
+            }
+            $isDosenWali = $krs->mahasiswa->dosenWalis()
+                ->where('dosen_id', $dosen->id)
+                ->where('tahun_ajaran_id', $krs->tahun_ajaran_id)
+                ->exists();
+            if (! $isDosenWali) {
+                abort(403, 'Akses Ditolak: Anda bukan Dosen Wali mahasiswa ini untuk tahun ajaran terkait.');
+            }
+        }
 
         try {
-            $krsService->approveKrsByDosenWali($krs, $dosen?->id ?? auth()->id());
+            $approverId = $dosen ? (int) $dosen->id : (int) auth()->id();
+            $krsService->approveKrsByDosenWali($krs, $approverId);
 
             return back()->with('success', 'KRS Mahasiswa berhasil disetujui.');
         } catch (Exception $e) {
@@ -145,16 +164,35 @@ class KrsController extends Controller
      */
     public function rejectKrs(Request $request, Krs $krs, KrsService $krsService): RedirectResponse
     {
+        $user = auth()->user();
+        if (! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi', 'dosen'])
+            && ! in_array($user->user_type, ['superadmin', 'admin_akademik', 'kaprodi', 'dosen'])) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk menolak KRS.');
+        }
+
+        $dosen = Dosen::where('user_id', $user->id)->first();
+        if ($user->hasRole('dosen') && ! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi'])) {
+            if (! $dosen) {
+                abort(403, 'Profil dosen tidak ditemukan.');
+            }
+            $isDosenWali = $krs->mahasiswa->dosenWalis()
+                ->where('dosen_id', $dosen->id)
+                ->where('tahun_ajaran_id', $krs->tahun_ajaran_id)
+                ->exists();
+            if (! $isDosenWali) {
+                abort(403, 'Akses Ditolak: Anda bukan Dosen Wali mahasiswa ini untuk tahun ajaran terkait.');
+            }
+        }
+
         $validated = $request->validate([
             'catatan' => ['required', 'string', 'max:500'],
         ], [
             'catatan.required' => 'Alasan penolakan KRS wajib diisi.',
         ]);
 
-        $dosen = Dosen::where('user_id', auth()->id())->first();
-
         try {
-            $krsService->rejectKrsByDosenWali($krs, $dosen?->id ?? auth()->id(), $validated['catatan']);
+            $approverId = $dosen ? (int) $dosen->id : (int) auth()->id();
+            $krsService->rejectKrsByDosenWali($krs, $approverId, $validated['catatan']);
 
             return back()->with('success', 'KRS Mahasiswa berhasil ditolak dengan catatan.');
         } catch (Exception $e) {

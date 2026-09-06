@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { AlertCircle, CheckCircle2, CreditCard, ExternalLink, Eye, RefreshCw, XCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle2, CreditCard, ExternalLink, Eye, RefreshCw, XCircle, Calendar } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -7,13 +7,28 @@ import {
     Dialog,
     DialogContent,
     DialogDescription,
+    DialogFooter,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { formatDateIndonesian } from '@/lib/utils';
 import type { SharedData } from '@/types';
 
+type PeriodeRegistrasiOption = {
+    id: number;
+    tahun_ajaran_id: number;
+    jenis: string;
+    mulai: string;
+    selesai: string;
+    tahun_ajaran?: {
+        id: number;
+        nama: string;
+        semester: string;
+        is_active: boolean;
+    };
+};
 
 type Pembayaran = {
     id: number;
@@ -39,13 +54,20 @@ type Pembayaran = {
 
 export default function PembayaranStaffIndex({
     pembayarans = [],
+    periodeRegistrasis = [],
     currentStatus = 'menunggu',
 }: {
     pembayarans: Pembayaran[];
+    periodeRegistrasis?: PeriodeRegistrasiOption[];
     currentStatus: string;
 }) {
     const { errors, flash } = usePage<SharedData & { flash?: { success?: string; error?: string }; errors?: Record<string, string> }>().props;
     const [selectedPembayaran, setSelectedPembayaran] = useState<Pembayaran | null>(null);
+    const [isBatchModalOpen, setIsBatchModalOpen] = useState(false);
+    const [selectedPeriodeId, setSelectedPeriodeId] = useState<string>(
+        periodeRegistrasis[0] ? String(periodeRegistrasis[0].id) : ''
+    );
+    const [isGenerating, setIsGenerating] = useState(false);
     const { confirm, confirmDialog } = useConfirmDialog();
 
     const handleVerify = (item: Pembayaran, status: 'diverifikasi' | 'ditolak') => {
@@ -66,6 +88,19 @@ export default function PembayaranStaffIndex({
 
     const handleFilterStatus = (status: string) => {
         router.get('/keuangan/pembayaran', { status });
+    };
+
+    const handleGenerateBatch = (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsGenerating(true);
+        router.post('/keuangan/generate-ukt-batch', {
+            periode_registrasi_id: selectedPeriodeId ? Number(selectedPeriodeId) : undefined,
+        }, {
+            onFinish: () => {
+                setIsGenerating(false);
+                setIsBatchModalOpen(false);
+            },
+        });
     };
 
     const errorMessage = errors?.verifikasi || errors?.error || flash?.error;
@@ -94,7 +129,7 @@ export default function PembayaranStaffIndex({
                     </div>
 
                     <Button
-                        onClick={() => router.post('/keuangan/generate-ukt-batch', { periode_registrasi_id: 1 })}
+                        onClick={() => setIsBatchModalOpen(true)}
                         variant="outline"
                         className="border-border-default text-text-primary hover:bg-surface-base text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 self-start sm:self-auto"
                     >
@@ -291,6 +326,75 @@ export default function PembayaranStaffIndex({
                             )}
                         </div>
                     )}
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Dialog Konfirmasi Generate Batch UKT */}
+            <Dialog open={isBatchModalOpen} onOpenChange={setIsBatchModalOpen}>
+                <DialogContent className="max-w-md">
+                    <DialogHeader>
+                        <div className="flex items-center gap-2 text-brand-primary">
+                            <RefreshCw className="size-5" />
+                            <DialogTitle className="text-base font-bold">Generate Batch Tagihan UKT</DialogTitle>
+                        </div>
+                        <DialogDescription className="text-xs text-text-secondary">
+                            Pilih periode registrasi akademik untuk membuat tagihan UKT otomatis bagi seluruh mahasiswa yang memiliki penetapan UKT aktif.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <form onSubmit={handleGenerateBatch} className="space-y-4 pt-2">
+                        <div className="space-y-1.5">
+                            <Label className="text-xs font-semibold">Periode Registrasi Akademik</Label>
+                            {periodeRegistrasis.length > 0 ? (
+                                <Select
+                                    value={selectedPeriodeId}
+                                    onValueChange={setSelectedPeriodeId}
+                                >
+                                    <SelectTrigger className="w-full text-xs">
+                                        <SelectValue placeholder="-- Pilih Periode Registrasi --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {periodeRegistrasis.map((p) => (
+                                            <SelectItem key={p.id} value={String(p.id)} className="text-xs">
+                                                <span className="font-semibold">{p.tahun_ajaran?.nama || 'Tahun Ajaran'} ({p.jenis})</span>
+                                                <span className="text-muted-foreground ml-1.5 text-[11px]">
+                                                    ({formatDateIndonesian(p.mulai)} s.d. {formatDateIndonesian(p.selesai)})
+                                                </span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            ) : (
+                                <p className="text-xs text-amber-600 bg-amber-50 p-2.5 rounded border border-amber-200">
+                                    Belum ada periode registrasi yang terdaftar. Tagihan akan menggunakan periode aktif secara otomatis.
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="p-2.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] leading-relaxed">
+                            <strong>Idempoten:</strong> Sistem tidak akan menduplikasi tagihan jika mahasiswa sudah memiliki tagihan UKT pada tahun ajaran yang sama.
+                        </div>
+
+                        <DialogFooter className="gap-2 sm:gap-0">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsBatchModalOpen(false)}
+                                disabled={isGenerating}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                size="sm"
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                                disabled={isGenerating}
+                            >
+                                {isGenerating ? 'Memproses...' : 'Jalankan Batch UKT'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
         </>

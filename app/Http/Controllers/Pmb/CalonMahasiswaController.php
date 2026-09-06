@@ -12,6 +12,7 @@ use App\Services\PmbStateService;
 use Exception;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -129,18 +130,22 @@ class CalonMahasiswaController extends Controller
             'catatan' => ['nullable', 'string'],
         ]);
 
-        $hasil = HasilSeleksi::updateOrCreate(
-            ['calon_mahasiswa_id' => $calonMahasiswa->id],
-            [
-                'nilai_tes' => $validated['nilai_tes'] ?? null,
-                'status' => $validated['status'],
-                'catatan' => $validated['catatan'] ?? null,
-            ]
-        );
+        $hasil = DB::transaction(function () use ($calonMahasiswa, $validated) {
+            $hasil = HasilSeleksi::updateOrCreate(
+                ['calon_mahasiswa_id' => $calonMahasiswa->id],
+                [
+                    'nilai_tes' => $validated['nilai_tes'] ?? null,
+                    'status' => $validated['status'],
+                    'catatan' => $validated['catatan'] ?? null,
+                ]
+            );
 
-        // Update status pendaftaran calon mahasiswa
-        $newStatus = $validated['status'] === 'lulus' ? 'lulus_seleksi' : 'tidak_lulus';
-        $calonMahasiswa->update(['status_pendaftaran' => $newStatus]);
+            // Update status pendaftaran calon mahasiswa
+            $newStatus = $validated['status'] === 'lulus' ? 'lulus_seleksi' : 'tidak_lulus';
+            $calonMahasiswa->update(['status_pendaftaran' => $newStatus]);
+
+            return $hasil;
+        });
 
         if ($calonMahasiswa->user) {
             try {

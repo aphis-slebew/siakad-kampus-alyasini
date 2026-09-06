@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Akademik;
 
 use App\Http\Controllers\Controller;
+use App\Models\Dosen;
 use App\Models\Mahasiswa;
 use App\Models\ProgramStudi;
 use Illuminate\Http\Request;
@@ -21,13 +22,22 @@ class DataMahasiswaController extends Controller
         $status = $request->input('status');
         $angkatan = $request->input('angkatan');
 
+        $user = $request->user();
+        $isKaprodi = $user && $user->hasRole('kaprodi') && ! $user->hasAnyRole(['superadmin', 'admin_akademik']);
+        if ($isKaprodi) {
+            $dosen = Dosen::where('user_id', $user->id)->first();
+            if ($dosen && $dosen->program_studi_id) {
+                $prodiId = (string) $dosen->program_studi_id;
+            }
+        }
+
         $query = Mahasiswa::with(['programStudi', 'user'])
             ->latest('id');
 
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'ilike', "%{$search}%")
-                    ->orWhere('nim', 'ilike', "%{$search}%");
+                $q->where('nama_lengkap', 'like', "%{$search}%")
+                    ->orWhere('nim', 'like', "%{$search}%");
             });
         }
 
@@ -71,6 +81,15 @@ class DataMahasiswaController extends Controller
      */
     public function show(Mahasiswa $mahasiswa): Response
     {
+        $user = auth()->user();
+        $isKaprodi = $user && $user->hasRole('kaprodi') && ! $user->hasAnyRole(['superadmin', 'admin_akademik']);
+        if ($isKaprodi) {
+            $dosen = Dosen::where('user_id', $user->id)->first();
+            if ($dosen && $dosen->program_studi_id && $mahasiswa->program_studi_id !== $dosen->program_studi_id) {
+                abort(403, 'Akses ditolak: Anda hanya berwenang melihat detail mahasiswa di Program Studi Anda.');
+            }
+        }
+
         $mahasiswa->load([
             'programStudi.fakultas',
             'agama',

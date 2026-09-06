@@ -2,6 +2,10 @@ import { Head, router, useForm } from '@inertiajs/react';
 import { BookOpen, Edit, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirmDialog } from '@/components/confirm-dialog';
+import { EmptyState } from '@/components/empty-state';
+import { PageContainer } from '@/components/page-container';
+import { PageHeader } from '@/components/page-header';
+import { StatusBadge } from '@/components/status-badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -31,6 +35,7 @@ type Matakuliah = {
 
 export default function MatakuliahIndex({
     matakuliahs = [],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     bidangIlmus = [],
 }: {
     matakuliahs: Matakuliah[];
@@ -110,40 +115,38 @@ return;
             {confirmDialog}
             <Head title="Kelola Matakuliah Master" />
 
-            <div className="p-4 sm:p-6 space-y-6 font-sans">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                    <div>
-                        <h1 className="text-xl font-semibold text-text-primary">Master Data Matakuliah</h1>
-                        <p className="text-xs text-text-secondary mt-0.5">
-                            Kelola daftar seluruh matakuliah, bobot SKS, dan jenis kelompok matakuliah.
-                        </p>
-                    </div>
+            <PageContainer variant="default">
+                <PageHeader
+                    title="Master Data Matakuliah"
+                    description="Kelola daftar seluruh matakuliah, bobot SKS, dan jenis kelompok matakuliah."
+                    icon={BookOpen}
+                    actions={
+                        <Button
+                            onClick={() => setIsCreateOpen(true)}
+                            className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-lg flex items-center gap-1.5 shadow-xs"
+                        >
+                            <Plus className="size-4" />
+                            Tambah Matakuliah
+                        </Button>
+                    }
+                />
 
-                    <Button
-                        onClick={() => setIsCreateOpen(true)}
-                        className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md flex items-center gap-1.5 self-start sm:self-auto"
-                    >
-                        <Plus className="size-4" />
-                        Tambah Matakuliah
-                    </Button>
-                </div>
-
-                <div className="rounded-lg border border-border-default bg-surface-card shadow-xs overflow-hidden">
+                <div className="rounded-xl border border-border-default bg-surface-card shadow-xs overflow-hidden">
                     {matakuliahs.length === 0 ? (
-                        <div className="p-12 text-center">
-                            <BookOpen className="mx-auto size-10 text-text-secondary/50 mb-3" />
-                            <h3 className="text-sm font-semibold text-text-primary">Belum ada data matakuliah</h3>
-                            <p className="text-xs text-text-secondary mt-1 mb-4">
-                                Tambahkan matakuliah baru ke dalam repositori akademik kampus.
-                            </p>
-                            <Button
-                                onClick={() => setIsCreateOpen(true)}
-                                className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-md inline-flex items-center gap-1.5"
-                            >
-                                <Plus className="size-4" />
-                                Tambah Matakuliah
-                            </Button>
-                        </div>
+                        <EmptyState
+                            icon={BookOpen}
+                            title="Belum ada data matakuliah"
+                            description="Tambahkan matakuliah baru ke dalam repositori akademik kampus."
+                            action={
+                                <Button
+                                    onClick={() => setIsCreateOpen(true)}
+                                    className="bg-brand-primary text-white hover:bg-brand-primary-dark text-xs font-semibold px-4 py-2 rounded-lg inline-flex items-center gap-1.5 shadow-xs"
+                                >
+                                    <Plus className="size-4" />
+                                    Tambah Matakuliah
+                                </Button>
+                            }
+                        />
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="w-full text-left text-xs">
@@ -170,13 +173,11 @@ return;
                                             </td>
                                             <td className="py-3 px-4 font-mono text-center font-semibold">{item.sks} SKS</td>
                                             <td className="py-3 px-4 text-center hidden sm:table-cell">
-                                                <span className={`capitalize px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
-                                                    item.jenis === 'wajib'
-                                                        ? 'bg-brand-primary/10 text-brand-primary border-brand-primary/20'
-                                                        : 'bg-surface-base text-text-secondary border-border-default'
-                                                }`}>
-                                                    {item.jenis}
-                                                </span>
+                                                <StatusBadge
+                                                    variant={item.jenis === 'wajib' ? 'info' : 'neutral'}
+                                                    label={item.jenis}
+                                                    icon={false}
+                                                />
                                             </td>
                                             <td className="py-3 px-4 text-right">
                                                 <div className="flex items-center justify-end gap-1">
@@ -205,7 +206,7 @@ return;
                         </div>
                     )}
                 </div>
-            </div>
+            </PageContainer>
 
             {/* Modal Tambah Matakuliah */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>

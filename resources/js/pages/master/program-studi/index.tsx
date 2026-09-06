@@ -1,7 +1,8 @@
 import { Head, Link, router, useForm } from '@inertiajs/react';
-import { Building2, Edit, Plus, Trash2, Eye, Award, CheckCircle, GraduationCap } from 'lucide-react';
+import { Plus, Trash2, Eye, Award, GraduationCap, UserCheck, Layers } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirmDialog } from '@/components/confirm-dialog';
+import { MasterDataNav } from '@/components/master-data-nav';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MasterDataNav } from '@/components/master-data-nav';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Fakultas = {
     id: number;
@@ -38,12 +39,24 @@ type ProgramStudi = {
     mahasiswas_count?: number;
 };
 
+type DosenOption = {
+    id: number;
+    nama_lengkap: string;
+    nidn: string | null;
+    gelar_depan?: string | null;
+    gelar_belakang?: string | null;
+    niy_nip?: string | null;
+    nama_bergelar?: string;
+};
+
 export default function ProgramStudiIndex({
     programStudis = [],
     fakultas = [],
+    dosens = [],
 }: {
     programStudis: ProgramStudi[];
     fakultas: Fakultas[];
+    dosens?: DosenOption[];
 }) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
 
@@ -180,11 +193,19 @@ export default function ProgramStudiIndex({
                                                 >
                                                     {item.nama}
                                                 </Link>
-                                                {item.nama_singkat && (
-                                                    <span className="text-[11px] text-text-secondary block">
-                                                        {item.nama_singkat}
-                                                    </span>
-                                                )}
+                                                <div className="flex items-center gap-1.5 mt-0.5">
+                                                    {item.nama_singkat && (
+                                                        <span className="text-[11px] text-text-secondary">
+                                                            {item.nama_singkat}
+                                                        </span>
+                                                    )}
+                                                    {Boolean(item.konsentrasis_count && item.konsentrasis_count > 0) && (
+                                                        <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded bg-emerald-50 text-emerald-700 text-[10px] font-semibold border border-emerald-200">
+                                                            <Layers className="size-2.5" />
+                                                            <span>{item.konsentrasis_count} Konsentrasi</span>
+                                                        </span>
+                                                    )}
+                                                </div>
                                             </td>
                                             <td className="p-3 text-text-primary">
                                                 {item.fakultas?.nama || '-'}
@@ -339,13 +360,97 @@ export default function ProgramStudiIndex({
                             </div>
                         </div>
 
+                        {/* Dosen Picker for Kaprodi */}
+                        <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700/60 space-y-2">
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                    <UserCheck className="size-3.5 text-emerald-600" />
+                                    <span>Pilih Ketua Program Studi (Kaprodi) dari Data Dosen</span>
+                                </Label>
+                                <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Snapshot Reference</span>
+                            </div>
+                            <Select
+                                onValueChange={(val) => {
+                                    const selected = dosens.find((d) => String(d.id) === val);
+
+                                    if (selected) {
+                                        createForm.setData((prev) => ({
+                                            ...prev,
+                                            ketua_prodi_nama: selected.nama_bergelar || selected.nama_lengkap,
+                                            ketua_prodi_nidn: selected.nidn || selected.niy_nip || '',
+                                        }));
+                                    }
+                                }}
+                            >
+                                <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-900">
+                                    <SelectValue placeholder="-- Pilih Dosen untuk Kaprodi --" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {dosens.map((d) => (
+                                        <SelectItem key={d.id} value={String(d.id)} className="text-xs">
+                                            <span className="font-mono text-muted-foreground mr-1.5">[{d.nidn || d.niy_nip || 'Tanpa NIDN'}]</span>
+                                            <span className="font-medium">{d.nama_bergelar || d.nama_lengkap}</span>
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[11px] text-muted-foreground">
+                                Memilih dosen akan otomatis mengisi kolom Nama Bergelar dan NIDN Kaprodi di bawah.
+                            </p>
+                        </div>
+
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <div className="space-y-1">
-                                <Label className="text-xs">Ketua Program Studi (Kaprodi)</Label>
+                                <Label className="text-xs">Ketua Program Studi (Nama & Gelar)</Label>
                                 <Input
                                     value={createForm.data.ketua_prodi_nama}
                                     onChange={(e) => createForm.setData('ketua_prodi_nama', e.target.value)}
                                     placeholder="e.g. Dr. H. Ja'far, M.Pd.I"
+                                    className="h-8 text-xs"
+                                />
+                            </div>
+                            <div className="space-y-1">
+                                <Label className="text-xs">NIDN Ketua Prodi</Label>
+                                <Input
+                                    value={createForm.data.ketua_prodi_nidn}
+                                    onChange={(e) => createForm.setData('ketua_prodi_nidn', e.target.value)}
+                                    placeholder="e.g. 2108098201"
+                                    className="h-8 text-xs font-mono"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs">Sekretaris Program Studi (Sekprodi)</Label>
+                                    <Select
+                                        onValueChange={(val) => {
+                                            const selected = dosens.find((d) => String(d.id) === val);
+
+                                            if (selected) {
+                                                const name = selected.nama_bergelar || selected.nama_lengkap;
+                                                createForm.setData('sekretaris_prodi_nama', name);
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="h-6 text-[11px] px-2 py-0 border-dashed text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/50 border-emerald-300 w-auto gap-1">
+                                            <span className="text-[11px]">Pilih Dosen</span>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {dosens.map((d) => (
+                                                <SelectItem key={d.id} value={String(d.id)} className="text-xs">
+                                                    <span className="font-mono text-muted-foreground mr-1.5">[{d.nidn || d.niy_nip || '-'}]</span>
+                                                    <span>{d.nama_bergelar || d.nama_lengkap}</span>
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <Input
+                                    value={createForm.data.sekretaris_prodi_nama}
+                                    onChange={(e) => createForm.setData('sekretaris_prodi_nama', e.target.value)}
+                                    placeholder="e.g. Nur Kholis, M.Pd"
                                     className="h-8 text-xs"
                                 />
                             </div>

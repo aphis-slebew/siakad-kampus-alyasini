@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Pegawai;
 use App\Models\UnitKerja;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -92,7 +93,13 @@ class PegawaiManagementController extends Controller
             unset($validated['create_user_account'], $validated['email'], $validated['user_role'], $validated['password']);
             $validated['user_id'] = $userId;
 
-            Pegawai::create($validated);
+            $pegawai = Pegawai::create($validated);
+
+            ActivityLogger::log('kepegawaian.pegawai.create', 'Pegawai', $pegawai->id, null, [
+                'nama_lengkap' => $pegawai->nama_lengkap,
+                'nip_internal' => $pegawai->nip_internal,
+                'unit_kerja_id' => $pegawai->unit_kerja_id,
+            ]);
         });
 
         return back()->with('success', 'Data pegawai berhasil ditambahkan.');
@@ -116,6 +123,12 @@ class PegawaiManagementController extends Controller
             'status_kepegawaian' => 'required|in:tetap,kontrak,honorer',
         ]);
 
+        $oldData = [
+            'nama_lengkap' => $pegawai->nama_lengkap,
+            'unit_kerja_id' => $pegawai->unit_kerja_id,
+            'status_kepegawaian' => $pegawai->status_kepegawaian,
+        ];
+
         $pegawai->update($validated);
 
         if ($pegawai->user) {
@@ -123,6 +136,12 @@ class PegawaiManagementController extends Controller
                 'name' => $validated['nama_lengkap'],
             ]);
         }
+
+        ActivityLogger::log('kepegawaian.pegawai.update', 'Pegawai', $pegawai->id, $oldData, [
+            'nama_lengkap' => $pegawai->nama_lengkap,
+            'unit_kerja_id' => $pegawai->unit_kerja_id,
+            'status_kepegawaian' => $pegawai->status_kepegawaian,
+        ]);
 
         return back()->with('success', 'Data pegawai berhasil diperbarui.');
     }
@@ -132,7 +151,18 @@ class PegawaiManagementController extends Controller
      */
     public function destroy(Pegawai $pegawai): RedirectResponse
     {
-        $pegawai->delete();
+        DB::transaction(function () use ($pegawai) {
+            if ($pegawai->user) {
+                $pegawai->user->update(['status' => 'nonaktif']);
+            }
+
+            ActivityLogger::log('kepegawaian.pegawai.delete', 'Pegawai', $pegawai->id, [
+                'nama_lengkap' => $pegawai->nama_lengkap,
+                'nip_internal' => $pegawai->nip_internal,
+            ], null);
+
+            $pegawai->delete();
+        });
 
         return back()->with('success', 'Data pegawai berhasil dihapus.');
     }

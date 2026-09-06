@@ -15,8 +15,10 @@ if (typeof window !== 'undefined' && typeof Node === 'function' && Node.prototyp
             if (console) {
                 console.warn('Cannot remove child: not a child of this node.', this, child);
             }
+
             return child;
         }
+
         return originalRemoveChild.apply(this, [child]) as T;
     };
 
@@ -26,8 +28,10 @@ if (typeof window !== 'undefined' && typeof Node === 'function' && Node.prototyp
             if (console) {
                 console.warn('Cannot insert before: reference node not a child of this node.', this, referenceNode);
             }
+
             return newNode;
         }
+
         return originalInsertBefore.apply(this, [newNode, referenceNode]) as T;
     };
 }

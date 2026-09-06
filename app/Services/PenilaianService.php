@@ -3,11 +3,13 @@
 namespace App\Services;
 
 use App\Models\Dosen;
+use App\Models\KalenderAkademik;
 use App\Models\KelasKuliah;
 use App\Models\KomposisiNilai;
 use App\Models\KrsDetail;
 use App\Models\Nilai;
 use App\Models\SkalaNilai;
+use App\Models\User;
 use DomainException;
 use Illuminate\Support\Facades\DB;
 
@@ -41,9 +43,21 @@ class PenilaianService
     /**
      * Dosen inputs numeric scores for a student in a class.
      * IMMUNITY CHECK: If grades are already finalized (is_final = true), CANNOT be edited directly.
+     * TIMELINE CHECK: Verify input_nilai schedule on Kalender Akademik (bypass for admin/superadmin).
      */
-    public function inputNilaiByDosen(KelasKuliah $kelas, int $krsDetailId, array $komponenScores, int $dosenUserId): void
+    public function inputNilaiByDosen(KelasKuliah $kelas, int $krsDetailId, array $komponenScores, int $dosenUserId, bool $bypassTimeline = false): void
     {
+        $user = User::find($dosenUserId);
+        $isPrivileged = $bypassTimeline || ($user && ($user->hasRole('superadmin') || $user->hasRole('admin_akademik')));
+
+        // TIMELINE ENGINE CHECK: Verify input_nilai schedule on Kalender Akademik
+        if (! $isPrivileged && $kelas->tahun_ajaran_id) {
+            $timeline = AcademicTimelineService::getTimelineStatus($kelas->tahun_ajaran_id, KalenderAkademik::TIPE_INPUT_NILAI);
+            if ($timeline['is_configured'] && ! $timeline['is_open']) {
+                throw new DomainException("PERIODE PENGISIAN NILAI DITUTUP: {$timeline['message']} Hubungi Admin Akademik jika memerlukan perpanjangan jadwal atau pemutihan nilai.");
+            }
+        }
+
         $dosen = Dosen::where('user_id', $dosenUserId)->first();
         if (! $dosen || ! $kelas->dosenPengajars()->where('dosen_id', $dosen->id)->exists()) {
             throw new DomainException('AKSES DITOLAK: Anda bukan dosen pengajar yang ditugaskan pada kelas kuliah ini.');

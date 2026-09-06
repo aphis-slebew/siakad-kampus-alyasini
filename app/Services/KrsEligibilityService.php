@@ -4,9 +4,9 @@ namespace App\Services;
 
 use App\Models\Cekal;
 use App\Models\CicilanTagihan;
+use App\Models\KalenderAkademik;
 use App\Models\Mahasiswa;
 use App\Models\RegistrasiUlang;
-use App\Models\SystemConfig;
 use App\Models\Tagihan;
 
 class KrsEligibilityService
@@ -14,6 +14,7 @@ class KrsEligibilityService
     /**
      * Evaluate the 3 mandatory conditions for KRS submission eligibility (02-Database-Schema.md §11).
      *
+     * SYARAT 0: Jadwal KRS aktif pada Kalender Akademik (Timeline Engine).
      * SYARAT 1: Tidak sedang memiliki status Cekal aktif (is_active = true).
      * SYARAT 2: Telah menyelesaikan Registrasi Ulang (status = 'selesai').
      * SYARAT 3: Tagihan UKT telah 'lunas' ATAU memiliki skema cicilan (cicilan_tagihans) aktif & TANPA cicilan menunggak (melewati jatuh tempo).
@@ -23,15 +24,11 @@ class KrsEligibilityService
     public static function evaluate(Mahasiswa $mahasiswa, int $tahunAjaranId): array
     {
         $reasons = [];
-        $today = date('Y-m-d');
-        $openDate = SystemConfig::getValue('KRS_OPENING_DATE', '');
-        $closeDate = SystemConfig::getValue('KRS_CLOSING_DATE', '');
 
-        if ($openDate && $today < $openDate) {
-            $reasons[] = "Pengajuan KRS belum dibuka (Jadwal Pembukaan: {$openDate}).";
-        }
-        if ($closeDate && $today > $closeDate) {
-            $reasons[] = "Pengajuan KRS telah ditutup (Batas Akhir: {$closeDate}).";
+        // 0. Syarat 0: Evaluasi Timeline Kalender Akademik
+        $timeline = AcademicTimelineService::getTimelineStatus($tahunAjaranId, KalenderAkademik::TIPE_KRS);
+        if ($timeline['is_configured'] && ! $timeline['is_open']) {
+            $reasons[] = $timeline['message'];
         }
 
         // 1. Syarat 1: Cekal Aktif

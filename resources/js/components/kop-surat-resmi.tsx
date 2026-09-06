@@ -1,31 +1,40 @@
 import { usePage } from '@inertiajs/react';
 import { GraduationCap } from 'lucide-react';
 
-interface PerguruanTinggiShared {
-    nama_unit?: string;
-    nama_singkat?: string;
-    lembaga_naungan?: string;
-    peringkat_akreditasi?: string;
-    lembaga_akreditasi?: string;
-    no_sk_pendirian?: string;
-    no_sk_akreditasi?: string;
-    alamat?: string;
-    website?: string;
-    email?: string;
-    telepon?: string;
+export interface PerguruanTinggiShared {
+    nama_unit?: string | null;
+    nama_singkat?: string | null;
+    lembaga_naungan?: string | null;
+    peringkat_akreditasi?: string | null;
+    lembaga_akreditasi?: string | null;
+    no_sk_pendirian?: string | null;
+    no_sk_akreditasi?: string | null;
+    alamat?: string | null;
+    website?: string | null;
+    email?: string | null;
+    telepon?: string | null;
+    logo_url?: string | null;
+    logo_kop_url?: string | null;
+    stempel_url?: string | null;
+    ttd_ketua_url?: string | null;
 }
 
 export function KopSuratResmi({
     title,
     subtitle,
     nomorDokumen,
+    data,
+    className = '',
 }: {
     title?: string;
     subtitle?: string;
     nomorDokumen?: string;
+    data?: PerguruanTinggiShared;
+    className?: string;
 }) {
     const { props } = usePage();
-    const pt = (props as Record<string, unknown>).perguruanTinggi as PerguruanTinggiShared | undefined;
+    const pagePt = (props as Record<string, unknown>).perguruanTinggi as PerguruanTinggiShared | undefined;
+    const pt = data || pagePt;
 
     const lembagaNaungan = pt?.lembaga_naungan || 'Yayasan Pondok Pesantren Terpadu Al-Yasini';
     const namaKampus = pt?.nama_unit || 'Sekolah Tinggi Agama Islam (STAI) Al-Yasini Pasuruan';
@@ -34,14 +43,25 @@ export function KopSuratResmi({
         : 'Terakreditasi BAN-PT / LAMDIK • SK Pendirian Kemenag RI';
     const alamatText = pt?.alamat || 'Jl. Pesantren Terpadu Al-Yasini Kec. Wonorejo Kab. Pasuruan 67173';
     const kontakText = `Website: ${pt?.website || 'www.stai-alyasini.ac.id'} • Email: ${pt?.email || 'info@stai-alyasini.ac.id'} • Telp: ${pt?.telepon || '081333220202'}`;
+    const logoUrl = pt?.logo_kop_url || pt?.logo_url;
 
     return (
-        <div className="w-full text-center select-none font-sans">
+        <div className={`w-full text-center select-none font-sans ${className}`}>
             {/* Header / Kop */}
             <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900 gap-4">
-                {/* Logo placeholder / Emblem */}
-                <div className="w-20 h-20 shrink-0 flex items-center justify-center rounded-full border-2 border-brand-primary bg-brand-primary/5 text-brand-primary">
-                    <GraduationCap className="size-10 text-brand-primary" />
+                {/* Logo Kampus / Emblem */}
+                <div className="w-20 h-20 shrink-0 flex items-center justify-center">
+                    {logoUrl ? (
+                        <img
+                            src={logoUrl}
+                            alt={namaKampus}
+                            className="max-w-full max-h-full object-contain"
+                        />
+                    ) : (
+                        <div className="w-20 h-20 shrink-0 flex items-center justify-center rounded-full border-2 border-brand-primary bg-brand-primary/5 text-brand-primary">
+                            <GraduationCap className="size-10 text-brand-primary" />
+                        </div>
+                    )}
                 </div>
 
                 {/* Institute Info */}

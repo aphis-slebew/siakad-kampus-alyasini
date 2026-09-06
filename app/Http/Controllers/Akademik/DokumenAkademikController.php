@@ -35,12 +35,17 @@ class DokumenAkademikController extends Controller
             return $currentMahasiswa;
         }
 
-        if ($mahasiswa) {
-            return $mahasiswa;
+        // Academic and staff roles allowed to access student documents
+        if ($user->hasAnyRole(['superadmin', 'admin_akademik', 'dosen', 'kaprodi', 'staf_kepegawaian', 'operator_kemahasiswaan', 'staf_keuangan'])
+            || in_array($user->user_type, ['superadmin', 'admin_akademik', 'dosen', 'kaprodi', 'pegawai'])) {
+            if ($mahasiswa) {
+                return $mahasiswa;
+            }
+
+            abort(404, 'Mahasiswa tidak ditentukan.');
         }
 
-        // If admin/dosen hits without param, take first or fail
-        abort(404, 'Mahasiswa tidak ditentukan.');
+        abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mengakses dokumen akademik mahasiswa.');
     }
 
     /**
@@ -51,9 +56,10 @@ class DokumenAkademikController extends Controller
         $target = $this->resolveMahasiswa($mahasiswa);
         $target->load(['programStudi.fakultas', 'dosenWalis.dosen']);
 
-        $tahunAjaran = $request->filled('tahun_ajaran_id')
-            ? TahunAjaran::findOrFail($request->input('tahun_ajaran_id'))
-            : (TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->first());
+        $tahunAjaranId = $request->input('tahun_ajaran_id');
+        $tahunAjaran = is_numeric($tahunAjaranId)
+            ? TahunAjaran::findOrFail((int) $tahunAjaranId)
+            : (TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->firstOrFail());
 
         $krs = Krs::with([
             'krsDetails.kelasKuliah.kurikulumMatakuliah.matakuliah',
@@ -86,11 +92,12 @@ class DokumenAkademikController extends Controller
         $target = $this->resolveMahasiswa($mahasiswa);
         $target->load(['programStudi.fakultas', 'dosenWalis.dosen']);
 
-        $tahunAjaran = $request->filled('tahun_ajaran_id')
-            ? TahunAjaran::findOrFail($request->input('tahun_ajaran_id'))
-            : (TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->first());
+        $tahunAjaranId = $request->input('tahun_ajaran_id');
+        $tahunAjaran = is_numeric($tahunAjaranId)
+            ? TahunAjaran::findOrFail((int) $tahunAjaranId)
+            : (TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->firstOrFail());
 
-        $khsData = $khsService->generateKhs($target, $tahunAjaran->id, auth()->id());
+        $khsData = $khsService->generateKhs($target, $tahunAjaran->id, auth()->id() ? (int) auth()->id() : null);
 
         $dosenWali = $target->dosenWalis
             ->where('tahun_ajaran_id', $tahunAjaran->id)
@@ -188,9 +195,10 @@ class DokumenAkademikController extends Controller
         $target->load(['programStudi.fakultas']);
 
         $jenisUjian = $request->input('jenis', 'UAS'); // UTS | UAS
-        $tahunAjaran = $request->filled('tahun_ajaran_id')
-            ? TahunAjaran::findOrFail($request->input('tahun_ajaran_id'))
-            : (TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->first());
+        $tahunAjaranId = $request->input('tahun_ajaran_id');
+        $tahunAjaran = is_numeric($tahunAjaranId)
+            ? TahunAjaran::findOrFail((int) $tahunAjaranId)
+            : (TahunAjaran::where('is_active', true)->first() ?? TahunAjaran::latest()->firstOrFail());
 
         // Status Kelunasan Keuangan
         $tagihanPending = Tagihan::where('mahasiswa_id', $target->id)
@@ -223,6 +231,12 @@ class DokumenAkademikController extends Controller
     public function cetakBeritaAcaraKelas(Request $request, KelasKuliah $kelas): Response
     {
         $user = auth()->user();
+
+        // Only superadmin, admin_akademik, kaprodi, and assigned lecturers can access Berita Acara
+        if (! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi', 'dosen'])
+            && ! in_array($user->user_type, ['superadmin', 'admin_akademik', 'kaprodi', 'dosen', 'pegawai'])) {
+            abort(403, 'Akses Ditolak: Hanya dosen pengajar atau administrator akademik yang berhak mencetak berita acara perkuliahan.');
+        }
 
         // Check if user is dosen pengajar of this class or admin
         if ($user->hasRole('dosen') || $user->user_type === 'dosen') {

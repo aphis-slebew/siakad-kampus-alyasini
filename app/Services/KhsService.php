@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Models\KomposisiNilai;
 use App\Models\Krs;
 use App\Models\Mahasiswa;
 use App\Models\SkalaNilai;
@@ -27,6 +26,7 @@ class KhsService
         $krs = Krs::with([
             'tahunAjaran',
             'krsDetails.kelasKuliah.kurikulumMatakuliah.matakuliah',
+            'krsDetails.kelasKuliah.komposisiNilais',
             'krsDetails.nilais',
         ])
             ->where('mahasiswa_id', $mahasiswa->id)
@@ -47,6 +47,7 @@ class KhsService
         $items = [];
         $totalSks = 0;
         $totalSksXBobot = 0.00;
+        $skalaNilais = SkalaNilai::all();
 
         foreach ($krs->krsDetails as $detail) {
             $kelas = $detail->kelasKuliah;
@@ -54,7 +55,7 @@ class KhsService
             $sks = $mk->sks ?? 0;
 
             $nilais = $detail->nilais;
-            $komposisis = KomposisiNilai::where('kelas_kuliah_id', $kelas->id)->get();
+            $komposisis = $kelas->komposisiNilais ?? collect();
 
             $finalScore = 0.00;
             if ($komposisis->count() > 0 && $nilais->count() > 0) {
@@ -68,7 +69,7 @@ class KhsService
                 $finalScore = $nilais->avg('nilai_angka') ?? 0.00;
             }
 
-            $huruf = $this->calculateHuruf($finalScore);
+            $huruf = $this->calculateHuruf($finalScore, $skalaNilais);
             $bobotNilai = $this->calculateBobot($huruf);
 
             $items[] = [
@@ -98,11 +99,18 @@ class KhsService
         ];
     }
 
-    private function calculateHuruf(float $score): string
+    private function calculateHuruf(float $score, $skalaNilais = null): string
     {
-        $skala = SkalaNilai::where('min_angka', '<=', $score)->where('max_angka', '>=', $score)->first();
-        if ($skala) {
-            return $skala->huruf;
+        if ($skalaNilais) {
+            $skala = $skalaNilais->first(fn ($s) => $s->min_angka <= $score && $s->max_angka >= $score);
+            if ($skala) {
+                return $skala->huruf;
+            }
+        } else {
+            $skala = SkalaNilai::where('min_angka', '<=', $score)->where('max_angka', '>=', $score)->first();
+            if ($skala) {
+                return $skala->huruf;
+            }
         }
 
         if ($score >= 85) {

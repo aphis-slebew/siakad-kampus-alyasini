@@ -1,12 +1,14 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     Activity,
+    AlertCircle,
+    ArrowRight,
     Award,
-    Bell,
     BookOpen,
     Building2,
     Calendar,
     CheckCircle2,
+    ClipboardList,
     Clock,
     CreditCard,
     FileCheck,
@@ -17,20 +19,20 @@ import {
     LayoutGrid,
     Printer,
     RefreshCw,
-    Send,
     Settings,
-    Shield,
+    ShieldAlert,
     Sparkles,
     UserCheck,
     Users,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { PageContainer } from '@/components/page-container';
 import type { SharedData } from '@/types';
 
 type LiveStats = {
     total_mahasiswa_aktif: number;
     total_dosen_aktif: number;
     total_prodi: number;
+    prodi_names?: string[];
     tahun_ajaran_aktif: string;
     pending_krs_count: number;
     pending_pembayaran_count: number;
@@ -38,14 +40,26 @@ type LiveStats = {
     total_kelas_aktif: number;
 };
 
+type RecentActivityItem = {
+    id: number;
+    action: string;
+    entity_type: string;
+    entity_id: number;
+    user_name: string;
+    created_at: string;
+};
+
 export default function Dashboard({
     liveStats,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     studentData,
     dosenData,
+    recentActivities,
 }: {
     liveStats?: LiveStats;
     studentData?: { mahasiswa?: { id: number; nama_lengkap: string; nim: string }; active_krs_status?: string } | null;
     dosenData?: { dosen?: { id: number; nama_lengkap: string }; bimbingan_krs_count?: number } | null;
+    recentActivities?: RecentActivityItem[] | null;
 }) {
     const { auth } = usePage<SharedData>().props;
     const user = auth?.user;
@@ -53,11 +67,13 @@ export default function Dashboard({
 
     const isDosen = userRoles.includes('dosen') || userRoles.includes('kaprodi') || user?.user_type === 'dosen';
     const isMahasiswa = userRoles.includes('mahasiswa') || user?.user_type === 'mahasiswa';
-    const isKeuangan = userRoles.includes('staf_keuangan');
-    const isPmb = userRoles.includes('panitia_pmb');
-    const isKepegawaian = userRoles.includes('staf_kepegawaian');
     const isSuperAdmin = userRoles.includes('superadmin') || user?.user_type === 'superadmin';
-    const isAdminAkademik = isSuperAdmin || userRoles.includes('admin_akademik');
+    const isAdminAkademik = isSuperAdmin || userRoles.includes('admin_akademik') || user?.user_type === 'admin_akademik';
+
+    const prodiSummaryText =
+        liveStats?.prodi_names && liveStats.prodi_names.length > 0
+            ? liveStats.prodi_names.slice(0, 3).join(' • ')
+            : `${liveStats?.total_prodi || 0} Prodi Terakreditasi`;
 
     const stats = [
         {
@@ -65,6 +81,7 @@ export default function Dashboard({
             value: liveStats ? String(liveStats.total_mahasiswa_aktif) : '1.248',
             subtext: 'Aktif Semester Ini',
             icon: GraduationCap,
+            href: '/mahasiswa',
             bgColor: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300',
             borderColor: 'border-emerald-200/80',
             iconBg: 'bg-emerald-600 text-white',
@@ -74,6 +91,7 @@ export default function Dashboard({
             value: liveStats ? String(liveStats.total_dosen_aktif) : '64',
             subtext: 'Tenaga Pendidik Aktif',
             icon: Users,
+            href: '/kepegawaian/dosen',
             bgColor: 'bg-blue-500/10 text-blue-700 dark:text-blue-300',
             borderColor: 'border-blue-200/80',
             iconBg: 'bg-blue-600 text-white',
@@ -81,8 +99,9 @@ export default function Dashboard({
         {
             title: 'Program Studi S1',
             value: liveStats ? String(liveStats.total_prodi) : '3',
-            subtext: 'PAI • Ekobis • PGMI',
+            subtext: prodiSummaryText,
             icon: Building2,
+            href: '/master/program-studi',
             bgColor: 'bg-amber-500/10 text-amber-700 dark:text-amber-300',
             borderColor: 'border-amber-200/80',
             iconBg: 'bg-amber-600 text-white',
@@ -92,6 +111,7 @@ export default function Dashboard({
             value: liveStats?.tahun_ajaran_aktif || '2026/2027',
             subtext: `${liveStats?.total_kelas_aktif || 0} Kelas Dibuka`,
             icon: Calendar,
+            href: '/master/tahun-ajaran',
             bgColor: 'bg-purple-500/10 text-purple-700 dark:text-purple-300',
             borderColor: 'border-purple-200/80',
             iconBg: 'bg-purple-600 text-white',
@@ -109,7 +129,7 @@ export default function Dashboard({
         <>
             <Head title="Dashboard Utama" />
 
-            <div className="p-4 sm:p-6 lg:p-8 space-y-6 font-sans max-w-7xl mx-auto">
+            <PageContainer variant="wide">
                 {/* Welcoming Hero Banner */}
                 <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-primary via-brand-primary to-brand-primary-dark p-6 sm:p-8 text-white shadow-md">
                     {/* Background Islamic Geometric Circles */}
@@ -502,15 +522,88 @@ export default function Dashboard({
                     </div>
                 </div>
 
-                {/* Metric Summary Cards */}
+                {/* Operational Workload Queue for Superadmin & Admin Akademik */}
+                {(isSuperAdmin || isAdminAkademik) && liveStats && (
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-base font-bold text-text-primary flex items-center gap-2">
+                                <AlertCircle className="size-4.5 text-amber-600" />
+                                <span>Antrean Tindakan Operasional Kampus</span>
+                            </h2>
+                            <span className="text-xs text-text-secondary">Persetujuan & verifikasi yang membutuhkan tindak lanjut</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
+                            {/* Pending KRS */}
+                            <Link
+                                href="/perwalian/krs"
+                                className="group p-4 rounded-xl bg-surface-card border border-border-default hover:border-brand-primary/50 hover:shadow-md transition-all flex items-center justify-between"
+                            >
+                                <div className="space-y-1">
+                                    <span className="text-xs font-semibold text-text-secondary">Persetujuan KRS Mahasiswa</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-2xl font-bold text-text-primary group-hover:text-brand-primary transition-colors">
+                                            {liveStats.pending_krs_count}
+                                        </span>
+                                        <span className="text-xs text-text-secondary">menunggu persetujuan</span>
+                                    </div>
+                                </div>
+                                <div className={`p-2.5 rounded-xl transition-colors ${liveStats.pending_krs_count > 0 ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-500'}`}>
+                                    <ClipboardList className="size-5" />
+                                </div>
+                            </Link>
+
+                            {/* Pending Pembayaran */}
+                            <Link
+                                href="/keuangan/pembayaran"
+                                className="group p-4 rounded-xl bg-surface-card border border-border-default hover:border-purple-500/50 hover:shadow-md transition-all flex items-center justify-between"
+                            >
+                                <div className="space-y-1">
+                                    <span className="text-xs font-semibold text-text-secondary">Verifikasi Pembayaran UKT</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-2xl font-bold text-text-primary group-hover:text-purple-600 transition-colors">
+                                            {liveStats.pending_pembayaran_count}
+                                        </span>
+                                        <span className="text-xs text-text-secondary">menunggu kasir</span>
+                                    </div>
+                                </div>
+                                <div className={`p-2.5 rounded-xl transition-colors ${liveStats.pending_pembayaran_count > 0 ? 'bg-purple-100 text-purple-700' : 'bg-slate-100 text-slate-500'}`}>
+                                    <CreditCard className="size-5" />
+                                </div>
+                            </Link>
+
+                            {/* Pending PMB */}
+                            <Link
+                                href="/pmb/calon-mahasiswa"
+                                className="group p-4 rounded-xl bg-surface-card border border-border-default hover:border-blue-500/50 hover:shadow-md transition-all flex items-center justify-between"
+                            >
+                                <div className="space-y-1">
+                                    <span className="text-xs font-semibold text-text-secondary">Verifikasi Pendaftar PMB</span>
+                                    <div className="flex items-baseline gap-2">
+                                        <span className="text-2xl font-bold text-text-primary group-hover:text-blue-600 transition-colors">
+                                            {liveStats.pending_pmb_count}
+                                        </span>
+                                        <span className="text-xs text-text-secondary">menunggu berkas</span>
+                                    </div>
+                                </div>
+                                <div className={`p-2.5 rounded-xl transition-colors ${liveStats.pending_pmb_count > 0 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-500'}`}>
+                                    <UserCheck className="size-5" />
+                                </div>
+                            </Link>
+                        </div>
+                    </div>
+                )}
+
+                {/* Metric Summary Cards (Interactive & Clickable) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {stats.map((stat) => (
-                        <div
+                        <Link
                             key={stat.title}
-                            className="rounded-2xl border border-border-default bg-surface-card p-5 shadow-xs hover:shadow-md transition-all"
+                            href={stat.href}
+                            className="group rounded-2xl border border-border-default bg-surface-card p-5 shadow-xs hover:shadow-md hover:border-brand-primary/40 transition-all block cursor-pointer"
                         >
                             <div className="flex items-center justify-between">
-                                <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">
+                                <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider group-hover:text-brand-primary transition-colors">
                                     {stat.title}
                                 </span>
                                 <div className={`p-2.5 rounded-xl ${stat.iconBg} shadow-xs`}>
@@ -518,20 +611,23 @@ export default function Dashboard({
                                 </div>
                             </div>
                             <div className="mt-3">
-                                <span className="text-3xl font-bold tracking-tight text-text-primary">
-                                    {stat.value}
-                                </span>
+                                <div className="flex items-center justify-between">
+                                    <span className="text-3xl font-bold tracking-tight text-text-primary group-hover:text-brand-primary transition-colors">
+                                        {stat.value}
+                                    </span>
+                                    <ArrowRight className="size-4 text-text-secondary opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                                </div>
                                 <p className="text-xs font-medium text-text-secondary mt-1 flex items-center gap-1">
-                                    <span className="inline-block size-1.5 rounded-full bg-brand-primary" />
-                                    {stat.subtext}
+                                    <span className="inline-block size-1.5 rounded-full bg-brand-primary shrink-0" />
+                                    <span className="truncate">{stat.subtext}</span>
                                 </p>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
 
                 {/* Information Boards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className={`grid grid-cols-1 gap-6 ${isSuperAdmin && recentActivities && recentActivities.length > 0 ? 'lg:grid-cols-3' : 'md:grid-cols-2'}`}>
                     <div className="rounded-2xl border border-border-default bg-surface-card p-6 shadow-xs space-y-3">
                         <div className="flex items-center gap-2.5 pb-3 border-b border-border-default">
                             <div className="p-2 rounded-lg bg-emerald-50 text-brand-primary">
@@ -599,8 +695,56 @@ export default function Dashboard({
                             </p>
                         </div>
                     </div>
+
+                    {/* Recent Audit Activities Board (Superadmin Exclusive) */}
+                    {isSuperAdmin && recentActivities && recentActivities.length > 0 && (
+                        <div className="rounded-2xl border border-border-default bg-surface-card p-6 shadow-xs space-y-3 flex flex-col justify-between">
+                            <div>
+                                <div className="flex items-center justify-between pb-3 border-b border-border-default">
+                                    <div className="flex items-center gap-2.5">
+                                        <div className="p-2 rounded-lg bg-blue-50 text-blue-600">
+                                            <Activity className="size-5" />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-sm font-bold text-text-primary">Aktivitas Sistem Terkini</h3>
+                                            <p className="text-[11px] text-text-secondary">Log audit & pengawasan terkini</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                                        Live
+                                    </span>
+                                </div>
+
+                                <div className="mt-3 space-y-2.5 text-xs">
+                                    {recentActivities.map((act) => (
+                                        <div key={act.id} className="flex items-start justify-between gap-2 pb-2 border-b border-slate-100 last:border-0 last:pb-0">
+                                            <div className="space-y-0.5 min-w-0">
+                                                <p className="font-semibold text-text-primary truncate">
+                                                    {act.action}
+                                                </p>
+                                                <p className="text-[11px] text-text-secondary truncate">
+                                                    oleh <strong>{act.user_name}</strong> • {act.entity_type} #{act.entity_id}
+                                                </p>
+                                            </div>
+                                            <span className="text-[10px] text-slate-400 font-mono shrink-0">
+                                                {act.created_at}
+                                            </span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <Link
+                                href="/superadmin/monitoring"
+                                className="pt-3 border-t border-border-default text-xs font-semibold text-brand-primary hover:text-brand-primary-dark flex items-center justify-between group"
+                            >
+                                <span>Buka Seluruh Log Audit</span>
+                                <ArrowRight className="size-3.5 group-hover:translate-x-1 transition-transform" />
+                            </Link>
+                        </div>
+                    )}
                 </div>
-            </div>
+            </PageContainer>
         </>
     );
 }

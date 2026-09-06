@@ -28,11 +28,24 @@ erDiagram
     %% 1. KELEMBAGAAN & MASTER DATA
     %% ====================================================
     perguruan_tinggis ||--o{ fakultas : "memiliki"
+    perguruan_tinggis ||--o| dosens : "dipimpin_ketua (ketua_dosen_id)"
+    perguruan_tinggis ||--o| dosens : "dibantu_wakil_1 (wakil_ketua_1_dosen_id)"
+    fakultas ||--o| dosens : "dipimpin_dekan (dekan_dosen_id)"
+    fakultas ||--o| dosens : "dibantu_wadek_1 (wakil_dekan_1_dosen_id)"
+    fakultas ||--o| dosens : "dibantu_wadek_2 (wakil_dekan_2_dosen_id)"
+    fakultas ||--o| dosens : "dibantu_wadek_3 (wakil_dekan_3_dosen_id)"
+    fakultas ||--o| dosens : "dibantu_wadek_4 (wakil_dekan_4_dosen_id)"
+    fakultas ||--o| dosens : "penjaminan_mutu (ketua_gpmf_dosen_id)"
+    fakultas ||--o| pegawais : "kepala_tu (kepala_tata_usaha_pegawai_id)"
+    fakultas ||--o{ riwayat_pimpinan_fakultas : "rekam_jejak_dekanat"
+    dosens ||--o{ riwayat_pimpinan_fakultas : "menjabat"
     fakultas ||--o{ program_studis : "menaungi"
     program_studis ||--o{ setting_prodis : "dikonfigurasi"
     program_studis ||--o{ kurikulum_prodis : "menerapkan"
+    program_studis ||--o{ konsentrasis : "peminatan"
     program_studis ||--o{ dosens : "homebase"
     program_studis ||--o{ mahasiswas : "terdaftar"
+    tahun_ajarans ||--o{ kalender_akademiks : "agenda"
     tahun_ajarans ||--o{ kelas_kuliahs : "periode"
     tahun_ajarans ||--o{ krs : "semester"
     tahun_ajarans ||--o{ tagihans : "tahun_buku"
@@ -111,6 +124,63 @@ erDiagram
         timestamps created_at
     }
 
+    fakultas {
+        bigint id PK
+        bigint dekan_dosen_id FK
+        bigint wakil_dekan_dosen_id FK
+        bigint wakil_dekan_1_dosen_id FK
+        bigint wakil_dekan_2_dosen_id FK
+        bigint wakil_dekan_3_dosen_id FK
+        bigint wakil_dekan_4_dosen_id FK
+        bigint ketua_gpmf_dosen_id FK
+        bigint kepala_tata_usaha_pegawai_id FK
+        string kode UK
+        string nama
+        string nama_en
+        string nama_singkat
+        string no_sk_pendirian
+        date tanggal_sk_pendirian
+        string file_sk_pendirian_path
+        string no_sk_izin_operasional
+        date tanggal_sk_izin_operasional
+        string file_sk_izin_operasional_path
+        string alamat
+        string telepon
+        string email
+        string website
+        integer tahun_berdiri
+        string periode_berdiri
+        string status "aktif|nonaktif"
+        string luas_m2
+        string dekan_nama
+        string dekan_gelar_depan
+        string dekan_gelar_belakang
+        string dekan_nidn
+        string wakil_dekan_1
+        string wakil_dekan_2
+        string wakil_dekan_3
+        string wakil_dekan_4
+        text visi
+        text misi
+        uuid id_feeder UK
+        timestamp last_synced_at
+        string sync_status "belum_sinkron|sinkron|gagal_sinkron"
+        timestamps created_at
+    }
+
+    riwayat_pimpinan_fakultas {
+        bigint id PK
+        bigint fakultas_id FK
+        bigint dosen_id FK
+        string jabatan "dekan|wakil_dekan_1|wakil_dekan_2|wakil_dekan_3|wakil_dekan_4|ketua_gpmf"
+        date periode_mulai
+        date periode_selesai
+        string no_sk_pelantikan
+        string file_sk_pelantikan_path
+        boolean is_aktif
+        timestamps created_at
+    }
+
     program_studis {
         bigint id PK
         bigint fakultas_id FK
@@ -118,6 +188,55 @@ erDiagram
         string nama
         string jenjang "S1|S2"
         integer sks_lulus_min
+    }
+
+    konsentrasis {
+        bigint id PK
+        bigint program_studi_id FK
+        string nama
+        timestamps created_at
+    }
+
+    kalender_akademiks {
+        bigint id PK
+        bigint tahun_ajaran_id FK
+        string kegiatan
+        string tipe_kegiatan "pembayaran_ukt|krs|perwalian_krs|perkuliahan|uts|uas|input_nilai|yudisium|lainnya"
+        date mulai
+        date selesai
+        text deskripsi
+        boolean is_published
+    }
+
+    perguruan_tinggis {
+        bigint id PK
+        bigint ketua_dosen_id FK
+        bigint wakil_ketua_1_dosen_id FK
+        string kode_unit
+        string nama_unit
+        string nama_singkat
+        string jenis_perguruan_tinggi
+        string status_milik "Negeri|Swasta"
+        string lembaga_naungan
+        string no_sk_pendirian
+        date tanggal_sk_pendirian
+        string no_sk_operasional
+        date tanggal_sk_operasional
+        string lembaga_akreditasi
+        string peringkat_akreditasi
+        string no_sk_akreditasi
+        date tanggal_berakhir_akreditasi
+        string alamat
+        decimal lintang
+        decimal bujur
+        integer radius_presensi
+        string logo_path
+        string logo_kop_path
+        string stempel_path
+        string ttd_ketua_path
+        string ketua_nama
+        string ketua_nidn
+        string wakil_ketua_1_nama
     }
 
     dosens {
@@ -214,6 +333,8 @@ erDiagram
 
 | Entitas Asal | Foreign Key | Entitas Target | Kardinalitas | Aturan Hapus (On Delete) | Deskripsi Hubungan |
 | :--- | :--- | :--- | :---: | :---: | :--- |
+| `fakultas` | `dekan_dosen_id` | `dosens(id)` | N : 1 | SET NULL | Pimpinan Dekan fakultas terhubung |
+| `fakultas` | `wakil_dekan_dosen_id` | `dosens(id)` | N : 1 | SET NULL | Pimpinan Wakil Dekan fakultas |
 | `program_studis` | `fakultas_id` | `fakultas(id)` | N : 1 | CASCADE | Satu fakultas menaungi banyak prodi |
 | `dosens` | `user_id` | `users(id)` | 1 : 1 | CASCADE | Akun login otentikasi dosen |
 | `dosens` | `program_studi_id` | `program_studis(id)`| N : 1 | RESTRICT | Homebase program studi dosen |
@@ -229,6 +350,8 @@ erDiagram
 | `presensis` | `krs_detail_id` | `krs_details(id)` | N : 1 | CASCADE | Kehadiran mahasiswa per pertemuan |
 | `tagihans` | `mahasiswa_id` | `mahasiswas(id)` | N : 1 | CASCADE | Tagihan biaya kepada mahasiswa |
 | `pembayarans` | `tagihan_id` | `tagihans(id)` | N : 1 | CASCADE | Transaksi pembayaran tagihan |
+| `kalender_akademiks` | `tahun_ajaran_id` | `tahun_ajarans(id)` | N : 1 | CASCADE | Agenda kalender tahun ajaran |
+| `konsentrasis` | `program_studi_id` | `program_studis(id)` | N : 1 | CASCADE | Bidang peminatan / konsentrasi prodi |
 
 ---
 

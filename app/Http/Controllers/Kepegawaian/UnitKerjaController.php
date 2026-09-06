@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Kepegawaian;
 
 use App\Http\Controllers\Controller;
 use App\Models\UnitKerja;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,7 +34,12 @@ class UnitKerjaController extends Controller
             'nama' => 'required|string|max:150',
         ]);
 
-        UnitKerja::create($validated);
+        $unitKerja = UnitKerja::create($validated);
+
+        ActivityLogger::log('kepegawaian.unit_kerja.create', 'UnitKerja', $unitKerja->id, null, [
+            'kode' => $unitKerja->kode,
+            'nama' => $unitKerja->nama,
+        ]);
 
         return back()->with('success', 'Unit kerja berhasil ditambahkan.');
     }
@@ -48,7 +54,17 @@ class UnitKerjaController extends Controller
             'nama' => 'required|string|max:150',
         ]);
 
+        $oldData = [
+            'kode' => $unitKerja->kode,
+            'nama' => $unitKerja->nama,
+        ];
+
         $unitKerja->update($validated);
+
+        ActivityLogger::log('kepegawaian.unit_kerja.update', 'UnitKerja', $unitKerja->id, $oldData, [
+            'kode' => $unitKerja->kode,
+            'nama' => $unitKerja->nama,
+        ]);
 
         return back()->with('success', 'Unit kerja berhasil diperbarui.');
     }
@@ -61,6 +77,11 @@ class UnitKerjaController extends Controller
         if ($unitKerja->pegawais()->exists()) {
             return back()->with('error', 'Unit kerja tidak dapat dihapus karena masih memiliki staf/pegawai aktif.');
         }
+
+        ActivityLogger::log('kepegawaian.unit_kerja.delete', 'UnitKerja', $unitKerja->id, [
+            'kode' => $unitKerja->kode,
+            'nama' => $unitKerja->nama,
+        ], null);
 
         $unitKerja->delete();
 

@@ -62,5 +62,8 @@ class MasterDataSeeder extends Seeder
         ReferensiBiodata::firstOrCreate(['tipe' => 'pekerjaan', 'nama' => 'Pegawai Negeri Sipil (PNS)']);
         ReferensiBiodata::firstOrCreate(['tipe' => 'pekerjaan', 'nama' => 'Wiraswasta']);
         ReferensiBiodata::firstOrCreate(['tipe' => 'penghasilan', 'nama' => 'Rp 1.000.000 - Rp 3.000.000']);
+
+        // 6. Kalender Akademik & Konsentrasi
+        $this->call(KalenderAkademikSeeder::class);
     }
 }

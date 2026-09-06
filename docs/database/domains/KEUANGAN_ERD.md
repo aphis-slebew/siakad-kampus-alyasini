@@ -1,0 +1,102 @@
+# Domain ERD: Keuangan, Tagihan UKT & Kasir POS
+
+## 1. Deskripsi Domain
+Dokumentasi ERD untuk pengelolaan keuangan institusi: komponen tarif biaya, kelompok UKT, pemetaan UKT mahasiswa, beasiswa subsidi penuh/parsial, pembuatan tagihan semesteran/her-registrasi, fasilitas cicilan tagihan, dan pencatatan transaksi pembayaran (Kasir POS Loket TU / Bank Transfer).
+
+## 2. Diagram ERD (Crow's Foot Notation)
+
+```mermaid
+erDiagram
+    komponen_biayas {
+        bigint id PK "id"
+        varchar kode UK "kode"
+        varchar nama "nama"
+        varchar kategori "kategori"
+        bigint program_studi_id FK "program_studi_id"
+        int angkatan "angkatan"
+        decimal nominal "nominal"
+        tinyint is_active "is_active"
+        text keterangan "keterangan"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    kelompok_ukts {
+        bigint id PK "id"
+        bigint program_studi_id FK "program_studi_id"
+        varchar nama "nama"
+        decimal nominal_per_semester "nominal_per_semester"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    mahasiswa_ukts {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint kelompok_ukt_id FK "kelompok_ukt_id"
+        bigint tahun_ajaran_id FK "tahun_ajaran_id"
+        varchar status "status"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    beasiswa_mahasiswas {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint jenis_beasiswa_id FK "jenis_beasiswa_id"
+        varchar status "status"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    tagihans {
+        bigint id PK "id"
+        bigint mahasiswa_id FK "mahasiswa_id"
+        bigint tahun_ajaran_id FK "tahun_ajaran_id"
+        varchar jenis "jenis"
+        decimal nominal "nominal"
+        date jatuh_tempo "jatuh_tempo"
+        varchar status "status"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+        timestamp deleted_at "deleted_at"
+    }
+    cicilan_tagihans {
+        bigint id PK "id"
+        bigint tagihan_id FK "tagihan_id"
+        int cicilan_ke "cicilan_ke"
+        decimal nominal "nominal"
+        date jatuh_tempo "jatuh_tempo"
+        varchar status "status"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+    }
+    pembayarans {
+        bigint id PK "id"
+        bigint tagihan_id FK "tagihan_id"
+        date tanggal_bayar "tanggal_bayar"
+        decimal nominal_dibayar "nominal_dibayar"
+        varchar metode "metode"
+        varchar bukti_file_path "bukti_file_path"
+        varchar status_verifikasi "status_verifikasi"
+        bigint diverifikasi_oleh_user_id FK "diverifikasi_oleh_user_id"
+        timestamp diverifikasi_at "diverifikasi_at"
+        timestamp created_at "created_at"
+        timestamp updated_at "updated_at"
+        timestamp deleted_at "deleted_at"
+    }
+    kelompok_ukts ||--o{ mahasiswa_ukts : "kelompok_ukt_id"
+    tagihans ||--o{ cicilan_tagihans : "tagihan_id"
+    tagihans ||--o{ pembayarans : "tagihan_id"
+```
+
+## 3. Inventarisasi Tabel Domain
+
+| Nama Tabel | Total Kolom | Primary Key | Total FK | Keterangan Fungsi |
+|---|---|---|---|---|
+| `komponen_biayas` | 11 | `id` | 1 | Tabel operasional modul komponen biayas |
+| `kelompok_ukts` | 6 | `id` | 1 | Tabel operasional modul kelompok ukts |
+| `mahasiswa_ukts` | 7 | `id` | 3 | Tabel operasional modul mahasiswa ukts |
+| `beasiswa_mahasiswas` | 6 | `id` | 2 | Tabel operasional modul beasiswa mahasiswas |
+| `tagihans` | 10 | `id` | 2 | Tabel operasional modul tagihans |
+| `cicilan_tagihans` | 8 | `id` | 1 | Tabel operasional modul cicilan tagihans |
+| `pembayarans` | 12 | `id` | 2 | Tabel operasional modul pembayarans |
+
+---
+*Dokumentasi ini digenerate secara otomatis berdasarkan skema database fisik aktif `siakad_db`.*

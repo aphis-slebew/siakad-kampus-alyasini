@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { Calendar, CheckCircle2, Edit, Plus, Trash2, XCircle, Search, Clock, ShieldAlert } from 'lucide-react';
 import { useState } from 'react';
 import { useConfirmDialog } from '@/components/confirm-dialog';
+import { MasterDataNav } from '@/components/master-data-nav';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -14,7 +15,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MasterDataNav } from '@/components/master-data-nav';
 import { formatDateIndonesian } from '@/lib/utils';
 
 type TahunAjaran = {

@@ -22,7 +22,7 @@ class YudisiumController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasRole('mahasiswa')) {
+        if ($user->hasRole('mahasiswa') || $user->user_type === 'mahasiswa') {
             $mahasiswa = Mahasiswa::where('user_id', $user->id)->firstOrFail();
             $yudisium = Yudisium::with(['periodeWisuda', 'mahasiswa.programStudi'])
                 ->where('mahasiswa_id', $mahasiswa->id)
@@ -32,6 +32,11 @@ class YudisiumController extends Controller
                 'yudisium' => $yudisium,
                 'role' => 'mahasiswa',
             ]);
+        }
+
+        if (! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi', 'dosen', 'operator_kemahasiswaan'])
+            && ! in_array($user->user_type, ['superadmin', 'admin_akademik', 'kaprodi', 'dosen', 'pegawai'])) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki akses ke portal yudisium.');
         }
 
         $yudisiums = Yudisium::with(['mahasiswa.programStudi', 'periodeWisuda'])->latest()->get();
@@ -100,11 +105,14 @@ class YudisiumController extends Controller
         $user = auth()->user();
 
         // IDOR Check: Mahasiswa A cannot view Mahasiswa B certificate
-        if ($user->hasRole('mahasiswa')) {
+        if ($user->hasRole('mahasiswa') || $user->user_type === 'mahasiswa') {
             $mahasiswa = Mahasiswa::where('user_id', $user->id)->firstOrFail();
             if ($yudisium->mahasiswa_id !== $mahasiswa->id) {
                 abort(403, 'Akses Ditolak: Anda tidak memiliki akses ke Dokumen Yudisium ini.');
             }
+        } elseif (! $user->hasAnyRole(['superadmin', 'admin_akademik', 'kaprodi', 'dosen'])
+            && ! in_array($user->user_type, ['superadmin', 'admin_akademik', 'kaprodi', 'dosen', 'pegawai'])) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mengakses Dokumen Yudisium.');
         }
 
         $yudisium->load(['mahasiswa.programStudi.fakultas', 'periodeWisuda']);

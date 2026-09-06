@@ -139,22 +139,26 @@ class KasirController extends Controller
         $mahasiswas = $mhsQuery->get();
         $generatedCount = 0;
 
-        DB::transaction(function () use ($mahasiswas, $komponen, $validated, &$generatedCount) {
-            foreach ($mahasiswas as $mhs) {
-                // Check if already billed
-                $exists = Tagihan::where('mahasiswa_id', $mhs->id)
-                    ->where('tahun_ajaran_id', $validated['tahun_ajaran_id'])
-                    ->where('jenis', $komponen->kode)
-                    ->exists();
+        // Pre-fetch all already billed student IDs for this semester and component (1 query instead of N queries)
+        $existingBilledMhsIds = Tagihan::where('tahun_ajaran_id', $validated['tahun_ajaran_id'])
+            ->where('jenis', $komponen->kode)
+            ->whereIn('mahasiswa_id', $mahasiswas->pluck('id'))
+            ->pluck('mahasiswa_id')
+            ->flip();
 
-                if ($exists) {
+        $isTuitionCategory = in_array(strtolower($komponen->kategori), ['akademik', 'spp', 'ukt']);
+
+        DB::transaction(function () use ($mahasiswas, $komponen, $validated, $existingBilledMhsIds, $isTuitionCategory, &$generatedCount) {
+            foreach ($mahasiswas as $mhs) {
+                // Check if already billed using in-memory flipped array (O(1) lookup)
+                if (isset($existingBilledMhsIds[$mhs->id])) {
                     continue;
                 }
 
                 $nominal = (float) $komponen->nominal;
 
-                // Check scholarship (if active scholarship and fee is tuition/spp/ukt)
-                if (in_array(strtolower($komponen->kategori), ['akademik', 'spp', 'ukt']) && $mhs->beasiswaMahasiswas()->where('status', 'aktif')->exists()) {
+                // Check scholarship using eager-loaded relation collection (0 additional queries)
+                if ($isTuitionCategory && $mhs->beasiswaMahasiswas->contains('status', 'aktif')) {
                     // Full waiver for scholarship holders or standard nominal 0
                     $nominal = 0.00;
                 }

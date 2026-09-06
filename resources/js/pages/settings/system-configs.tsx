@@ -81,7 +81,10 @@ export default function SystemConfigsIndex({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingConfig) return;
+
+        if (!editingConfig) {
+return;
+}
 
         put(`/settings/system-configs/${editingConfig.id}`, {
             onSuccess: () => closeModal(),
@@ -209,6 +212,7 @@ export default function SystemConfigsIndex({
                             {CATEGORIES.map((cat) => {
                                 const Icon = cat.icon;
                                 const isActive = activeCategory === cat.id;
+
                                 return (
                                     <button
                                         key={cat.id}
@@ -268,6 +272,7 @@ export default function SystemConfigsIndex({
                             <TableBody>
                                 {filteredConfigs.map((item, index) => {
                                     const catBadge = getCategoryBadge(item.category);
+
                                     return (
                                         <TableRow key={item.id} className="hover:bg-slate-50/80 transition-colors">
                                             <TableCell align="center" className="text-slate-500 font-medium text-xs">

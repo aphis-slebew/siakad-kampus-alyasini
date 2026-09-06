@@ -198,3 +198,15 @@ test('RBAC restricts curriculum and class CRUD to admin_akademik while allowing 
         'jenis' => 'wajib',
     ])->assertRedirect();
 });
+
+test('Superadmin and admin akademik can search kelas kuliah without database error', function () {
+    $userAdmin = User::factory()->create(['user_type' => 'pegawai', 'two_factor_secret' => encrypt('DEV_2FA')]);
+    $userAdmin->assignRole('admin_akademik');
+    $this->actingAs($userAdmin);
+
+    $responseSearch = $this->get(route('akademik.kelas-kuliah.index', ['search' => 'Kelas']));
+    $responseSearch->assertOk();
+
+    $responseCourse = $this->get(route('akademik.kelas-kuliah.index', ['search' => 'Tafsir']));
+    $responseCourse->assertOk();
+});

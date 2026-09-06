@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Jobs\GenerateUktTagihanJob;
 use App\Models\CicilanTagihan;
 use App\Models\Pembayaran;
+use App\Models\PeriodeRegistrasi;
 use App\Models\Tagihan;
+use App\Models\TahunAjaran;
 use App\Services\PaymentVerificationService;
 use App\Services\SecureFileUploadService;
 use Exception;
@@ -40,9 +42,14 @@ class KeuanganController extends Controller
             ->orderByDesc('id')
             ->get();
 
+        $periodeRegistrasis = PeriodeRegistrasi::with('tahunAjaran')
+            ->orderByDesc('id')
+            ->get(['id', 'tahun_ajaran_id', 'jenis', 'mulai', 'selesai']);
+
         return Inertia::render('keuangan/pembayaran/index', [
             'pembayarans' => $pembayarans,
             'tagihans' => $tagihans,
+            'periodeRegistrasis' => $periodeRegistrasis,
             'currentStatus' => $status,
         ]);
     }
@@ -92,6 +99,14 @@ class KeuanganController extends Controller
         ]);
 
         $tagihan = Tagihan::findOrFail($validated['tagihan_id']);
+
+        $user = $request->user();
+        if ($user && ($user->hasRole('mahasiswa') || $user->user_type === 'mahasiswa')) {
+            $mahasiswa = $user->mahasiswa;
+            if (! $mahasiswa || (int) $tagihan->mahasiswa_id !== (int) $mahasiswa->id) {
+                abort(403, 'Akses Ditolak: Anda hanya dapat mengunggah bukti pembayaran untuk tagihan milik Anda sendiri.');
+            }
+        }
 
         try {
             $path = SecureFileUploadService::uploadPrivate(
@@ -165,6 +180,15 @@ class KeuanganController extends Controller
      */
     public function requestCicilan(Request $request, Tagihan $tagihan): RedirectResponse
     {
+        $user = $request->user();
+        $isStaff = $user->hasAnyRole(['staf_keuangan', 'superadmin', 'admin_akademik'])
+            || in_array($user->user_type, ['staf_keuangan', 'superadmin', 'admin_akademik', 'pegawai']);
+        $isOwner = $tagihan->mahasiswa && $tagihan->mahasiswa->user_id === $user->id;
+
+        if (! $isStaff && ! $isOwner) {
+            abort(403, 'Akses Ditolak: Anda tidak memiliki wewenang untuk mengatur skema cicilan tagihan ini.');
+        }
+
         $validated = $request->validate([
             'jumlah_cicilan' => ['required', 'integer', 'min:2', 'max:4'],
         ]);
@@ -208,10 +232,23 @@ class KeuanganController extends Controller
     public function generateUktBatch(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'periode_registrasi_id' => ['required', 'exists:periode_registrasis,id'],
+            'periode_registrasi_id' => ['nullable', 'exists:periode_registrasis,id'],
         ]);
 
-        GenerateUktTagihanJob::dispatch($validated['periode_registrasi_id']);
+        $periodeId = $validated['periode_registrasi_id'] ?? null;
+        if (! $periodeId) {
+            $activeTahunAjaran = TahunAjaran::where('is_active', true)->first();
+            $activePeriode = PeriodeRegistrasi::where('tahun_ajaran_id', $activeTahunAjaran?->id)
+                ->orderByDesc('id')
+                ->first() ?? PeriodeRegistrasi::orderByDesc('id')->first();
+            $periodeId = $activePeriode?->id;
+        }
+
+        if (! $periodeId) {
+            return back()->withErrors(['error' => 'Tidak ditemukan periode registrasi untuk pembuatan batch tagihan UKT.']);
+        }
+
+        GenerateUktTagihanJob::dispatch((int) $periodeId);
 
         return back()->with('success', 'Job pembuatan tagihan UKT otomatis berhasil dijalankan di background queue.');
     }

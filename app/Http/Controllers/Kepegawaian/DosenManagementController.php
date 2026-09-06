@@ -8,6 +8,7 @@ use App\Models\ProgramStudi;
 use App\Models\RiwayatJabatanFungsional;
 use App\Models\RiwayatPendidikanDosen;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -103,7 +104,13 @@ class DosenManagementController extends Controller
             unset($validated['create_user_account'], $validated['password']);
             $validated['user_id'] = $userId;
 
-            Dosen::create($validated);
+            $dosen = Dosen::create($validated);
+
+            ActivityLogger::log('kepegawaian.dosen.create', 'Dosen', $dosen->id, null, [
+                'nama_lengkap' => $dosen->nama_lengkap,
+                'nidn' => $dosen->nidn,
+                'program_studi_id' => $dosen->program_studi_id,
+            ]);
         });
 
         return back()->with('success', 'Data dosen berhasil ditambahkan.');
@@ -132,6 +139,12 @@ class DosenManagementController extends Controller
             'sertifikasi_pendidik' => 'boolean',
         ]);
 
+        $oldData = [
+            'nama_lengkap' => $dosen->nama_lengkap,
+            'program_studi_id' => $dosen->program_studi_id,
+            'status_kepegawaian' => $dosen->status_kepegawaian,
+        ];
+
         $dosen->update($validated);
 
         if ($dosen->user) {
@@ -141,6 +154,12 @@ class DosenManagementController extends Controller
             ]);
         }
 
+        ActivityLogger::log('kepegawaian.dosen.update', 'Dosen', $dosen->id, $oldData, [
+            'nama_lengkap' => $dosen->nama_lengkap,
+            'program_studi_id' => $dosen->program_studi_id,
+            'status_kepegawaian' => $dosen->status_kepegawaian,
+        ]);
+
         return back()->with('success', 'Data dosen berhasil diperbarui.');
     }
 
@@ -149,7 +168,30 @@ class DosenManagementController extends Controller
      */
     public function destroy(Dosen $dosen): RedirectResponse
     {
-        $dosen->delete();
+        if ($dosen->dosenWalis()->exists()) {
+            return back()->with('error', 'Dosen tidak dapat dihapus karena masih ditugaskan sebagai Dosen Wali untuk mahasiswa aktif.');
+        }
+
+        if ($dosen->dosenPengajars()->exists()) {
+            return back()->with('error', 'Dosen tidak dapat dihapus karena masih tercatat sebagai dosen pengajar pada kelas kuliah.');
+        }
+
+        if ($dosen->skripsis()->exists() || $dosen->proposalSkripsis()->exists()) {
+            return back()->with('error', 'Dosen tidak dapat dihapus karena masih membimbing proposal atau skripsi mahasiswa.');
+        }
+
+        DB::transaction(function () use ($dosen) {
+            if ($dosen->user) {
+                $dosen->user->update(['status' => 'nonaktif']);
+            }
+
+            ActivityLogger::log('kepegawaian.dosen.delete', 'Dosen', $dosen->id, [
+                'nama_lengkap' => $dosen->nama_lengkap,
+                'nidn' => $dosen->nidn,
+            ], null);
+
+            $dosen->delete();
+        });
 
         return back()->with('success', 'Data dosen berhasil dihapus.');
     }

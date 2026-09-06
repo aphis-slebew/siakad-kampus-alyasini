@@ -86,6 +86,24 @@ class RegistrasiUlangController extends Controller
             return back()->withErrors(['registrasi' => 'Registrasi Ulang harus memilih salah satu dari Calon Mahasiswa (baru) atau Mahasiswa (lama), tidak boleh keduanya sekaligus atau kosong.']);
         }
 
+        $user = $request->user();
+        $isStaff = $user->hasAnyRole(['superadmin', 'admin_akademik', 'staf_keuangan'])
+            || in_array($user->user_type, ['superadmin', 'admin_akademik', 'staf_keuangan', 'pegawai']);
+
+        if (! $isStaff) {
+            if ($hasCalon) {
+                $calon = $user->calonMahasiswa;
+                if (! $calon || (int) $validated['calon_mahasiswa_id'] !== (int) $calon->id) {
+                    abort(403, 'Akses Ditolak: Anda hanya dapat mendaftarkan registrasi ulang atas nama diri sendiri.');
+                }
+            } elseif ($hasMahasiswa) {
+                $mahasiswa = $user->mahasiswa;
+                if (! $mahasiswa || (int) $validated['mahasiswa_id'] !== (int) $mahasiswa->id) {
+                    abort(403, 'Akses Ditolak: Anda hanya dapat mendaftarkan registrasi ulang atas nama diri sendiri.');
+                }
+            }
+        }
+
         try {
             DB::transaction(function () use ($request, $validated, $hasCalon) {
                 $registrasi = RegistrasiUlang::firstOrCreate(

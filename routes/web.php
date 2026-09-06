@@ -25,6 +25,8 @@ use App\Http\Controllers\Keuangan\RegistrasiUlangController;
 use App\Http\Controllers\Laporan\LaporanController;
 use App\Http\Controllers\Mahasiswa\MahasiswaPortalController;
 use App\Http\Controllers\Master\FakultasController;
+use App\Http\Controllers\Master\KalenderAkademikController;
+use App\Http\Controllers\Master\KonsentrasiController;
 use App\Http\Controllers\Master\PerguruanTinggiController;
 use App\Http\Controllers\Master\ProgramStudiController;
 use App\Http\Controllers\Master\ReferensiBiodataController;
@@ -153,11 +155,16 @@ Route::middleware(['auth'])->group(function () {
         Route::get('perguruan-tinggi', [PerguruanTinggiController::class, 'index'])->name('perguruan-tinggi.index');
         Route::post('perguruan-tinggi', [PerguruanTinggiController::class, 'update'])->name('perguruan-tinggi.update');
 
+        Route::post('fakultas/{fakulta}/pimpinan', [FakultasController::class, 'storePimpinan'])->name('fakultas.pimpinan.store');
+        Route::delete('fakultas/{fakulta}/pimpinan/{pimpinan}', [FakultasController::class, 'destroyPimpinan'])->name('fakultas.pimpinan.destroy');
+        Route::post('fakultas/{fakulta}/sync-feeder', [FakultasController::class, 'syncFeeder'])->name('fakultas.sync-feeder');
         Route::resource('fakultas', FakultasController::class)->except(['create', 'edit']);
         Route::resource('program-studi', ProgramStudiController::class)->except(['create', 'edit']);
         Route::resource('tahun-ajaran', TahunAjaranController::class)->except(['create', 'edit', 'show']);
         Route::resource('ruang-kuliah', RuangKuliahController::class)->except(['create', 'edit', 'show']);
         Route::resource('referensi-biodata', ReferensiBiodataController::class)->except(['create', 'edit', 'show']);
+        Route::resource('konsentrasi', KonsentrasiController::class)->except(['create', 'edit', 'show']);
+        Route::resource('kalender-akademik', KalenderAkademikController::class)->except(['create', 'edit', 'show']);
     });
 
     // PMB Management (Otorisasi: pmb.manage)
@@ -169,10 +176,12 @@ Route::middleware(['auth'])->group(function () {
         Route::get('calon-mahasiswa/{calonMahasiswa}', [CalonMahasiswaController::class, 'show'])->name('calon-mahasiswa.show');
         Route::patch('calon-mahasiswa/{calonMahasiswa}/status', [CalonMahasiswaController::class, 'updateStatus'])->name('calon-mahasiswa.update-status');
         Route::patch('berkas/{berkas}/verify', [CalonMahasiswaController::class, 'verifyBerkas'])->name('berkas.verify');
-        Route::get('berkas/{berkas}/download', [CalonMahasiswaController::class, 'downloadBerkas'])->name('berkas.download');
         Route::post('calon-mahasiswa/{calonMahasiswa}/hasil-seleksi', [CalonMahasiswaController::class, 'inputHasilSeleksi'])->name('calon-mahasiswa.hasil-seleksi');
         Route::post('calon-mahasiswa/{calonMahasiswa}/konversi', [CalonMahasiswaController::class, 'konversi'])->name('calon-mahasiswa.konversi');
     });
+
+    // PMB Berkas Download (Protected in Controller for Panitia, Superadmin & Document Owner)
+    Route::get('pmb/berkas/{berkas}/download', [CalonMahasiswaController::class, 'downloadBerkas'])->name('pmb.berkas.download');
 
     // Registrasi Ulang & Keuangan Staff Management (Otorisasi: keuangan.manage / registrasi.manage)
     Route::middleware(['role:superadmin|admin_akademik|staf_keuangan'])->prefix('keuangan')->name('keuangan.')->group(function () {
@@ -265,16 +274,18 @@ Route::middleware(['auth'])->group(function () {
         Route::get('presensi/saya', fn () => redirect()->route('mahasiswa.presensi'));
     });
 
-    // Data Mahasiswa (Admin / BAA View)
-    Route::middleware(['role:superadmin|admin_akademik'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
+    // Data Mahasiswa (Admin / BAA / Kaprodi View)
+    Route::middleware(['role:superadmin|admin_akademik|kaprodi'])->prefix('mahasiswa')->name('mahasiswa.')->group(function () {
         Route::get('/', [DataMahasiswaController::class, 'index'])->name('index');
         Route::get('/{mahasiswa}', [DataMahasiswaController::class, 'show'])->whereNumber('mahasiswa')->name('show');
     });
 
     // Dosen Wali Portal: Perwalian & Approval KRS
-    Route::get('perwalian/krs', [KrsController::class, 'dosenIndex'])->name('perwalian.krs.index');
-    Route::post('perwalian/krs/{krs}/approve', [KrsController::class, 'approveKrs'])->name('perwalian.krs.approve');
-    Route::post('perwalian/krs/{krs}/reject', [KrsController::class, 'rejectKrs'])->name('perwalian.krs.reject');
+    Route::middleware(['role:superadmin|admin_akademik|kaprodi|dosen'])->group(function () {
+        Route::get('perwalian/krs', [KrsController::class, 'dosenIndex'])->name('perwalian.krs.index');
+        Route::post('perwalian/krs/{krs}/approve', [KrsController::class, 'approveKrs'])->name('perwalian.krs.approve');
+        Route::post('perwalian/krs/{krs}/reject', [KrsController::class, 'rejectKrs'])->name('perwalian.krs.reject');
+    });
 
     // Modul 7: Presensi, Penilaian Perkuliahan, & KHS
     Route::middleware(['role:superadmin|admin_akademik|kaprodi|dosen'])->group(function () {
@@ -329,7 +340,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('kemahasiswaan/beasiswa', [KemahasiswaanController::class, 'beasiswaIndex'])->name('kemahasiswaan.beasiswa.index');
     Route::post('kemahasiswaan/beasiswa', [KemahasiswaanController::class, 'beasiswaStore'])->name('kemahasiswaan.beasiswa.store');
 
-    Route::middleware(['role:superadmin|admin_akademik'])->group(function () {
+    Route::middleware(['role:superadmin|admin_akademik|operator_kemahasiswaan'])->group(function () {
         Route::post('kemahasiswaan/aktivitas/{aktivitas}/validate', [KemahasiswaanController::class, 'aktivitasValidate'])->name('kemahasiswaan.aktivitas.validate');
         Route::post('kemahasiswaan/pelanggaran', [KemahasiswaanController::class, 'pelanggaranStore'])->name('kemahasiswaan.pelanggaran.store');
         Route::post('kemahasiswaan/beasiswa/{beasiswa}/approve', [KemahasiswaanController::class, 'beasiswaApprove'])->name('kemahasiswaan.beasiswa.approve');
@@ -368,7 +379,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [PddiktiSyncController::class, 'index'])->name('index');
         Route::get('/test-connection', [PddiktiSyncController::class, 'testConnection'])->name('test-connection');
         Route::post('/retry/{log}', [PddiktiSyncController::class, 'retry'])->name('retry');
-        Route::post('/sync-batch', [PddiktiSyncController::class, 'syncBatch'])->name('sync-batch');
+        Route::post('/sync-batch', [PddiktiSyncController::class, 'syncBatch'])->middleware('throttle:10,1')->name('sync-batch');
         Route::post('/reconcile', [PddiktiSyncController::class, 'reconcile'])->name('reconcile');
     });
 

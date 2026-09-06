@@ -116,12 +116,16 @@ class UserManagementController extends Controller
 
         $users = $query->paginate(15)->withQueryString()->through(function ($user) {
             $identifier = '-';
+            $entityLink = null;
             if ($user->mahasiswa) {
                 $identifier = 'NIM: '.($user->mahasiswa->nim ?? '-');
+                $entityLink = '/mahasiswa/'.$user->mahasiswa->id;
             } elseif ($user->dosen) {
                 $identifier = 'NIDN: '.($user->dosen->nidn ?? '-');
+                $entityLink = '/kepegawaian/dosen';
             } elseif ($user->pegawai) {
                 $identifier = 'NIP: '.($user->pegawai->nip ?? '-');
+                $entityLink = '/kepegawaian/pegawai';
             }
 
             return [
@@ -132,6 +136,7 @@ class UserManagementController extends Controller
                 'status' => $user->status ?? 'aktif',
                 'roles' => $user->getRoleNames(),
                 'identifier' => $identifier,
+                'entity_link' => $entityLink,
                 'prodi_or_unit' => $user->mahasiswa?->programStudi?->nama
                     ?? $user->dosen?->programStudi?->nama
                     ?? $user->pegawai?->unitKerja?->nama
@@ -274,6 +279,10 @@ class UserManagementController extends Controller
 
         if ($currentAuth->id === $user->id) {
             return back()->with('error', 'Anda sudah berada di akun ini.');
+        }
+
+        if ($user->hasRole('superadmin') || $user->user_type === 'superadmin') {
+            return back()->with('error', 'Tidak dapat melakukan impersonasi ke sesama akun Superadmin.');
         }
 
         // Only store original impersonator if not already impersonating

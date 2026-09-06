@@ -1,8 +1,12 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import {
     BookOpen,
     Building2,
+    Check,
+    Copy,
+    ExternalLink,
     Eye,
+    EyeOff,
     GraduationCap,
     KeyRound,
     Lock,
@@ -13,6 +17,7 @@ import {
     Search,
     Shield,
     ShieldAlert,
+    Sparkles,
     Trash2,
     UserCheck,
     UserPlus,
@@ -30,6 +35,13 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Pagination } from '@/components/ui/pagination';
@@ -45,6 +57,7 @@ type UserItem = {
     identifier: string;
     prodi_or_unit: string;
     created_at: string;
+    entity_link?: string | null;
 };
 
 type PaginationProps = {
@@ -89,6 +102,8 @@ export default function UserManagementPage({
     const [isEditOpen, setIsEditOpen] = useState(false);
     const [isResetPasswordOpen, setIsResetPasswordOpen] = useState(false);
     const [selectedUser, setSelectedUser] = useState<UserItem | null>(null);
+    const [showResetPassword, setShowResetPassword] = useState(false);
+    const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
 
     // Forms
     const createForm = useForm({
@@ -119,6 +134,7 @@ export default function UserManagementPage({
             search,
             role: selectedRole !== 'all' ? selectedRole : undefined,
             status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            page: 1,
         }, { preserveState: true });
     };
 
@@ -128,6 +144,7 @@ export default function UserManagementPage({
             search: search || undefined,
             role: role !== 'all' ? role : undefined,
             status: selectedStatus !== 'all' ? selectedStatus : undefined,
+            page: 1,
         }, { preserveState: true });
     };
 
@@ -187,15 +204,37 @@ return;
     const openResetPasswordModal = (user: UserItem) => {
         setSelectedUser(user);
         resetPasswordForm.reset();
+        setShowResetPassword(false);
+        setCopiedWhatsApp(false);
         setIsResetPasswordOpen(true);
+    };
+
+    const handleGenerateRandomPassword = () => {
+        const randomNum = Math.floor(1000 + Math.random() * 9000);
+        const autoPass = `Yasini#${randomNum}`;
+        resetPasswordForm.setData({
+            password: autoPass,
+            password_confirmation: autoPass,
+        });
+        setShowResetPassword(true);
+    };
+
+    const handleCopyWhatsAppFormat = () => {
+        if (!selectedUser || !resetPasswordForm.data.password) {
+            return;
+        }
+        const text = `*AKUN SIAKAD AL-YASINI*\n\nYth. Civitas Akademika: *${selectedUser.name}*\nEmail Login: *${selectedUser.email}*\nIdentitas (NIM/NIDN/NIP): *${selectedUser.identifier || '-'}*\nPassword Baru: *${resetPasswordForm.data.password}*\n\nSilakan masuk melalui portal SIAKAD: ${window.location.origin}/login\nDemi keamanan akun, segera perbarui password ini setelah berhasil login.`;
+        navigator.clipboard.writeText(text);
+        setCopiedWhatsApp(true);
+        setTimeout(() => setCopiedWhatsApp(false), 3000);
     };
 
     const handleResetPasswordSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
         if (!selectedUser) {
-return;
-}
+            return;
+        }
 
         resetPasswordForm.post(`/users/${selectedUser.id}/reset-password`, {
             onSuccess: () => setIsResetPasswordOpen(false),
@@ -217,7 +256,7 @@ return;
     const getRoleBadgeColor = (role: string) => {
         switch (role.toLowerCase()) {
             case 'superadmin':
-                return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+                return 'bg-purple-50 text-purple-700 border-purple-200';
             case 'admin_akademik':
             case 'kaprodi':
                 return 'bg-emerald-50 text-emerald-700 border-emerald-200';
@@ -226,13 +265,17 @@ return;
             case 'staf_keuangan':
                 return 'bg-amber-50 text-amber-700 border-amber-200';
             case 'panitia_pmb':
-                return 'bg-purple-50 text-purple-700 border-purple-200';
+                return 'bg-indigo-50 text-indigo-700 border-indigo-200';
             case 'staf_kepegawaian':
-                return 'bg-teal-50 text-teal-700 border-teal-200';
+            case 'kepegawaian':
+                return 'bg-violet-50 text-violet-700 border-violet-200';
             case 'mahasiswa':
-                return 'bg-teal-50 text-teal-700 border-teal-200';
-            case 'operator_kemahasiswaan':
                 return 'bg-cyan-50 text-cyan-700 border-cyan-200';
+            case 'calon_mahasiswa':
+                return 'bg-sky-50 text-sky-700 border-sky-200';
+            case 'operator_kemahasiswaan':
+            case 'kemahasiswaan':
+                return 'bg-rose-50 text-rose-700 border-rose-200';
             default:
                 return 'bg-slate-100 text-slate-700 border-slate-200';
         }
@@ -462,51 +505,67 @@ return;
                                             </span>
                                         </TableCell>
                                         <TableCell align="right">
-                                            <div className="flex items-center justify-end gap-1">
+                                            <div className="flex items-center justify-end gap-1.5">
                                                 {/* Impersonate Button */}
                                                 <Button
                                                     size="sm"
                                                     variant="outline"
                                                     onClick={() => handleImpersonate(u)}
-                                                    className="h-7 px-2 text-[11px] border-emerald-300 text-emerald-700 hover:bg-emerald-50"
-                                                    title="Login sebagai pengguna ini"
+                                                    className="h-7 px-2 text-[11px] font-medium border-emerald-300 text-emerald-700 hover:bg-emerald-50 hover:border-emerald-400 shadow-2xs transition"
+                                                    title="Masuk dan akses sistem sebagai pengguna ini"
                                                 >
                                                     <LogIn className="size-3 mr-1 text-emerald-600" />
                                                     <span>Akses Akun</span>
                                                 </Button>
 
-                                                {/* Edit User */}
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => openEditModal(u)}
-                                                    className="size-7 p-0 text-slate-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                                    title="Edit Pengguna"
-                                                >
-                                                    <Pencil className="size-3.5" />
-                                                </Button>
-
-                                                {/* Reset Password */}
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => openResetPasswordModal(u)}
-                                                    className="size-7 p-0 text-slate-600 hover:text-amber-700 hover:bg-amber-50"
-                                                    title="Setel Ulang Password"
-                                                >
-                                                    <KeyRound className="size-3.5" />
-                                                </Button>
-
-                                                {/* Delete User */}
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() => handleDeleteUser(u)}
-                                                    className="size-7 p-0 text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                                                    title="Hapus Akun"
-                                                >
-                                                    <Trash2 className="size-3.5" />
-                                                </Button>
+                                                {/* More Actions Dropdown */}
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="size-7 p-0 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-md"
+                                                            title="Menu Tindakan Akun"
+                                                        >
+                                                            <MoreVertical className="size-3.5" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end" className="w-48 bg-white shadow-lg border border-slate-200">
+                                                        {u.entity_link && (
+                                                            <DropdownMenuItem asChild>
+                                                                <Link
+                                                                    href={u.entity_link}
+                                                                    className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 font-medium py-1.5 px-2.5 hover:bg-slate-50"
+                                                                >
+                                                                    <ExternalLink className="size-3.5 text-slate-500" />
+                                                                    <span>Buka Profil Data</span>
+                                                                </Link>
+                                                            </DropdownMenuItem>
+                                                        )}
+                                                        <DropdownMenuItem
+                                                            onClick={() => openEditModal(u)}
+                                                            className="flex items-center gap-2 cursor-pointer text-xs text-slate-700 font-medium py-1.5 px-2.5 hover:bg-slate-50"
+                                                        >
+                                                            <Pencil className="size-3.5 text-slate-500" />
+                                                            <span>Edit Akun</span>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onClick={() => openResetPasswordModal(u)}
+                                                            className="flex items-center gap-2 cursor-pointer text-xs text-amber-700 font-medium py-1.5 px-2.5 hover:bg-amber-50"
+                                                        >
+                                                            <KeyRound className="size-3.5 text-amber-600" />
+                                                            <span>Setel Ulang Password</span>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator className="my-1 border-slate-100" />
+                                                        <DropdownMenuItem
+                                                            onClick={() => handleDeleteUser(u)}
+                                                            className="flex items-center gap-2 cursor-pointer text-xs text-rose-600 font-medium py-1.5 px-2.5 hover:bg-rose-50"
+                                                        >
+                                                            <Trash2 className="size-3.5 text-rose-500" />
+                                                            <span>Hapus Akun</span>
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -730,17 +789,57 @@ defaultRole = 'mahasiswa';
             <Dialog open={isResetPasswordOpen} onOpenChange={setIsResetPasswordOpen}>
                 <DialogContent className="sm:max-w-md bg-white">
                     <DialogHeader>
-                        <DialogTitle className="text-base font-bold text-text-primary">Reset Password Pengguna</DialogTitle>
-                        <DialogDescription className="text-xs text-text-secondary">
-                            Atur ulang password untuk akun <strong>{selectedUser?.name}</strong> ({selectedUser?.email}).
+                        <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                            <KeyRound className="size-5 text-amber-600" />
+                            <span>Setel Ulang Password Pengguna</span>
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-slate-500">
+                            Atur ulang kredensial masuk untuk <strong>{selectedUser?.name}</strong> ({selectedUser?.email}).
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={handleResetPasswordSubmit} className="space-y-3.5 py-2 text-xs">
+                    <form onSubmit={handleResetPasswordSubmit} className="space-y-4 py-2 text-xs">
+                        {/* Quick Generator Box */}
+                        <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <div>
+                                <p className="text-xs font-semibold text-slate-800">Generate Password Acak</p>
+                                <p className="text-[11px] text-slate-500">Buat password acak yang aman secara instan</p>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleGenerateRandomPassword}
+                                className="h-8 text-xs font-medium border-slate-300 text-slate-700 hover:bg-white flex items-center gap-1.5 shrink-0 shadow-2xs"
+                            >
+                                <Sparkles className="size-3.5 text-amber-500" />
+                                <span>Acak Otomatis</span>
+                            </Button>
+                        </div>
+
                         <div className="space-y-1">
-                            <Label className="text-xs font-semibold">Password Baru</Label>
+                            <div className="flex items-center justify-between">
+                                <Label className="text-xs font-semibold">Password Baru</Label>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowResetPassword(!showResetPassword)}
+                                    className="text-[11px] text-slate-500 hover:text-slate-800 flex items-center gap-1 focus:outline-none"
+                                >
+                                    {showResetPassword ? (
+                                        <>
+                                            <EyeOff className="size-3" />
+                                            <span>Sembunyikan</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Eye className="size-3" />
+                                            <span>Lihat</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                             <Input
-                                type="password"
+                                type={showResetPassword ? 'text' : 'password'}
                                 value={resetPasswordForm.data.password}
                                 onChange={(e) => resetPasswordForm.setData('password', e.target.value)}
                                 placeholder="Minimal 8 karakter"
@@ -754,7 +853,7 @@ defaultRole = 'mahasiswa';
                         <div className="space-y-1">
                             <Label className="text-xs font-semibold">Konfirmasi Password Baru</Label>
                             <Input
-                                type="password"
+                                type={showResetPassword ? 'text' : 'password'}
                                 value={resetPasswordForm.data.password_confirmation}
                                 onChange={(e) => resetPasswordForm.setData('password_confirmation', e.target.value)}
                                 placeholder="Ketik ulang password baru"
@@ -762,12 +861,37 @@ defaultRole = 'mahasiswa';
                             />
                         </div>
 
-                        <DialogFooter className="pt-3">
+                        {/* WhatsApp Credentials Copy Shortcut */}
+                        {resetPasswordForm.data.password && (
+                            <div className="pt-1">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={handleCopyWhatsAppFormat}
+                                    className="w-full text-xs font-medium border-emerald-300 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/60 flex items-center justify-center gap-2"
+                                >
+                                    {copiedWhatsApp ? (
+                                        <>
+                                            <Check className="size-3.5 text-emerald-600" />
+                                            <span>Format Pesan Tersalin ke Clipboard!</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Copy className="size-3.5 text-emerald-600" />
+                                            <span>Salin Format Info WhatsApp Civitas</span>
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        )}
+
+                        <DialogFooter className="pt-2">
                             <Button type="button" variant="outline" size="sm" onClick={() => setIsResetPasswordOpen(false)}>
                                 Batal
                             </Button>
                             <Button type="submit" size="sm" disabled={resetPasswordForm.processing} className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                                {resetPasswordForm.processing ? 'Menyimpan...' : 'Setel Ulang Password'}
+                                {resetPasswordForm.processing ? 'Menyimpan...' : 'Simpan & Perbarui Password'}
                             </Button>
                         </DialogFooter>
                     </form>

@@ -180,6 +180,7 @@ export default function DosenIndex({
             program_studi_id: selectedProdi !== 'all' ? selectedProdi : undefined,
             jabatan_fungsional: selectedJabatan !== 'all' ? selectedJabatan : undefined,
             status_kepegawaian: selectedStatus !== 'all' ? selectedStatus : undefined,
+            page: '1',
             ...newFilters,
         };
 

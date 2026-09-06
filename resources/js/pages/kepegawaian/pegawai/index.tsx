@@ -116,6 +116,7 @@ export default function PegawaiIndex({
             search: searchQuery || undefined,
             unit_kerja_id: selectedUnit !== 'all' ? selectedUnit : undefined,
             status_kepegawaian: selectedStatus !== 'all' ? selectedStatus : undefined,
+            page: '1',
             ...newFilters,
         };
 

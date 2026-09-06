@@ -2,6 +2,7 @@ import { Head, Link, router, useForm } from '@inertiajs/react';
 import { DoorOpen, Edit, Plus, Search, Trash2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import { useConfirmDialog } from '@/components/confirm-dialog';
+import { MasterDataNav } from '@/components/master-data-nav';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,7 +14,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MasterDataNav } from '@/components/master-data-nav';
 
 type RuangKuliah = {
     id: number;

@@ -3,84 +3,75 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
-use App\Models\Dosen;
+use App\Http\Requests\FakultasRequest;
 use App\Models\Fakultas;
-use App\Services\ActivityLogger;
+use App\Models\RiwayatPimpinanFakultas;
+use App\Services\FakultasService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class FakultasController extends Controller
 {
+    public function __construct(
+        protected FakultasService $fakultasService
+    ) {}
+
     /**
-     * Display a listing of the resource.
+     * Display a listing of the resource with metrics.
      */
     public function index(): Response
     {
-        $fakultas = Fakultas::withCount('programStudis')
-            ->orderBy('kode')
-            ->get();
-
-        $dosens = Dosen::orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn', 'gelar_depan', 'gelar_belakang']);
+        $fakultas = $this->fakultasService->getFakultasList();
+        $stats = $this->fakultasService->getStats();
+        $dosens = $this->fakultasService->getAvailableDosens();
+        $pegawais = $this->fakultasService->getAvailablePegawais();
 
         return Inertia::render('master/fakultas/index', [
             'fakultas' => $fakultas,
+            'stats' => $stats,
             'dosens' => $dosens,
+            'pegawais' => $pegawais,
         ]);
     }
 
     /**
-     * Display the specified fakultas detail page (matching reference UI Photo 1 & 2).
+     * Display the specified fakultas detail page.
      */
     public function show(Fakultas $fakulta): Response
     {
-        $fakulta->load(['programStudis']);
+        $detail = $this->fakultasService->getFakultasDetail($fakulta);
+        $analytics = $this->fakultasService->getFakultasAnalytics($detail);
         $allFakultas = Fakultas::orderBy('nama')->get(['id', 'kode', 'nama']);
-        $dosens = Dosen::orderBy('nama_lengkap')->get(['id', 'nama_lengkap', 'nidn', 'gelar_depan', 'gelar_belakang']);
+        $dosens = $this->fakultasService->getAvailableDosens();
+        $pegawais = $this->fakultasService->getAvailablePegawais();
 
         return Inertia::render('master/fakultas/show', [
-            'fakultas' => $fakulta,
+            'fakultas' => $detail,
+            'analytics' => $analytics,
             'allFakultas' => $allFakultas,
             'dosens' => $dosens,
+            'pegawais' => $pegawais,
         ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request): RedirectResponse
+    public function store(FakultasRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'kode' => ['required', 'string', 'max:20', 'unique:fakultas,kode'],
-            'nama' => ['required', 'string', 'max:255'],
-            'nama_en' => ['nullable', 'string', 'max:255'],
-            'nama_singkat' => ['nullable', 'string', 'max:100'],
-            'alamat' => ['nullable', 'string', 'max:500'],
-            'telepon' => ['nullable', 'string', 'max:50'],
-            'tahun_berdiri' => ['nullable', 'integer', 'min:1900', 'max:'.((int) date('Y'))],
-            'periode_berdiri' => ['nullable', 'string', 'max:100'],
-            'status' => ['nullable', 'in:aktif,nonaktif'],
-            'luas_m2' => ['nullable', 'string', 'max:50'],
-            'dekan_nama' => ['nullable', 'string', 'max:255'],
-            'dekan_nidn' => ['nullable', 'string', 'max:50'],
-            'wakil_dekan_1' => ['nullable', 'string', 'max:255'],
-            'wakil_dekan_2' => ['nullable', 'string', 'max:255'],
-            'wakil_dekan_3' => ['nullable', 'string', 'max:255'],
-            'wakil_dekan_4' => ['nullable', 'string', 'max:255'],
-            'visi' => ['nullable', 'string'],
-            'misi' => ['nullable', 'string'],
-        ], [
-            'kode.required' => 'Kode fakultas wajib diisi.',
-            'kode.unique' => 'Kode fakultas sudah digunakan.',
-            'nama.required' => 'Nama fakultas wajib diisi.',
-        ]);
+        $data = $request->validated();
 
-        $validated['status'] = $validated['status'] ?? 'aktif';
+        if ($request->hasFile('file_sk_pendirian')) {
+            $data['file_sk_pendirian'] = $request->file('file_sk_pendirian');
+        }
+        if ($request->hasFile('file_sk_izin_operasional')) {
+            $data['file_sk_izin_operasional'] = $request->file('file_sk_izin_operasional');
+        }
 
-        $fakultas = Fakultas::create($validated);
-
-        ActivityLogger::log('master.fakultas.create', 'Fakultas', $fakultas->id, null, $validated);
+        $this->fakultasService->createFakultas($data);
 
         return back()->with('success', 'Fakultas berhasil ditambahkan.');
     }
@@ -88,39 +79,72 @@ class FakultasController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Fakultas $fakulta): RedirectResponse
+    public function update(FakultasRequest $request, Fakultas $fakulta): RedirectResponse
     {
-        $validated = $request->validate([
-            'kode' => ['required', 'string', 'max:20', 'unique:fakultas,kode,'.$fakulta->id],
-            'nama' => ['required', 'string', 'max:255'],
-            'nama_en' => ['nullable', 'string', 'max:255'],
-            'nama_singkat' => ['nullable', 'string', 'max:100'],
-            'alamat' => ['nullable', 'string', 'max:500'],
-            'telepon' => ['nullable', 'string', 'max:50'],
-            'tahun_berdiri' => ['nullable', 'integer', 'min:1900', 'max:'.((int) date('Y'))],
-            'periode_berdiri' => ['nullable', 'string', 'max:100'],
-            'status' => ['required', 'in:aktif,nonaktif'],
-            'luas_m2' => ['nullable', 'string', 'max:50'],
-            'dekan_nama' => ['nullable', 'string', 'max:255'],
-            'dekan_nidn' => ['nullable', 'string', 'max:50'],
-            'wakil_dekan_1' => ['nullable', 'string', 'max:255'],
-            'wakil_dekan_2' => ['nullable', 'string', 'max:255'],
-            'wakil_dekan_3' => ['nullable', 'string', 'max:255'],
-            'wakil_dekan_4' => ['nullable', 'string', 'max:255'],
-            'visi' => ['nullable', 'string'],
-            'misi' => ['nullable', 'string'],
-        ], [
-            'kode.required' => 'Kode fakultas wajib diisi.',
-            'kode.unique' => 'Kode fakultas sudah digunakan.',
-            'nama.required' => 'Nama fakultas wajib diisi.',
-        ]);
+        $data = $request->validated();
 
-        $oldValues = $fakulta->toArray();
-        $fakulta->update($validated);
+        if ($request->hasFile('file_sk_pendirian')) {
+            $data['file_sk_pendirian'] = $request->file('file_sk_pendirian');
+        }
+        if ($request->hasFile('file_sk_izin_operasional')) {
+            $data['file_sk_izin_operasional'] = $request->file('file_sk_izin_operasional');
+        }
 
-        ActivityLogger::log('master.fakultas.update', 'Fakultas', $fakulta->id, $oldValues, $validated);
+        $this->fakultasService->updateFakultas($fakulta, $data);
 
         return back()->with('success', 'Fakultas berhasil diperbarui.');
+    }
+
+    /**
+     * Store a new leadership tenure record (Riwayat Pimpinan Dekanat).
+     */
+    public function storePimpinan(Request $request, Fakultas $fakulta): RedirectResponse
+    {
+        $validated = $request->validate([
+            'dosen_id' => ['required', 'integer', 'exists:dosens,id'],
+            'jabatan' => ['required', 'in:dekan,wakil_dekan_1,wakil_dekan_2,wakil_dekan_3,wakil_dekan_4,ketua_gpmf'],
+            'periode_mulai' => ['required', 'date'],
+            'periode_selesai' => ['nullable', 'date', 'after_or_equal:periode_mulai'],
+            'no_sk_pelantikan' => ['nullable', 'string', 'max:100'],
+            'file_sk_pelantikan' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'is_aktif' => ['nullable'],
+        ], [
+            'dosen_id.required' => 'Dosen pimpinan wajib dipilih.',
+            'dosen_id.exists' => 'Data dosen tidak valid.',
+            'jabatan.required' => 'Jabatan struktural dekanat wajib dipilih.',
+            'periode_mulai.required' => 'Tanggal periode mulai wajib diisi.',
+            'periode_selesai.after_or_equal' => 'Tanggal periode selesai harus setelah atau sama dengan tanggal mulai.',
+            'file_sk_pelantikan.mimes' => 'Berkas SK Pelantikan harus berupa dokumen PDF.',
+            'file_sk_pelantikan.max' => 'Ukuran berkas SK Pelantikan maksimal 5MB.',
+        ]);
+
+        if ($request->hasFile('file_sk_pelantikan')) {
+            $validated['file_sk_pelantikan'] = $request->file('file_sk_pelantikan');
+        }
+
+        $this->fakultasService->addRiwayatPimpinan($fakulta, $validated);
+
+        return back()->with('success', 'Riwayat masa jabatan pimpinan fakultas berhasil ditambahkan.');
+    }
+
+    /**
+     * Delete a leadership tenure record.
+     */
+    public function destroyPimpinan(Fakultas $fakulta, RiwayatPimpinanFakultas $pimpinan): RedirectResponse
+    {
+        $this->fakultasService->deleteRiwayatPimpinan($pimpinan);
+
+        return back()->with('success', 'Riwayat masa jabatan pimpinan fakultas berhasil dihapus.');
+    }
+
+    /**
+     * Trigger sync status with PDDIKTI Neo Feeder.
+     */
+    public function syncFeeder(Fakultas $fakulta): RedirectResponse
+    {
+        $this->fakultasService->syncFeeder($fakulta);
+
+        return back()->with('success', 'Data fakultas berhasil disinkronkan dengan PDDIKTI Feeder.');
     }
 
     /**
@@ -128,16 +152,15 @@ class FakultasController extends Controller
      */
     public function destroy(Fakultas $fakulta): RedirectResponse
     {
-        if ($fakulta->programStudis()->exists()) {
-            return back()->with('error', 'Fakultas tidak dapat dihapus karena masih memiliki Program Studi aktif.');
+        try {
+            $this->fakultasService->deleteFakultas($fakulta);
+
+            return back()->with('success', 'Fakultas berhasil dihapus.');
+        } catch (ValidationException $e) {
+            $message = $e->validator->errors()->first('error')
+                ?: 'Fakultas tidak dapat dihapus karena masih memiliki Program Studi aktif.';
+
+            return back()->with('error', $message);
         }
-
-        $oldValues = $fakulta->toArray();
-        $id = $fakulta->id;
-        $fakulta->delete();
-
-        ActivityLogger::log('master.fakultas.delete', 'Fakultas', $id, $oldValues, null);
-
-        return back()->with('success', 'Fakultas berhasil dihapus.');
     }
 }

@@ -32,10 +32,16 @@ class PenilaianController extends Controller
             'jadwalPerkuliahans.ruangKuliah',
         ])
             ->where('tahun_ajaran_id', $tahunAjaran->id)
-            ->when(! $user->hasRole('superadmin') && ! $user->hasRole('admin_akademik'), function ($q) use ($dosen) {
-                $q->whereHas('dosenPengajars', function ($dq) use ($dosen) {
-                    $dq->where('dosen_id', $dosen?->id);
-                });
+            ->when(! $user->hasRole('superadmin') && ! $user->hasRole('admin_akademik'), function ($q) use ($user, $dosen) {
+                if ($user->hasRole('kaprodi') && $dosen?->program_studi_id) {
+                    $q->whereHas('kurikulumMatakuliah.kurikulumProdi', function ($kq) use ($dosen) {
+                        $kq->where('program_studi_id', $dosen->program_studi_id);
+                    });
+                } else {
+                    $q->whereHas('dosenPengajars', function ($dq) use ($dosen) {
+                        $dq->where('dosen_id', $dosen?->id);
+                    });
+                }
             })
             ->get()
             ->filter(fn ($k) => $k->isReadyForKrs())
@@ -96,7 +102,7 @@ class PenilaianController extends Controller
             'komposisis.*.bobot_persen' => ['required', 'numeric', 'min:1', 'max:100'],
         ]);
 
-        $kelas = KelasKuliah::findOrFail($validated['kelas_kuliah_id']);
+        $kelas = KelasKuliah::findOrFail((int) $validated['kelas_kuliah_id']);
 
         try {
             $penilaianService->saveKomposisiNilai($kelas, $validated['komposisis']);
@@ -118,10 +124,10 @@ class PenilaianController extends Controller
             'scores' => ['required', 'array'], // e.g. ['tugas' => 85, 'uts' => 80, 'uas' => 90]
         ]);
 
-        $kelas = KelasKuliah::findOrFail($validated['kelas_kuliah_id']);
+        $kelas = KelasKuliah::findOrFail((int) $validated['kelas_kuliah_id']);
 
         try {
-            $penilaianService->inputNilaiByDosen($kelas, $validated['krs_detail_id'], $validated['scores'], auth()->id());
+            $penilaianService->inputNilaiByDosen($kelas, (int) $validated['krs_detail_id'], $validated['scores'], (int) auth()->id());
 
             return back()->with('success', 'Nilai mahasiswa berhasil diperbarui.');
         } catch (Exception $e) {
@@ -138,10 +144,10 @@ class PenilaianController extends Controller
             'kelas_kuliah_id' => ['required', 'exists:kelas_kuliahs,id'],
         ]);
 
-        $kelas = KelasKuliah::findOrFail($validated['kelas_kuliah_id']);
+        $kelas = KelasKuliah::findOrFail((int) $validated['kelas_kuliah_id']);
 
         try {
-            $penilaianService->finalizeNilai($kelas, auth()->id());
+            $penilaianService->finalizeNilai($kelas, (int) auth()->id());
 
             return back()->with('success', 'Nilai kelas kuliah berhasil difinalisasi.');
         } catch (Exception $e) {

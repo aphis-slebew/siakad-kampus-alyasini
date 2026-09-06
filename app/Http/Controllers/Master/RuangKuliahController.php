@@ -79,7 +79,7 @@ class RuangKuliahController extends Controller
     public function destroy(RuangKuliah $ruangKuliah): RedirectResponse
     {
         if ($ruangKuliah->jadwalPerkuliahans()->exists()) {
-            return back()->withErrors(['error' => 'Ruang kuliah "'.$ruangKuliah->nama.'" tidak dapat dihapus karena masih digunakan dalam jadwal perkuliahan.']);
+            return back()->with('error', 'Ruang kuliah "'.$ruangKuliah->nama.'" tidak dapat dihapus karena masih digunakan dalam jadwal perkuliahan.');
         }
 
         $oldValues = $ruangKuliah->only(['kode', 'nama', 'kapasitas']);

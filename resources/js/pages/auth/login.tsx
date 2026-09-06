@@ -284,6 +284,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             <div className="grid grid-cols-2 gap-2">
                                 {devRoles.map((item) => {
                                     const IconComponent = item.icon;
+
                                     return (
                                         <a
                                             key={item.href}

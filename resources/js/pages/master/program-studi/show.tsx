@@ -1,12 +1,35 @@
 import { Head, Link, useForm, router } from '@inertiajs/react';
-import { GraduationCap, Award, Users, BookOpen, Phone, ArrowLeft, Edit, Trash2, Plus, FileText, CheckCircle, XCircle } from 'lucide-react';
+import {
+    GraduationCap,
+    Award,
+    Users,
+    BookOpen,
+    Phone,
+    ArrowLeft,
+    Edit,
+    Trash2,
+    FileText,
+    CheckCircle,
+    XCircle,
+    UserCheck,
+    Layers,
+    Plus,
+} from 'lucide-react';
 import React, { useState } from 'react';
+import { useConfirmDialog } from '@/components/confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AppLayout from '@/layouts/app-layout';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+interface KonsentrasiItem {
+    id: number;
+    program_studi_id: number;
+    nama: string;
+    created_at?: string;
+}
 
 interface ProgramStudi {
     id: number;
@@ -51,6 +74,7 @@ interface ProgramStudi {
         id: number;
         nama: string;
     };
+    konsentrasis?: KonsentrasiItem[];
 }
 
 interface PerguruanTinggi {
@@ -61,6 +85,10 @@ interface DosenOption {
     id: number;
     nama_lengkap: string;
     nidn: string | null;
+    gelar_depan?: string | null;
+    gelar_belakang?: string | null;
+    niy_nip?: string | null;
+    nama_bergelar?: string;
 }
 
 interface FakultasOption {
@@ -132,8 +160,59 @@ export default function ProgramStudiShow({ programStudi, perguruanTinggi, dosens
         }
     };
 
+    // Konsentrasi Management State & Handlers
+    const [isAddKonsentrasiOpen, setIsAddKonsentrasiOpen] = useState(false);
+    const [editingKonsentrasi, setEditingKonsentrasi] = useState<KonsentrasiItem | null>(null);
+
+    const addKonsentrasiForm = useForm({
+        program_studi_id: programStudi.id,
+        nama: '',
+    });
+
+    const editKonsentrasiForm = useForm({
+        nama: '',
+    });
+
+    const { confirm: confirmDelete, confirmDialog } = useConfirmDialog();
+
+    const handleAddKonsentrasi = (e: React.FormEvent) => {
+        e.preventDefault();
+        addKonsentrasiForm.post('/master/konsentrasi', {
+            onSuccess: () => {
+                setIsAddKonsentrasiOpen(false);
+                addKonsentrasiForm.reset('nama');
+            },
+        });
+    };
+
+    const handleEditKonsentrasi = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingKonsentrasi) {
+            return;
+        }
+        editKonsentrasiForm.put(`/master/konsentrasi/${editingKonsentrasi.id}`, {
+            onSuccess: () => {
+                setEditingKonsentrasi(null);
+                editKonsentrasiForm.reset();
+            },
+        });
+    };
+
+    const handleDeleteKonsentrasi = (item: KonsentrasiItem) => {
+        confirmDelete({
+            title: 'Hapus Bidang Konsentrasi',
+            description: `Apakah Anda yakin ingin menghapus bidang konsentrasi "${item.nama}"?`,
+            variant: 'destructive',
+            confirmText: 'Ya, Hapus Konsentrasi',
+            onConfirm: () => {
+                router.delete(`/master/konsentrasi/${item.id}`);
+            },
+        });
+    };
+
     return (
         <>
+            {confirmDialog}
             <Head title={`Detail Program Studi - ${programStudi.nama}`} />
 
             <div className="p-4 sm:p-6 lg:p-8 space-y-6 max-w-7xl mx-auto font-sans">
@@ -326,6 +405,85 @@ export default function ProgramStudiShow({ programStudi, perguruanTinggi, dosens
                                 <span className="text-text-primary">{programStudi.periode_hitung_ips}</span>
                             </div>
                         </div>
+                    </CardContent>
+                </Card>
+
+                {/* 3.5. Bidang Konsentrasi / Peminatan Program Studi Card */}
+                <Card className="border border-border-default shadow-xs overflow-hidden">
+                    <div className="h-1.5 bg-emerald-600" />
+                    <CardHeader className="p-4 sm:p-6 border-b border-border-default pb-3 flex flex-row items-center justify-between">
+                        <div className="flex items-center gap-2.5">
+                            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100">
+                                <Layers className="size-4.5" />
+                            </div>
+                            <div>
+                                <CardTitle className="text-base font-semibold text-text-primary">
+                                    Bidang Konsentrasi / Peminatan Program Studi
+                                </CardTitle>
+                                <p className="text-xs text-text-secondary mt-0.5">
+                                    Peminatan keilmuan yang dapat dikontrak oleh mahasiswa pada program studi ini.
+                                </p>
+                            </div>
+                        </div>
+                        <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => setIsAddKonsentrasiOpen(true)}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1.5 shadow-2xs"
+                        >
+                            <Plus className="size-3.5" />
+                            <span>Tambah Konsentrasi</span>
+                        </Button>
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6">
+                        {(!programStudi.konsentrasis || programStudi.konsentrasis.length === 0) ? (
+                            <div className="text-center py-8 text-slate-400">
+                                <Layers className="size-8 mx-auto text-slate-300 mb-2" />
+                                <p className="text-xs font-semibold text-slate-600">Belum Ada Bidang Konsentrasi Terdaftar</p>
+                                <p className="text-[11px] text-slate-400 mt-0.5">
+                                    Program studi ini belum memiliki bidang peminatan khusus. Klik Tambah Konsentrasi untuk menambahkan.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden shadow-2xs">
+                                {programStudi.konsentrasis.map((k, idx) => (
+                                    <div key={k.id} className="flex items-center justify-between p-3.5 bg-white hover:bg-slate-50 transition">
+                                        <div className="flex items-center gap-3">
+                                            <span className="size-7 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs flex items-center justify-center border border-emerald-200">
+                                                {idx + 1}
+                                            </span>
+                                            <div>
+                                                <p className="text-xs font-bold text-slate-900">{k.nama}</p>
+                                                <p className="text-[10px] text-slate-400">
+                                                    Ditambahkan {k.created_at ? new Date(k.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) : '-'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setEditingKonsentrasi(k);
+                                                    editKonsentrasiForm.setData('nama', k.nama);
+                                                }}
+                                                className="p-1.5 text-slate-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                                                title="Edit Konsentrasi"
+                                            >
+                                                <Edit className="size-3.5" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => handleDeleteKonsentrasi(k)}
+                                                className="p-1.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition"
+                                                title="Hapus Konsentrasi"
+                                            >
+                                                <Trash2 className="size-3.5" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -542,10 +700,50 @@ export default function ProgramStudiShow({ programStudi, perguruanTinggi, dosens
                         </div>
 
                         {/* Section 2: Pejabat */}
-                        <div>
-                            <h4 className="text-xs font-bold uppercase tracking-wider text-brand-primary mb-3">
+                        <div className="space-y-3">
+                            <h4 className="text-xs font-bold uppercase tracking-wider text-brand-primary">
                                 2. Pejabat Program Studi
                             </h4>
+
+                            {/* Dosen Picker for Kaprodi */}
+                            <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg border border-slate-200 dark:border-slate-700/60 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-xs font-semibold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                                        <UserCheck className="size-3.5 text-emerald-600" />
+                                        <span>Pilih Ketua Program Studi (Kaprodi) dari Data Dosen</span>
+                                    </Label>
+                                    <span className="text-[10px] uppercase tracking-wider font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">Snapshot Reference</span>
+                                </div>
+                                <Select
+                                    onValueChange={(val) => {
+                                        const selected = dosens.find((d) => String(d.id) === val);
+
+                                        if (selected) {
+                                            setData((prev) => ({
+                                                ...prev,
+                                                ketua_prodi_nama: selected.nama_bergelar || selected.nama_lengkap,
+                                                ketua_prodi_nidn: selected.nidn || selected.niy_nip || '',
+                                            }));
+                                        }
+                                    }}
+                                >
+                                    <SelectTrigger className="h-8 text-xs bg-white dark:bg-slate-900">
+                                        <SelectValue placeholder="-- Pilih Dosen untuk Kaprodi --" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {dosens.map((d) => (
+                                            <SelectItem key={d.id} value={String(d.id)} className="text-xs">
+                                                <span className="font-mono text-muted-foreground mr-1.5">[{d.nidn || d.niy_nip || 'Tanpa NIDN'}]</span>
+                                                <span className="font-medium">{d.nama_bergelar || d.nama_lengkap}</span>
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[11px] text-muted-foreground">
+                                    Memilih dosen akan otomatis mengisi kolom Nama Bergelar dan NIDN Kaprodi di bawah.
+                                </p>
+                            </div>
+
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                 <div className="space-y-1">
                                     <Label className="text-xs">Ketua Prodi (Nama & Gelar)</Label>
@@ -553,6 +751,7 @@ export default function ProgramStudiShow({ programStudi, perguruanTinggi, dosens
                                         value={data.ketua_prodi_nama}
                                         onChange={(e) => setData('ketua_prodi_nama', e.target.value)}
                                         className="h-8 text-xs"
+                                        placeholder="Nama Lengkap & Gelar Kaprodi"
                                     />
                                 </div>
                                 <div className="space-y-1">
@@ -561,14 +760,40 @@ export default function ProgramStudiShow({ programStudi, perguruanTinggi, dosens
                                         value={data.ketua_prodi_nidn}
                                         onChange={(e) => setData('ketua_prodi_nidn', e.target.value)}
                                         className="h-8 text-xs font-mono"
+                                        placeholder="NIDN Kaprodi"
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-xs">Sekretaris Prodi</Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-xs">Sekretaris Prodi</Label>
+                                        <Select
+                                            onValueChange={(val) => {
+                                                const selected = dosens.find((d) => String(d.id) === val);
+
+                                                if (selected) {
+                                                    const name = selected.nama_bergelar || selected.nama_lengkap;
+                                                    setData('sekretaris_prodi_nama', name);
+                                                }
+                                            }}
+                                        >
+                                            <SelectTrigger className="h-6 text-[10px] px-1.5 py-0 border-dashed text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100/50 border-emerald-300 w-auto gap-1">
+                                                <span>Pilih Dosen</span>
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {dosens.map((d) => (
+                                                    <SelectItem key={d.id} value={String(d.id)} className="text-xs">
+                                                        <span className="font-mono text-muted-foreground mr-1.5">[{d.nidn || d.niy_nip || '-'}]</span>
+                                                        <span>{d.nama_bergelar || d.nama_lengkap}</span>
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
                                     <Input
                                         value={data.sekretaris_prodi_nama}
                                         onChange={(e) => setData('sekretaris_prodi_nama', e.target.value)}
                                         className="h-8 text-xs"
+                                        placeholder="Nama Lengkap & Gelar Sekprodi"
                                     />
                                 </div>
                             </div>
@@ -702,6 +927,113 @@ export default function ProgramStudiShow({ programStudi, perguruanTinggi, dosens
                             </Button>
                             <Button type="submit" size="sm" disabled={processing} className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold">
                                 {processing ? 'Menyimpan...' : 'Simpan Perubahan'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Tambah Konsentrasi */}
+            <Dialog open={isAddKonsentrasiOpen} onOpenChange={setIsAddKonsentrasiOpen}>
+                <DialogContent className="sm:max-w-md bg-white">
+                    <form onSubmit={handleAddKonsentrasi}>
+                        <DialogHeader>
+                            <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <Layers className="size-5 text-emerald-600" />
+                                <span>Tambah Bidang Konsentrasi</span>
+                            </DialogTitle>
+                            <DialogDescription className="text-xs text-slate-500">
+                                Masukkan nama peminatan atau konsentrasi keilmuan untuk program studi ini.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="py-4 space-y-3 text-xs">
+                            <div className="space-y-1">
+                                <Label htmlFor="konsentrasi-nama" className="text-xs font-semibold">
+                                    Nama Bidang Konsentrasi / Peminatan
+                                </Label>
+                                <Input
+                                    id="konsentrasi-nama"
+                                    value={addKonsentrasiForm.data.nama}
+                                    onChange={(e) => addKonsentrasiForm.setData('nama', e.target.value)}
+                                    placeholder="Contoh: Pendidikan Agama Islam Transformatif"
+                                    required
+                                />
+                                {addKonsentrasiForm.errors.nama && (
+                                    <p className="text-rose-600 text-[11px]">{addKonsentrasiForm.errors.nama}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setIsAddKonsentrasiOpen(false)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                size="sm"
+                                disabled={addKonsentrasiForm.processing}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                            >
+                                {addKonsentrasiForm.processing ? 'Menyimpan...' : 'Simpan Konsentrasi'}
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal Edit Konsentrasi */}
+            <Dialog open={!!editingKonsentrasi} onOpenChange={(open) => !open && setEditingKonsentrasi(null)}>
+                <DialogContent className="sm:max-w-md bg-white">
+                    <form onSubmit={handleEditKonsentrasi}>
+                        <DialogHeader>
+                            <DialogTitle className="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <Edit className="size-5 text-emerald-600" />
+                                <span>Edit Bidang Konsentrasi</span>
+                            </DialogTitle>
+                            <DialogDescription className="text-xs text-slate-500">
+                                Perbarui nama peminatan atau konsentrasi keilmuan.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="py-4 space-y-3 text-xs">
+                            <div className="space-y-1">
+                                <Label htmlFor="edit-konsentrasi-nama" className="text-xs font-semibold">
+                                    Nama Bidang Konsentrasi / Peminatan
+                                </Label>
+                                <Input
+                                    id="edit-konsentrasi-nama"
+                                    value={editKonsentrasiForm.data.nama}
+                                    onChange={(e) => editKonsentrasiForm.setData('nama', e.target.value)}
+                                    required
+                                />
+                                {editKonsentrasiForm.errors.nama && (
+                                    <p className="text-rose-600 text-[11px]">{editKonsentrasiForm.errors.nama}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <DialogFooter className="pt-2">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setEditingKonsentrasi(null)}
+                            >
+                                Batal
+                            </Button>
+                            <Button
+                                type="submit"
+                                size="sm"
+                                disabled={editKonsentrasiForm.processing}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold"
+                            >
+                                {editKonsentrasiForm.processing ? 'Menyimpan...' : 'Perbarui Konsentrasi'}
                             </Button>
                         </DialogFooter>
                     </form>

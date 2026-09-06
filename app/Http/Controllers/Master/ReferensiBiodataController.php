@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Master;
 
 use App\Http\Controllers\Controller;
+use App\Models\AktivitasMahasiswa;
+use App\Models\BeasiswaMahasiswa;
 use App\Models\Mahasiswa;
+use App\Models\Matakuliah;
+use App\Models\PelanggaranMahasiswa;
 use App\Models\ReferensiBiodata;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,7 +47,9 @@ class ReferensiBiodataController extends Controller
 
         $validated['tipe'] = trim(strtolower($validated['tipe']));
 
-        ReferensiBiodata::create($validated);
+        $referensi = ReferensiBiodata::create($validated);
+
+        ActivityLogger::log('master.referensi_biodata.create', 'ReferensiBiodata', $referensi->id, null, $validated);
 
         return back()->with('success', 'Referensi biodata berhasil ditambahkan.');
     }
@@ -63,7 +70,10 @@ class ReferensiBiodataController extends Controller
 
         $validated['tipe'] = trim(strtolower($validated['tipe']));
 
+        $oldValues = $referensiBiodatum->only(['tipe', 'nama', 'pddikti_ref_id']);
         $referensiBiodatum->update($validated);
+
+        ActivityLogger::log('master.referensi_biodata.update', 'ReferensiBiodata', $referensiBiodatum->id, $oldValues, $validated);
 
         return back()->with('success', 'Referensi biodata berhasil diperbarui.');
     }
@@ -73,12 +83,28 @@ class ReferensiBiodataController extends Controller
      */
     public function destroy(ReferensiBiodata $referensiBiodatum): RedirectResponse
     {
-        // Safety check if referenced in mahasiswa agama
-        if (Mahasiswa::where('agama_referensi_biodata_id', $referensiBiodatum->id)->exists()) {
-            return back()->withErrors(['error' => 'Referensi "'.$referensiBiodatum->nama.'" tidak dapat dihapus karena sedang digunakan dalam data profil mahasiswa.']);
+        $id = $referensiBiodatum->id;
+
+        // Comprehensive safety check across all 9 FK columns in 5 tables
+        $isUsedInMahasiswa = Mahasiswa::where('agama_referensi_biodata_id', $id)
+            ->orWhere('pekerjaan_ayah_referensi_id', $id)
+            ->orWhere('pekerjaan_ibu_referensi_id', $id)
+            ->orWhere('penghasilan_ortu_referensi_id', $id)
+            ->exists();
+
+        $isUsedInMatakuliah = Matakuliah::where('bidang_ilmu_id', $id)->exists();
+        $isUsedInAktivitas = AktivitasMahasiswa::where('jenis_aktivitas_id', $id)->exists();
+        $isUsedInPelanggaran = PelanggaranMahasiswa::where('jenis_pelanggaran_id', $id)->orWhere('sanksi_id', $id)->exists();
+        $isUsedInBeasiswa = BeasiswaMahasiswa::where('jenis_beasiswa_id', $id)->exists();
+
+        if ($isUsedInMahasiswa || $isUsedInMatakuliah || $isUsedInAktivitas || $isUsedInPelanggaran || $isUsedInBeasiswa) {
+            return back()->with('error', 'Referensi biodata "'.$referensiBiodatum->nama.'" tidak dapat dihapus karena sedang digunakan dalam data sistem.');
         }
 
+        $oldValues = $referensiBiodatum->only(['tipe', 'nama', 'pddikti_ref_id']);
         $referensiBiodatum->delete();
+
+        ActivityLogger::log('master.referensi_biodata.delete', 'ReferensiBiodata', $id, $oldValues, null);
 
         return back()->with('success', 'Referensi biodata berhasil dihapus.');
     }
